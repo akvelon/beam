@@ -1,0 +1,29 @@
+{
+  "name": "Kafka to Pub/Sub",
+  "description": "Streaming pipeline. Ingests JSON-encoded messages from Kafka to a Pub/Sub subscription",
+  "parameters": [
+    {
+      "name": "bootstrap_servers",
+      "label": "Kafka Bootstrap Servers",
+      "helpText": "Comma separated Kafka bootstrap servers in format ip:port",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "input_topics",
+      "label": "Kafka input topics",
+      "helpText": "Comma separated Kafka topics to read data",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "output_topic",
+      "label": "Pub/Sub output topic",
+      "helpText": "Pub/Sub topic to write the output, in the format of 'projects/yourproject/topics/yourtopic'",
+      "regexes": [
+        "projects\/[a-zA-Z][-_.~+%a-zA-Z0-9]{2,}\/topics\/[a-zA-Z][-_.~+%a-zA-Z0-9]{2,}"
+      ],
+      "paramType": "TEXT"
+    }
+  ]
+}
