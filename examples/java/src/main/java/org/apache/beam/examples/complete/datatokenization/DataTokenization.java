@@ -353,7 +353,7 @@ public class DataTokenization {
       new BigTableIO(options).write(tokenizedRows.get(TOKENIZATION_OUT), schema.getBeamSchema());
     } else {
       throw new IllegalStateException(
-          "No sink is provided, please configure BigQuery or BigTable.");
+          "No sink is provided, please configure BigQuery, BigTable or File System.");
     }
 
     return pipeline.run();

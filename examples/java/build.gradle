@@ -95,6 +95,7 @@ dependencies {
   testCompile project(path: ":runners:direct-java", configuration: "shadow")
   testCompile project(":sdks:java:io:google-cloud-platform")
   testCompile project(":sdks:java:extensions:ml")
+  testCompile project(path: ":sdks:java:testing:test-utils", configuration: "testRuntime")
   testCompile library.java.hamcrest_core
   testCompile library.java.hamcrest_library
   testCompile library.java.junit
