@@ -293,7 +293,7 @@ public class DataProtectors {
           sendRpc(formatJsonsToRpcBatch(rowsToJsons(inputRows)).getBytes(Charset.defaultCharset()));
 
       if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-        LOG.error("Send to DSG '{}' failed with '{}'",
+        LOG.error("Send to RPC '{}' failed with '{}'",
             this.rpcURI,
             response.getStatusLine());
       }
