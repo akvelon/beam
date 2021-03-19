@@ -33,7 +33,7 @@ import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Strings;
 public class JsonToBeamRow extends PTransform<PCollection<String>, PCollection<Row>> {
 
   private final String failedToParseDeadLetterPath;
-  private final SchemasUtils schema;
+  private final transient SchemasUtils schema;
 
   public JsonToBeamRow(String failedToParseDeadLetterPath, SchemasUtils schema) {
     this.failedToParseDeadLetterPath = failedToParseDeadLetterPath;
