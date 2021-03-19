@@ -76,7 +76,7 @@ public class DataProtectors {
   private static final Logger LOG = LoggerFactory.getLogger(DataProtectors.class);
 
   public static final String ID_FIELD_NAME = "ID";
-  public static final Integer MAX_BUFFERING = 100;
+  private static final Integer MAX_BUFFERING = 100;
 
   /**
    * The {@link RowToTokenizedRow} transform converts {@link Row} to {@link TableRow} objects. The
@@ -203,10 +203,10 @@ public class DataProtectors {
       } catch (Exception e) {
         for (Row outputRow : rows) {
           context.output(
-                  failureTag,
-                  FailsafeElement.of(outputRow, outputRow)
-                          .setErrorMessage(e.getMessage())
-                          .setStacktrace(Throwables.getStackTraceAsString(e)));
+              failureTag,
+              FailsafeElement.of(outputRow, outputRow)
+                  .setErrorMessage(e.getMessage())
+                  .setStacktrace(Throwables.getStackTraceAsString(e)));
         }
       }
     }
