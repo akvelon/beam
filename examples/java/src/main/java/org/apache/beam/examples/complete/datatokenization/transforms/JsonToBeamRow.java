@@ -32,11 +32,11 @@ import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Strings;
 
 public class JsonToBeamRow extends PTransform<PCollection<String>, PCollection<Row>> {
 
-  private final String nonTokenizedDeadLetterPath;
+  private final String failedToParseDeadLetterPath;
   private final SchemasUtils schema;
 
-  public JsonToBeamRow(String nonTokenizedDeadLetterPath, SchemasUtils schema) {
-    this.nonTokenizedDeadLetterPath = nonTokenizedDeadLetterPath;
+  public JsonToBeamRow(String failedToParseDeadLetterPath, SchemasUtils schema) {
+    this.failedToParseDeadLetterPath = failedToParseDeadLetterPath;
     this.schema = schema;
   }
 
@@ -48,7 +48,7 @@ public class JsonToBeamRow extends PTransform<PCollection<String>, PCollection<R
             "JsonToRow",
             JsonToRow.withExceptionReporting(schema.getBeamSchema()).withExtendedErrorInfo());
 
-    if (nonTokenizedDeadLetterPath != null) {
+    if (failedToParseDeadLetterPath != null) {
       /*
        * Write Row conversion errors to filesystem specified path
        */
@@ -59,13 +59,13 @@ public class JsonToBeamRow extends PTransform<PCollection<String>, PCollection<R
                   .via(
                       (Row errRow) ->
                           FailsafeElement.of(
-                              Strings.nullToEmpty(errRow.getString("line")),
-                              Strings.nullToEmpty(errRow.getString("line")))
+                                  Strings.nullToEmpty(errRow.getString("line")),
+                                  Strings.nullToEmpty(errRow.getString("line")))
                               .setErrorMessage(Strings.nullToEmpty(errRow.getString("err")))))
           .apply(
               "WriteCsvConversionErrorsToFS",
               ErrorConverters.WriteErrorsToTextIO.<String, String>newBuilder()
-                  .setErrorWritePath(nonTokenizedDeadLetterPath)
+                  .setErrorWritePath(failedToParseDeadLetterPath)
                   .setTranslateFunction(SerializableFunctions.getCsvErrorConverter())
                   .build());
     }
