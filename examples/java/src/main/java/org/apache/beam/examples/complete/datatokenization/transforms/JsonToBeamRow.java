@@ -19,7 +19,6 @@ package org.apache.beam.examples.complete.datatokenization.transforms;
 
 import static org.apache.beam.examples.complete.datatokenization.DataTokenization.FAILSAFE_ELEMENT_CODER;
 
-import java.io.Serializable;
 import org.apache.beam.examples.complete.datatokenization.utils.ErrorConverters;
 import org.apache.beam.examples.complete.datatokenization.utils.FailsafeElement;
 import org.apache.beam.examples.complete.datatokenization.utils.SchemasUtils;
@@ -29,6 +28,7 @@ import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.Row;
+import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Strings;
 
 public class JsonToBeamRow extends PTransform<PCollection<String>, PCollection<Row>> {
 
@@ -58,8 +58,10 @@ public class JsonToBeamRow extends PTransform<PCollection<String>, PCollection<R
               MapElements.into(FAILSAFE_ELEMENT_CODER.getEncodedTypeDescriptor())
                   .via(
                       (Row errRow) ->
-                          FailsafeElement.of(errRow.getString("line"), errRow.getString("line"))
-                              .setErrorMessage(errRow.getString("err"))))
+                          FailsafeElement.of(
+                              Strings.nullToEmpty(errRow.getString("line")),
+                              Strings.nullToEmpty(errRow.getString("line")))
+                              .setErrorMessage(Strings.nullToEmpty(errRow.getString("err")))))
           .apply(
               "WriteCsvConversionErrorsToFS",
               ErrorConverters.WriteErrorsToTextIO.<String, String>newBuilder()
