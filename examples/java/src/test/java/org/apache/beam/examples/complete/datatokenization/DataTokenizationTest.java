@@ -106,17 +106,17 @@ public class DataTokenizationTest {
 
   @Test
   public void testRowToCSVWithNull() {
-    final String NULLABLE_TEST_SCHEMA =
+    final String nullableTestSchema =
         "{\"fields\":[{\"mode\":\"REQUIRED\",\"name\":\"FieldName1\",\"type\":\"STRING\"},{\"mode\":\"NULLABLE\",\"name\":\"FieldName2\",\"type\":\"STRING\"}]}";
-    final String EXPECTED_CSV = "TestValueOne;null";
+    final String expectedCsv = "TestValueOne;null";
 
     List<Object> values = Lists.newArrayList("TestValueOne", null);
 
-    Schema beamSchema = new SchemasUtils(NULLABLE_TEST_SCHEMA).getBeamSchema();
+    Schema beamSchema = new SchemasUtils(nullableTestSchema).getBeamSchema();
     Row.Builder rowBuilder = Row.withSchema(beamSchema);
     Row row = rowBuilder.addValues(values).build();
     String csvResult = new RowToCsv(";").getCsvFromRow(row);
-    Assert.assertEquals(EXPECTED_CSV, csvResult);
+    Assert.assertEquals(expectedCsv, csvResult);
   }
 
   @Test
