@@ -17,6 +17,7 @@
  */
 package org.apache.beam.examples.complete.datatokenization.transforms.io;
 
+import org.apache.avro.generic.GenericRecord;
 import org.apache.beam.examples.complete.datatokenization.options.DataTokenizationOptions;
 import org.apache.beam.examples.complete.datatokenization.transforms.JsonToBeamRow;
 import org.apache.beam.examples.complete.datatokenization.transforms.SerializableFunctions;
@@ -26,11 +27,15 @@ import org.apache.beam.examples.complete.datatokenization.utils.FailsafeElement;
 import org.apache.beam.examples.complete.datatokenization.utils.RowToCsv;
 import org.apache.beam.examples.complete.datatokenization.utils.SchemasUtils;
 import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.coders.AvroCoder;
+import org.apache.beam.sdk.coders.RowCoder;
+import org.apache.beam.sdk.io.AvroIO;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.options.Default;
 import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.schemas.Schema;
+import org.apache.beam.sdk.schemas.utils.AvroUtils;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.ToJson;
 import org.apache.beam.sdk.values.PCollection;
@@ -39,6 +44,7 @@ import org.apache.beam.sdk.values.PCollectionTuple;
 import org.apache.beam.sdk.values.PDone;
 import org.apache.beam.sdk.values.Row;
 import org.apache.beam.sdk.values.TupleTag;
+import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.beam.sdk.values.TypeDescriptors;
 
 /** The {@link TokenizationFileSystemIO} class to read/write data from/into File Systems. */
@@ -61,7 +67,8 @@ public class TokenizationFileSystemIO {
   /** Supported format to read from GCS. */
   public enum FORMAT {
     JSON,
-    CSV
+    CSV,
+    AVRO
   }
 
   /**
@@ -141,10 +148,23 @@ public class TokenizationFileSystemIO {
       case CSV:
         return readCsv(pipeline, schema)
             .apply(new JsonToBeamRow(options.getNonTokenizedDeadLetterPath(), schema));
+      case AVRO:
+        return readAvro(pipeline, schema);
       default:
         throw new IllegalStateException(
             "No valid format for input data is provided. Please, choose JSON or CSV.");
     }
+  }
+
+  private PCollection<Row> readAvro(Pipeline pipeline, SchemasUtils schema) {
+    org.apache.avro.Schema avroSchema = AvroUtils.toAvroSchema(schema.getBeamSchema());
+    return pipeline
+        .apply("ReadAvroFiles",
+            AvroIO.readGenericRecords(avroSchema).from(options.getInputFilePattern()))
+        .apply("GenericRecordToRow",
+            MapElements.into(TypeDescriptor.of(Row.class))
+            .via(AvroUtils.getGenericRecordToRowFunction(schema.getBeamSchema())))
+        .setCoder(RowCoder.of(schema.getBeamSchema()));
   }
 
   private PCollection<String> readJson(Pipeline pipeline) {
@@ -217,10 +237,24 @@ public class TokenizationFileSystemIO {
         return writeJson(input);
       case CSV:
         return writeCsv(input, schema);
+      case AVRO:
+        return writeAvro(input, schema);
       default:
         throw new IllegalStateException(
             "No valid format for output data is provided. Please, choose JSON or CSV.");
     }
+  }
+
+  private PDone writeAvro(PCollection<Row> input, Schema schema) {
+    org.apache.avro.Schema avroSchema = AvroUtils.toAvroSchema(schema);
+    return input
+        .apply(
+            "RowToGenericRecord", MapElements.into(TypeDescriptor.of(GenericRecord.class))
+                .via(AvroUtils.getRowToGenericRecordFunction(avroSchema)))
+        .setCoder(AvroCoder.of(GenericRecord.class, avroSchema))
+        .apply("WriteToAvro", AvroIO.writeGenericRecords(avroSchema)
+            .to(options.getOutputDirectory())
+            .withSuffix(".avro"));
   }
 
   private PDone writeJson(PCollection<Row> input) {

@@ -261,7 +261,7 @@ public class DataTokenization {
       }
     } else {
       throw new IllegalStateException(
-          "No source is provided, please configure File System or Pub/Sub");
+          "No source is provided, please configure FS, GCS or Pub/Sub");
     }
 
     /*

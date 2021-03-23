@@ -72,6 +72,9 @@ public class DataTokenizationTest {
   private static final String JSON_FILE_PATH =
       Resources.getResource(RESOURCES_DIR + "testInput.txt").getPath();
 
+  private static final String AVRO_FILE_PATH =
+      Resources.getResource(RESOURCES_DIR + "testInput.avro").getPath();
+
   private static final String SCHEMA_FILE_PATH =
       Resources.getResource(RESOURCES_DIR + "schema.txt").getPath();
 
@@ -135,9 +138,15 @@ public class DataTokenizationTest {
   }
 
   @Test
+  public void testFileSystemIOReadAVRO() throws IOException {
+    PCollection<Row> rows = fileSystemIORead(AVRO_FILE_PATH, FORMAT.AVRO);
+    assertRows(rows);
+    testPipeline.run();
+  }
+
+  @Test
   public void testJsonToRow() throws IOException {
     PCollection<Row> rows = fileSystemIORead(JSON_FILE_PATH, FORMAT.JSON);
-    SchemasUtils testSchemaUtils = new SchemasUtils(SCHEMA_FILE_PATH, StandardCharsets.UTF_8);
 
     PAssert.that(rows)
         .satisfies(
