@@ -1,7 +1,7 @@
 package main
 
-import "beam.apache.org/playground/backend/executor"
+import "beam.apache.org/playground/backend/executors"
 
 func main() {
-	_ = executor.GoExecutor{}
+	_ = executors.GoExecutor{}
 }

@@ -1,4 +1,4 @@
-package executor
+package executors
 
 type JavaExecutor struct{}
 

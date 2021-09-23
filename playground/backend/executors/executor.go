@@ -1,4 +1,4 @@
-package executor
+package executors
 
 type executor interface {
 	//Validate executable file
