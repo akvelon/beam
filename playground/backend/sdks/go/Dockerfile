@@ -1,0 +1,1 @@
+#Dokerfile to set up the Beam Go SDK
