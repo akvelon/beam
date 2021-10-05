@@ -17,6 +17,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:playground/constants/sizes.dart';
 
 class ExpansionPanelItem extends StatelessWidget {
   final String name;
@@ -28,7 +29,7 @@ class ExpansionPanelItem extends StatelessWidget {
     return GestureDetector(
       onTap: () {},
       child: Container(
-        margin: const EdgeInsets.only(left: 36.0),
+        margin: const EdgeInsets.only(left: kLgMargin),
         height: 40.0,
         child: Row(
           children: [

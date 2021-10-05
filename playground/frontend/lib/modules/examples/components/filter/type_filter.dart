@@ -17,6 +17,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:playground/constants/sizes.dart';
 import 'package:playground/modules/examples/components/examples_components.dart';
 
 class TypeFilter extends StatelessWidget {
@@ -25,7 +26,10 @@ class TypeFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(
+        horizontal: kBgSpacing,
+        vertical: kMdSpacing,
+      ),
       child: Row(
         children: const <CategoryBubble>[
           CategoryBubble(name: 'All'),

@@ -17,6 +17,8 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:playground/config/theme.dart';
+import 'package:playground/constants/sizes.dart';
 
 class CategoryBubble extends StatelessWidget {
   final String name;
@@ -26,15 +28,15 @@ class CategoryBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
+      padding: const EdgeInsets.only(right: kMdSpacing),
       child: GestureDetector(
         onTap: () {},
         child: Container(
           height: 36.0,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: kLgSpacing),
           decoration: BoxDecoration(
-            color: Colors.deepOrange,
-            borderRadius: BorderRadius.circular(28.0),
+            color: ThemeColors.of(context).primary,
+            borderRadius: BorderRadius.circular(kLgBorderRadius),
           ),
           child: Center(
             child: Text(

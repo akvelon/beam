@@ -17,6 +17,8 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:playground/config/theme.dart';
+import 'package:playground/constants/sizes.dart';
 
 class SearchField extends StatelessWidget {
   final TextEditingController controller;
@@ -25,55 +27,45 @@ class SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final OutlineInputBorder _border = OutlineInputBorder(
+      borderSide: BorderSide(color: ThemeColors.of(context).lightGreyColor),
+      borderRadius: BorderRadius.circular(kMdBorderRadius),
+    );
+
     return Container(
       margin: const EdgeInsets.only(
-        top: 12.0,
-        right: 12.0,
-        left: 12.0,
+        top: kBgSpacing,
+        right: kBgSpacing,
+        left: kBgSpacing,
       ),
       width: 376.0,
       height: 40.0,
-      color: Colors.white,
+      color: Theme.of(context).backgroundColor,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(6.0),
+        borderRadius: BorderRadius.circular(kMdBorderRadius),
         child: TextFormField(
           controller: controller,
           decoration: InputDecoration(
-            suffixIcon: const Padding(
-              padding: EdgeInsetsDirectional.only(
-                start: 0.0,
-                end: 0.0,
+            suffixIcon: Padding(
+              padding: const EdgeInsetsDirectional.only(
+                start: kZeroSpacing,
+                end: kZeroSpacing,
               ),
               child: Icon(
                 Icons.search,
-                color: Colors.black38,
-                size: 25.0,
+                color: ThemeColors.of(context).lightGreyColor,
+                size: kIconSizeMd,
               ),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(
-                color: Colors.black12,
-              ),
-              borderRadius: BorderRadius.circular(6.0),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(
-                color: Colors.black12,
-              ),
-              borderRadius: BorderRadius.circular(6.0),
-            ),
+            focusedBorder: _border,
+            enabledBorder: _border,
             filled: false,
             isDense: true,
             hintText: 'Search',
-            contentPadding: const EdgeInsets.only(left: 13.0),
+            contentPadding: const EdgeInsets.only(left: kBgSpacing),
           ),
-          style: const TextStyle(
-            fontSize: 14.0,
-            height: 14 / 8,
-            color: Colors.black,
-          ),
-          cursorColor: Colors.grey,
-          cursorWidth: 1.0,
+          cursorColor: ThemeColors.of(context).lightGreyColor,
+          cursorWidth: kCursorSize,
           textAlignVertical: TextAlignVertical.center,
           onFieldSubmitted: (String txt) {},
           onChanged: (String txt) {},

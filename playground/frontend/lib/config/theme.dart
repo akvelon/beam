@@ -80,4 +80,8 @@ class ThemeColors {
   ThemeColors(this.isDark);
 
   Color get greyColor => isDark ? kDarkGrey : kLightGrey;
+
+  Color get lightGreyColor => isDark ? kLightGrey1 : kLightGrey;
+
+  Color get primary => isDark ? kDarkPrimary : kLightPrimary;
 }

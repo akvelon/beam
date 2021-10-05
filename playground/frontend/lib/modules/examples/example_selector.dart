@@ -18,6 +18,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:playground/config/theme.dart';
+import 'package:playground/constants/sizes.dart';
 import 'package:playground/modules/examples/components/examples_components.dart';
 import 'package:playground/modules/examples/models/selector_size_model.dart';
 
@@ -59,34 +60,31 @@ class _ExampleSelectorState extends State<ExampleSelector>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      key: selectorKey,
-      onTap: () {
-        if (widget.isSelectorOpened) {
-          _animationController.reverse();
-          _examplesDropdown?.remove();
-        } else {
-          _animationController.forward();
-          _examplesDropdown = _createExamplesDropdown();
-          Overlay.of(context)?.insert(_examplesDropdown!);
-        }
-        widget.changeSelectorVisibility();
-      },
-      child: Container(
-        width: 105.0,
-        height: 40.0,
-        decoration: BoxDecoration(
-          color: ThemeColors.greyColor(context),
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return Container(
+      height: 40.0,
+      decoration: BoxDecoration(
+        color: ThemeColors.of(context).greyColor,
+        borderRadius: BorderRadius.circular(kSmBorderRadius),
+      ),
+      child: TextButton(
+        key: selectorKey,
+        onPressed: () {
+          if (widget.isSelectorOpened) {
+            _animationController.reverse();
+            _examplesDropdown?.remove();
+          } else {
+            _animationController.forward();
+            _examplesDropdown = _createExamplesDropdown();
+            Overlay.of(context)?.insert(_examplesDropdown!);
+          }
+          widget.changeSelectorVisibility();
+        },
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: const [
-            Text(
-              'Catalog',
-              style: TextStyle(color: Colors.black, fontSize: 16.0),
-            ),
-            Icon(Icons.keyboard_arrow_down, color: Colors.black54),
+            Text('Catalog'),
+            Icon(Icons.keyboard_arrow_down),
           ],
         ),
       ),
@@ -96,48 +94,54 @@ class _ExampleSelectorState extends State<ExampleSelector>
   OverlayEntry _createExamplesDropdown() {
     SelectorPositionModel _posModel = _findSelectorPositionData();
     final TextEditingController _textController = TextEditingController();
+    final ScrollController _scrollController = ScrollController();
 
     return OverlayEntry(
       builder: (context) {
-        return Stack(children: [
-          GestureDetector(
-            onTap: () {
-              _animationController.reverse();
-              _examplesDropdown?.remove();
-              widget.changeSelectorVisibility();
-            },
-            child: Container(
-              color: Colors.transparent,
-              height: double.infinity,
-              width: double.infinity,
+        return Stack(
+          children: [
+            GestureDetector(
+              onTap: () {
+                _animationController.reverse();
+                _examplesDropdown?.remove();
+                widget.changeSelectorVisibility();
+              },
+              child: Container(
+                color: Colors.transparent,
+                height: double.infinity,
+                width: double.infinity,
+              ),
             ),
-          ),
-          Positioned(
-            left: _posModel.xAlignment,
-            top: _posModel.yAlignment + 50.0,
-            child: SlideTransition(
-              position: _offsetAnimation,
-              child: Material(
-                elevation: 2.0,
-                child: Container(
-                  height: 444.0,
-                  width: 400.0,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6.0),
-                  ),
-                  child: Column(
-                    children: [
-                      SearchField(controller: _textController),
-                      const TypeFilter(),
-                      ExampleList(items: widget.examples),
-                    ],
+            Positioned(
+              left: _posModel.xAlignment,
+              top: _posModel.yAlignment + 50.0,
+              child: SlideTransition(
+                position: _offsetAnimation,
+                child: Material(
+                  elevation: kElevation.toDouble(),
+                  child: Container(
+                    height: 444.0,
+                    width: 400.0,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).backgroundColor,
+                      borderRadius: BorderRadius.circular(kMdBorderRadius),
+                    ),
+                    child: Column(
+                      children: [
+                        SearchField(controller: _textController),
+                        const TypeFilter(),
+                        ExampleList(
+                          controller: _scrollController,
+                          items: widget.examples,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ]);
+          ],
+        );
       },
     );
   }

@@ -19,6 +19,7 @@ import 'dart:math' as math;
 
 import 'package:expansion_widget/expansion_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:playground/constants/sizes.dart';
 import 'package:playground/modules/examples/components/example_list/expansion_panel_item.dart';
 
 class CategoryExpansionPanel extends StatelessWidget {
@@ -38,7 +39,7 @@ class CategoryExpansionPanel extends StatelessWidget {
       titleBuilder: (animationValue, _, isExpanded, toggleFunction) => InkWell(
         onTap: () => toggleFunction(animated: true),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: const EdgeInsets.symmetric(horizontal: kBgSpacing),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [

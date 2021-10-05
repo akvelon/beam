@@ -21,30 +21,30 @@ import 'package:playground/modules/examples/components/examples_components.dart'
 
 class ExampleList extends StatelessWidget {
   final List items;
+  final ScrollController controller;
 
-  ExampleList({
+  const ExampleList({
     Key? key,
     required this.items,
+    required this.controller,
   }) : super(key: key);
-
-  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        color: Colors.white,
+        color: Theme.of(context).backgroundColor,
         child: Scrollbar(
           isAlwaysShown: true,
           showTrackOnHover: true,
-          controller: _scrollController,
+          controller: controller,
           child: ListView.builder(
             itemCount: items.length,
             itemBuilder: (context, index) => CategoryExpansionPanel(
               categoryName: items[index].name,
               examples: items[index].examples,
             ),
-            controller: _scrollController,
+            controller: controller,
             shrinkWrap: true,
           ),
         ),
