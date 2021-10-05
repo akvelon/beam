@@ -18,11 +18,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:playground/components/logo/logo_component.dart';
+import 'package:playground/components/toggle_theme_button/toggle_theme_button.dart';
+import 'package:playground/constants/sizes.dart';
 import 'package:playground/modules/examples/example_selector.dart';
-import 'package:playground/modules/examples/repositories/example_repository.dart';
 import 'package:playground/modules/output/components/output_area.dart';
 import 'package:playground/modules/sdk/components/sdk_selector.dart';
 import 'package:playground/pages/playground/components/editor_textarea_wrapper.dart';
+import 'package:playground/pages/playground/components/playground_page_providers.dart';
 import 'package:playground/pages/playground/states/examples_state.dart';
 import 'package:playground/pages/playground/states/playground_state.dart';
 import 'package:provider/provider.dart';
@@ -32,32 +34,14 @@ class PlaygroundPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<ExampleState>(
-          create: (context) => ExampleState(ExampleRepository()),
-        ),
-        ChangeNotifierProxyProvider<ExampleState, PlaygroundState>(
-          create: (context) => PlaygroundState(),
-          update: (context, exampleState, playground) {
-            if (playground == null) {
-              return PlaygroundState();
-            }
-            if (exampleState.examples?.isNotEmpty ?? false) {
-              return PlaygroundState(
-                  playground.sdk, exampleState.examples!.first);
-            }
-            return playground;
-          },
-        ),
-      ],
+    return PlaygroundPageProviders(
       child: Scaffold(
         appBar: AppBar(
           title: Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 16.0,
+            spacing: kLgSpacing,
             children: [
-              const LogoComponent(),
+              const Logo(),
               Consumer<ExampleState>(
                 builder: (context, state, child) {
                   return ExampleSelector(
@@ -77,11 +61,13 @@ class PlaygroundPage extends StatelessWidget {
               ),
             ],
           ),
+          actions: const [ToggleThemeButton()],
         ),
         body: Column(
           children: [
             const Expanded(child: CodeTextAreaWrapper()),
-            Container(height: 16.0, color: Theme.of(context).backgroundColor),
+            Container(
+                height: kLgSpacing, color: Theme.of(context).backgroundColor),
             const Expanded(child: OutputArea()),
           ],
         ),
