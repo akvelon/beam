@@ -17,19 +17,41 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:playground/modules/examples/models/category_model.dart';
 import 'package:playground/modules/examples/models/example_model.dart';
 import 'package:playground/modules/examples/repositories/example_repository.dart';
 
 class ExampleState with ChangeNotifier {
   final ExampleRepository _exampleRepository;
   List<ExampleModel>? examples;
+  List<CategoryModel>? categories;
+  bool isSelectorOpened = false;
 
   ExampleState(this._exampleRepository) {
     _loadExamples();
+    categories = [
+      CategoryModel('Side Inputs', [
+        ExampleModel({}, 'Example 1'),
+        ExampleModel({}, 'Example 2'),
+      ]),
+      CategoryModel('Side Outputs', [
+        ExampleModel({}, 'Example 1'),
+        ExampleModel({}, 'Example 2'),
+      ]),
+      CategoryModel('I/O', [
+        ExampleModel({}, 'Example 1'),
+        ExampleModel({}, 'Example 2'),
+      ]),
+    ];
   }
 
   _loadExamples() async {
     examples = await _exampleRepository.getExamples();
+    notifyListeners();
+  }
+
+  changeSelectorVisibility() {
+    isSelectorOpened = !isSelectorOpened;
     notifyListeners();
   }
 }

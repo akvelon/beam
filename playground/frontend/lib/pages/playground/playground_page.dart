@@ -17,14 +17,15 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:playground/modules/examples/repositories/example_repository.dart';
-import 'package:playground/pages/playground/states/examples_state.dart';
-import 'package:provider/provider.dart';
-import 'package:playground/pages/playground/components/editor_textarea_wrapper.dart';
-import 'package:playground/modules/output/components/output_area.dart';
-import 'package:playground/pages/playground/states/playground_state.dart';
-import 'package:playground/modules/sdk/components/sdk_selector.dart';
 import 'package:playground/components/logo/logo_component.dart';
+import 'package:playground/modules/examples/example_selector.dart';
+import 'package:playground/modules/examples/repositories/example_repository.dart';
+import 'package:playground/modules/output/components/output_area.dart';
+import 'package:playground/modules/sdk/components/sdk_selector.dart';
+import 'package:playground/pages/playground/components/editor_textarea_wrapper.dart';
+import 'package:playground/pages/playground/states/examples_state.dart';
+import 'package:playground/pages/playground/states/playground_state.dart';
+import 'package:provider/provider.dart';
 
 class PlaygroundPage extends StatelessWidget {
   const PlaygroundPage({Key? key}) : super(key: key);
@@ -57,6 +58,15 @@ class PlaygroundPage extends StatelessWidget {
             spacing: 16.0,
             children: [
               const LogoComponent(),
+              Consumer<ExampleState>(
+                builder: (context, state, child) {
+                  return ExampleSelector(
+                    changeSelectorVisibility: state.changeSelectorVisibility,
+                    isSelectorOpened: state.isSelectorOpened,
+                    examples: state.categories!,
+                  );
+                },
+              ),
               Consumer<PlaygroundState>(
                 builder: (context, state, child) {
                   return SDKSelector(
