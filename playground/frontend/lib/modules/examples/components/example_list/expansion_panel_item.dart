@@ -29,10 +29,11 @@ class ExpansionPanelItem extends StatelessWidget {
     return GestureDetector(
       onTap: () {},
       child: Container(
-        margin: const EdgeInsets.only(left: kLgMargin),
-        height: 40.0,
+        margin: const EdgeInsets.only(left: kXxlSpacing),
+        height: kContainerHeight,
         child: Row(
           children: [
+            // Wrapped with Row for better user interaction and positioning
             Text(name),
           ],
         ),

@@ -39,7 +39,7 @@ class CategoryExpansionPanel extends StatelessWidget {
       titleBuilder: (animationValue, _, isExpanded, toggleFunction) => InkWell(
         onTap: () => toggleFunction(animated: true),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: kBgSpacing),
+          padding: const EdgeInsets.symmetric(horizontal: kLgSpacing),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -48,8 +48,8 @@ class CategoryExpansionPanel extends StatelessWidget {
                 child: const Icon(Icons.keyboard_arrow_down),
                 alignment: Alignment.center,
               ),
-              Container(
-                height: 40.0,
+              SizedBox(
+                height: kContainerHeight,
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(categoryName),
@@ -60,18 +60,18 @@ class CategoryExpansionPanel extends StatelessWidget {
         ),
       ),
       content: Column(
-        children: _buildItems(),
+        children: buildItems(),
       ),
     );
   }
 
-  List<Widget> _buildItems() {
-    List<Widget> _items = [];
+  List<Widget> buildItems() {
+    List<Widget> items = [];
     for (var example in examples) {
-      _items.add(
+      items.add(
         ExpansionPanelItem(name: example.name),
       );
     }
-    return _items;
+    return items;
   }
 }

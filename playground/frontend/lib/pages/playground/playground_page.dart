@@ -39,7 +39,7 @@ class PlaygroundPage extends StatelessWidget {
         appBar: AppBar(
           title: Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: kLgSpacing,
+            spacing: kXlSpacing,
             children: [
               const Logo(),
               Consumer<ExampleState>(
@@ -67,7 +67,9 @@ class PlaygroundPage extends StatelessWidget {
           children: [
             const Expanded(child: CodeTextAreaWrapper()),
             Container(
-                height: kLgSpacing, color: Theme.of(context).backgroundColor),
+              height: kXlSpacing,
+              color: Theme.of(context).backgroundColor,
+            ),
             const Expanded(child: OutputArea()),
           ],
         ),

@@ -20,6 +20,11 @@ import 'package:flutter/material.dart';
 import 'package:playground/config/theme.dart';
 import 'package:playground/constants/sizes.dart';
 
+const double kContainerWidth = 376.0;
+const int kMinLines = 1;
+const int kMaxLines = 1;
+const String kHintText = 'Search';
+
 class SearchField extends StatelessWidget {
   final TextEditingController controller;
 
@@ -27,19 +32,19 @@ class SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final OutlineInputBorder _border = OutlineInputBorder(
+    final OutlineInputBorder border = OutlineInputBorder(
       borderSide: BorderSide(color: ThemeColors.of(context).lightGreyColor),
       borderRadius: BorderRadius.circular(kMdBorderRadius),
     );
 
     return Container(
       margin: const EdgeInsets.only(
-        top: kBgSpacing,
-        right: kBgSpacing,
-        left: kBgSpacing,
+        top: kLgSpacing,
+        right: kLgSpacing,
+        left: kLgSpacing,
       ),
-      width: 376.0,
-      height: 40.0,
+      width: kContainerWidth,
+      height: kContainerHeight,
       color: Theme.of(context).backgroundColor,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(kMdBorderRadius),
@@ -57,20 +62,20 @@ class SearchField extends StatelessWidget {
                 size: kIconSizeMd,
               ),
             ),
-            focusedBorder: _border,
-            enabledBorder: _border,
+            focusedBorder: border,
+            enabledBorder: border,
             filled: false,
             isDense: true,
-            hintText: 'Search',
-            contentPadding: const EdgeInsets.only(left: kBgSpacing),
+            hintText: kHintText,
+            contentPadding: const EdgeInsets.only(left: kLgSpacing),
           ),
           cursorColor: ThemeColors.of(context).lightGreyColor,
           cursorWidth: kCursorSize,
           textAlignVertical: TextAlignVertical.center,
           onFieldSubmitted: (String txt) {},
           onChanged: (String txt) {},
-          maxLines: 1,
-          minLines: 1,
+          maxLines: kMinLines,
+          minLines: kMaxLines,
         ),
       ),
     );

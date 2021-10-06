@@ -27,7 +27,7 @@ class TypeFilter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: kBgSpacing,
+        horizontal: kLgSpacing,
         vertical: kMdSpacing,
       ),
       child: Row(

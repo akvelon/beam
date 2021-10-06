@@ -22,6 +22,13 @@ import 'package:playground/constants/sizes.dart';
 import 'package:playground/modules/examples/components/examples_components.dart';
 import 'package:playground/modules/examples/models/selector_size_model.dart';
 
+const int kAnimationDurationInMilliseconds = 80;
+const Offset kAnimationBeginOffset = Offset(0.0, -0.02);
+const Offset kAnimationEndOffset = Offset(0.0, 0.0);
+const double kAdditionalDyAlignment = 50.0;
+const double kLgContainerHeight = 444.0;
+const double kLgContainerWidth = 400.0;
+
 class ExampleSelector extends StatefulWidget {
   final Function changeSelectorVisibility;
   final bool isSelectorOpened;
@@ -41,27 +48,27 @@ class ExampleSelector extends StatefulWidget {
 class _ExampleSelectorState extends State<ExampleSelector>
     with TickerProviderStateMixin {
   final GlobalKey selectorKey = LabeledGlobalKey('ExampleSelector');
-  late OverlayEntry? _examplesDropdown;
-  late AnimationController _animationController;
-  late Animation<Offset> _offsetAnimation;
+  late OverlayEntry? examplesDropdown;
+  late AnimationController animationController;
+  late Animation<Offset> offsetAnimation;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
+    animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 80),
+      duration: const Duration(milliseconds: kAnimationDurationInMilliseconds),
     );
-    _offsetAnimation = Tween<Offset>(
-      begin: const Offset(0.0, -0.02),
-      end: const Offset(0.0, 0.0),
-    ).animate(_animationController);
+    offsetAnimation = Tween<Offset>(
+      begin: kAnimationBeginOffset,
+      end: kAnimationEndOffset,
+    ).animate(animationController);
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 40.0,
+      height: kContainerHeight,
       decoration: BoxDecoration(
         color: ThemeColors.of(context).greyColor,
         borderRadius: BorderRadius.circular(kSmBorderRadius),
@@ -70,12 +77,12 @@ class _ExampleSelectorState extends State<ExampleSelector>
         key: selectorKey,
         onPressed: () {
           if (widget.isSelectorOpened) {
-            _animationController.reverse();
-            _examplesDropdown?.remove();
+            animationController.reverse();
+            examplesDropdown?.remove();
           } else {
-            _animationController.forward();
-            _examplesDropdown = _createExamplesDropdown();
-            Overlay.of(context)?.insert(_examplesDropdown!);
+            animationController.forward();
+            examplesDropdown = createExamplesDropdown();
+            Overlay.of(context)?.insert(examplesDropdown!);
           }
           widget.changeSelectorVisibility();
         },
@@ -91,10 +98,10 @@ class _ExampleSelectorState extends State<ExampleSelector>
     );
   }
 
-  OverlayEntry _createExamplesDropdown() {
-    SelectorPositionModel _posModel = _findSelectorPositionData();
-    final TextEditingController _textController = TextEditingController();
-    final ScrollController _scrollController = ScrollController();
+  OverlayEntry createExamplesDropdown() {
+    SelectorPositionModel posModel = findSelectorPositionData();
+    final TextEditingController textController = TextEditingController();
+    final ScrollController scrollController = ScrollController();
 
     return OverlayEntry(
       builder: (context) {
@@ -102,8 +109,8 @@ class _ExampleSelectorState extends State<ExampleSelector>
           children: [
             GestureDetector(
               onTap: () {
-                _animationController.reverse();
-                _examplesDropdown?.remove();
+                animationController.reverse();
+                examplesDropdown?.remove();
                 widget.changeSelectorVisibility();
               },
               child: Container(
@@ -113,25 +120,25 @@ class _ExampleSelectorState extends State<ExampleSelector>
               ),
             ),
             Positioned(
-              left: _posModel.xAlignment,
-              top: _posModel.yAlignment + 50.0,
+              left: posModel.xAlignment,
+              top: posModel.yAlignment + kAdditionalDyAlignment,
               child: SlideTransition(
-                position: _offsetAnimation,
+                position: offsetAnimation,
                 child: Material(
                   elevation: kElevation.toDouble(),
                   child: Container(
-                    height: 444.0,
-                    width: 400.0,
+                    height: kLgContainerHeight,
+                    width: kLgContainerWidth,
                     decoration: BoxDecoration(
                       color: Theme.of(context).backgroundColor,
                       borderRadius: BorderRadius.circular(kMdBorderRadius),
                     ),
                     child: Column(
                       children: [
-                        SearchField(controller: _textController),
+                        SearchField(controller: textController),
                         const TypeFilter(),
                         ExampleList(
-                          controller: _scrollController,
+                          controller: scrollController,
                           items: widget.examples,
                         ),
                       ],
@@ -146,7 +153,7 @@ class _ExampleSelectorState extends State<ExampleSelector>
     );
   }
 
-  SelectorPositionModel _findSelectorPositionData() {
+  SelectorPositionModel findSelectorPositionData() {
     RenderBox? rBox =
         selectorKey.currentContext?.findRenderObject() as RenderBox;
     SelectorPositionModel positionModel = SelectorPositionModel(

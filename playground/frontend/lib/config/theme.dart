@@ -39,7 +39,7 @@ TextButtonThemeData createTextButtonTheme(Color textColor) {
     style: TextButton.styleFrom(
       primary: textColor,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(kBorderRadius)),
+        borderRadius: BorderRadius.all(Radius.circular(kLgBorderRadius)),
       ),
     ),
   );
@@ -83,5 +83,5 @@ class ThemeColors {
 
   Color get lightGreyColor => isDark ? kLightGrey1 : kLightGrey;
 
-  Color get primary => isDark ? kDarkPrimary : kLightPrimary;
+  Color get primary => isDark ? kLightPrimary : kDarkPrimary;
 }

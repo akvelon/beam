@@ -32,11 +32,11 @@ class CategoryBubble extends StatelessWidget {
       child: GestureDetector(
         onTap: () {},
         child: Container(
-          height: 36.0,
-          padding: const EdgeInsets.symmetric(horizontal: kLgSpacing),
+          height: kContainerHeight,
+          padding: const EdgeInsets.symmetric(horizontal: kXlSpacing),
           decoration: BoxDecoration(
             color: ThemeColors.of(context).primary,
-            borderRadius: BorderRadius.circular(kLgBorderRadius),
+            borderRadius: BorderRadius.circular(kXlBorderRadius),
           ),
           child: Center(
             child: Text(

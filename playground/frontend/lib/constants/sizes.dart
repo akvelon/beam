@@ -20,17 +20,15 @@
 const double kZeroSpacing = 0.0;
 const double kSmSpacing = 4.0;
 const double kMdSpacing = 8.0;
-const double kBgSpacing = 12.0;
-const double kLgSpacing = 16.0;
-
-// margins
-const double kLgMargin = 36.0;
+const double kLgSpacing = 12.0;
+const double kXlSpacing = 16.0;
+const double kXxlSpacing = 36.0;
 
 // border radius
-const double kBorderRadius = 8.0;
 const double kSmBorderRadius = 4.0;
 const double kMdBorderRadius = 6.0;
-const double kLgBorderRadius = 28.0;
+const double kLgBorderRadius = 8.0;
+const double kXlBorderRadius = 28.0;
 
 // elevation
 const int kElevation = 1;
@@ -40,3 +38,6 @@ const double kIconSizeMd = 24.0;
 
 // cursor size
 const double kCursorSize = 1.0;
+
+// container size
+const double kContainerHeight = 40.0;
