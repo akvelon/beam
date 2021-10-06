@@ -47,7 +47,7 @@ class SDKSelector extends StatelessWidget {
           icon: const Icon(Icons.keyboard_arrow_down),
           iconSize: kIconSizeMd,
           elevation: kElevation,
-          borderRadius: BorderRadius.circular(kXlBorderRadius),
+          borderRadius: BorderRadius.circular(kLgBorderRadius),
           alignment: Alignment.bottomCenter,
           onChanged: (SDK? newSdk) {
             if (newSdk != null) {

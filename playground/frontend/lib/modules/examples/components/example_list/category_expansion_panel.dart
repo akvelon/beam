@@ -69,7 +69,7 @@ class CategoryExpansionPanel extends StatelessWidget {
     List<Widget> items = [];
     for (var example in examples) {
       items.add(
-        ExpansionPanelItem(name: example.name),
+        ExpansionPanelItem(example: example),
       );
     }
     return items;

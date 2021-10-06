@@ -18,11 +18,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:playground/constants/sizes.dart';
+import 'package:playground/modules/examples/models/example_model.dart';
 
 class ExpansionPanelItem extends StatelessWidget {
-  final String name;
+  final ExampleModel example;
 
-  const ExpansionPanelItem({Key? key, required this.name}) : super(key: key);
+  const ExpansionPanelItem({Key? key, required this.example}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +35,7 @@ class ExpansionPanelItem extends StatelessWidget {
         child: Row(
           children: [
             // Wrapped with Row for better user interaction and positioning
-            Text(name),
+            Text(example.name),
           ],
         ),
       ),
