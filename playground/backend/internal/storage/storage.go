@@ -15,22 +15,24 @@
 
 package storage
 
-type storage interface {
-	// SetCompileOutput set output of compilation to a storage
-	SetCompileOutput(pipelineUuid string, output string) error
+import (
+	"fmt"
+	"github.com/google/uuid"
+)
 
-	// GetCompileOutput get output of compilation by pipelineUuid
-	GetCompileOutput(pipelineUuid string) (string, error)
+type Storage interface {
+	SetOrUpdate(key string, value string)
 
-	// SetRunOutput set output of execution to a storage
-	SetRunOutput(pipelineUuid string, output string) error
+	Get(key string) (string, error)
+}
 
-	// GetRunOutput get output of execution by pipelineUuid
-	GetRunOutput(pipelineUuid string) (string, error)
+func getStatusKey(pipelineId uuid.UUID) string {
+	return fmt.Sprintf("%s_STATUS", pipelineId)
+}
+func getCompileOutputKey(pipelineId uuid.UUID) string {
+	return fmt.Sprintf("%s_COMPILE", pipelineId)
+}
 
-	// SetStatusPipeline set pipeline status to a storage
-	SetStatusPipeline(pipelineUuid string, status *pb.CheckStatusResponse) error
-
-	// GetStatusPipeline get status of pipeline by pipelineUuid
-	GetStatusPipeline(pipelineUuid string) *pb.CheckStatusResponse
+func getRunOutputKey(pipelineId uuid.UUID) string {
+	return fmt.Sprintf("%s_RUN", pipelineId)
 }
