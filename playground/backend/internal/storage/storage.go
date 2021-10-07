@@ -24,42 +24,41 @@ import (
 type Tag string
 
 const (
-	TagStatus        Tag = "STATUS_TAG"
-	TagRunOutput     Tag = "RUN_OUTPUT_TAG"
-	TagCompileOutput Tag = "COMPILE_OUTPUT_TAG"
+	Tag_StatusTag     Tag = "STATUS_TAG"
+	Tag_RunOutput     Tag = "RUN_OUTPUT_TAG"
+	Tag_CompileOutput Tag = "COMPILE_OUTPUT_TAG"
 )
 
 type client interface {
-	// Get returns value from storage by pipelineId and tag.
-	// If storage contains value by pipelineId and tag returns (value, true, nil).
-	// If storage doesn't contain value by pipelineId and tag returns ("", false, nil).
-	// If some error occurs method returns ("", false, err).
-	get(key string) (interface{}, bool, error)
+	// get returns value from storage by key.
+	get(key string) (interface{}, error)
 
-	// SetOrUpdate adds value to storage by pipelineId and tag.
-	setOrUpdate(key string, value interface{})
+	// set adds value to storage by key.
+	set(key string, value interface{})
 }
 
 type Storage struct {
 	client client
 }
 
-// GetNewStorage returns new Storage to save and read value
-func GetNewStorage() *Storage {
+// NewStorage returns new Storage to save and read value
+func NewStorage() (*Storage, error) {
 	switch os.Getenv("storage") {
 	default:
-		return &Storage{client: NewLocalStorageClient()}
+		client, err := NewLocalStorageClient()
+		if err != nil {
+			return nil, err
+		}
+		return &Storage{client}, nil
 	}
 }
 
-func (s *Storage) Get(pipelineId uuid.UUID, tag Tag) (interface{}, bool, error) {
-	key := getKey(pipelineId, tag)
-	return s.client.get(key)
+func (s *Storage) Get(pipelineId uuid.UUID, tag Tag) (interface{}, error) {
+	return s.client.get(getKey(pipelineId, tag))
 }
 
 func (s *Storage) Set(pipelineId uuid.UUID, tag Tag, value interface{}) {
-	key := getKey(pipelineId, tag)
-	s.client.setOrUpdate(key, value)
+	s.client.set(getKey(pipelineId, tag), value)
 }
 
 // getKey returns key for storage by id and tag

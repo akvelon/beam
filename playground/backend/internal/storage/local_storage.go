@@ -38,29 +38,48 @@ type LocalStorageClient struct {
 }
 
 type Item struct {
-	Value      interface{}
-	Created    time.Time
-	Next       string
-	Previous   string
-	Expiration int64
+	value      interface{}
+	created    time.Time
+	next       string
+	previous   string
+	expiration int64
 }
 
-// NewLocalStorageClient creates new instance of local storage client
-func NewLocalStorageClient() *LocalStorageClient {
+func NewLocalStorageClient() (*LocalStorageClient, error) {
 	items := make(map[string]Item)
-	ls := LocalStorageClient{
+	ls := &LocalStorageClient{
 		defaultExpiration:    defaultExpiration,
 		cleanupInterval:      cleanupInterval,
 		items:                items,
 		maxCacheSizeElements: maxCacheSizeElements,
 	}
-
 	go ls.startGC()
+	return ls, nil
 
-	return &ls
 }
 
-func (ls *LocalStorageClient) setOrUpdate(key string, value interface{}) {
+func (ls *LocalStorageClient) get(key string) (interface{}, error) {
+	ls.RLock()
+	item, found := ls.items[key]
+	ls.RUnlock()
+	if !found {
+		return nil, fmt.Errorf("item with key %s not found", key)
+	}
+
+	if item.expiration > 0 {
+		if time.Now().UnixNano() > item.expiration {
+			ls.delete(key)
+			return nil, fmt.Errorf("item with key %s is expired", key)
+		}
+	}
+
+	ls.removeItemFromQueue(key)
+	ls.setupNewHead(key)
+
+	return item.value, nil
+}
+
+func (ls *LocalStorageClient) set(key string, value interface{}) {
 	expiration := time.Now().Add(ls.defaultExpiration).UnixNano()
 
 	ls.RLock()
@@ -68,14 +87,13 @@ func (ls *LocalStorageClient) setOrUpdate(key string, value interface{}) {
 	ls.RUnlock()
 	if found {
 		ls.removeItemFromQueue(key)
-
 	} else {
 		item = Item{}
 	}
 
-	item.Value = value
-	item.Expiration = expiration
-	item.Created = time.Now()
+	item.value = value
+	item.expiration = expiration
+	item.created = time.Now()
 	ls.Lock()
 	ls.items[key] = item
 
@@ -91,30 +109,6 @@ func (ls *LocalStorageClient) setOrUpdate(key string, value interface{}) {
 	ls.delete(ls.queueTail)
 }
 
-func (ls *LocalStorageClient) get(key string) (interface{}, bool, error) {
-
-	ls.RLock()
-	item, found := ls.items[key]
-	ls.RUnlock()
-	if !found {
-		return "", found, fmt.Errorf("item with key %s not found", key)
-	}
-
-	if item.Expiration > 0 {
-
-		if time.Now().UnixNano() > item.Expiration {
-			ls.delete(key)
-			return "", false, fmt.Errorf("item with key %s is expired", key)
-		}
-	}
-
-	ls.removeItemFromQueue(key)
-	ls.setupNewHead(key)
-
-	return item.Value, found, nil
-
-}
-
 func (ls *LocalStorageClient) removeItemFromQueue(key string) {
 	ls.Lock()
 	defer ls.Unlock()
@@ -122,19 +116,19 @@ func (ls *LocalStorageClient) removeItemFromQueue(key string) {
 	if !found {
 		return
 	}
-	if item.Previous == "" { // head
-		ls.queueHead = item.Next
+	if item.previous == "" { // head
+		ls.queueHead = item.next
 	} else {
-		previous := ls.items[item.Previous]
-		previous.Next = item.Next
-		ls.items[item.Previous] = previous
+		previous := ls.items[item.previous]
+		previous.next = item.next
+		ls.items[item.previous] = previous
 	}
-	if item.Next == "" { //tail
-		ls.queueTail = item.Previous
+	if item.next == "" { //tail
+		ls.queueTail = item.previous
 	} else {
-		next := ls.items[item.Next]
-		next.Previous = item.Previous
-		ls.items[item.Next] = next
+		next := ls.items[item.next]
+		next.previous = item.previous
+		ls.items[item.next] = next
 	}
 }
 
@@ -143,11 +137,11 @@ func (ls *LocalStorageClient) setupNewHead(newHeadKey string) {
 	item := ls.items[newHeadKey]
 	if ls.queueHead != "" {
 		currentHead := ls.items[ls.queueHead]
-		currentHead.Previous = newHeadKey
+		currentHead.previous = newHeadKey
 		ls.items[ls.queueHead] = currentHead
 	}
-	item.Next = ls.queueHead
-	item.Previous = ""
+	item.next = ls.queueHead
+	item.previous = ""
 	ls.items[newHeadKey] = item
 	ls.queueHead = newHeadKey
 	ls.Unlock()
@@ -181,7 +175,7 @@ func (ls *LocalStorageClient) expiredKeys() (keys []string) {
 	defer ls.RUnlock()
 
 	for key, item := range ls.items {
-		if time.Now().UnixNano() > item.Expiration && item.Expiration > 0 {
+		if time.Now().UnixNano() > item.expiration && item.expiration > 0 {
 			keys = append(keys, key)
 		}
 	}
@@ -189,7 +183,6 @@ func (ls *LocalStorageClient) expiredKeys() (keys []string) {
 }
 
 func (ls *LocalStorageClient) clearItems(keys []string) {
-
 	for _, key := range keys {
 		ls.delete(key)
 	}
