@@ -18,21 +18,51 @@ package storage
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"os"
 )
 
-type Storage interface {
-	SetOrUpdate(key string, value string)
+type Tag string
 
-	Get(key string) (string, error)
+const (
+	TagStatus        Tag = "STATUS_TAG"
+	TagRunOutput     Tag = "RUN_OUTPUT_TAG"
+	TagCompileOutput Tag = "COMPILE_OUTPUT_TAG"
+)
+
+type client interface {
+	// Get returns value from storage by pipelineId and tag.
+	// If storage contains value by pipelineId and tag returns (value, true, nil).
+	// If storage doesn't contain value by pipelineId and tag returns ("", false, nil).
+	// If some error occurs method returns ("", false, err).
+	get(key string) (interface{}, bool, error)
+
+	// SetOrUpdate adds value to storage by pipelineId and tag.
+	setOrUpdate(key string, value interface{})
 }
 
-func getStatusKey(pipelineId uuid.UUID) string {
-	return fmt.Sprintf("%s_STATUS", pipelineId)
-}
-func getCompileOutputKey(pipelineId uuid.UUID) string {
-	return fmt.Sprintf("%s_COMPILE", pipelineId)
+type Storage struct {
+	client client
 }
 
-func getRunOutputKey(pipelineId uuid.UUID) string {
-	return fmt.Sprintf("%s_RUN", pipelineId)
+// GetNewStorage returns new Storage to save and read value
+func GetNewStorage() *Storage {
+	switch os.Getenv("storage") {
+	default:
+		return &Storage{client: NewLocalStorageClient()}
+	}
+}
+
+func (s *Storage) Get(pipelineId uuid.UUID, tag Tag) (interface{}, bool, error) {
+	key := getKey(pipelineId, tag)
+	return s.client.get(key)
+}
+
+func (s *Storage) Set(pipelineId uuid.UUID, tag Tag, value interface{}) {
+	key := getKey(pipelineId, tag)
+	s.client.setOrUpdate(key, value)
+}
+
+// getKey returns key for storage by id and tag
+func getKey(pipelineId uuid.UUID, tag Tag) string {
+	return fmt.Sprintf("%s_%s", pipelineId, tag)
 }
