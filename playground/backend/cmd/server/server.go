@@ -17,8 +17,24 @@ package main
 
 import (
 	"beam.apache.org/playground/backend/pkg/executors"
+	"beam.apache.org/playground/backend/pkg/storage"
+	"fmt"
+	"os"
+	"time"
 )
 
 func main() {
 	_ = executors.GoExecutor{}
+	ls, err := GetStorage()
+	ls.SetOrUpdate("mama", "papa")
+	output, _ := ls.Get("mama")
+	fmt.Println(output)
+	fmt.Println(err)
+}
+
+func GetStorage() (storage.Storage, error) {
+	switch os.Getenv("storageType") {
+	default:
+		return storage.NewLocalStorage(10*time.Second, 10*time.Second, 4)
+	}
 }
