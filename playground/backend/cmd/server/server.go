@@ -15,6 +15,8 @@
 
 package main
 
-func main() {
+import "beam.apache.org/playground/backend/internal/cache"
 
+func main() {
+	_ = cache.GetNewCache()
 }
