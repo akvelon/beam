@@ -16,37 +16,30 @@
 package cache
 
 import (
-	"fmt"
 	"github.com/google/uuid"
-	"os"
 	"time"
 )
 
 type Tag string
 
 const (
-	Tag_StatusTag     Tag = "STATUS_TAG"
-	Tag_RunOutput     Tag = "RUN_OUTPUT_TAG"
-	Tag_CompileOutput Tag = "COMPILE_OUTPUT_TAG"
+	Tag_StatusTag        Tag = "STATUS_TAG"
+	Tag_RunOutputTag     Tag = "RUN_OUTPUT_TAG"
+	Tag_CompileOutputTag Tag = "COMPILE_OUTPUT_TAG"
 )
 
 type Cache interface {
 	// Get returns value from cache by key.
-	Get(key string) (interface{}, error)
+	Get(pipelineId uuid.UUID, tag Tag) (interface{}, error)
 
 	// Set adds value to cache by key.
-	Set(key string, value interface{}, expTime time.Duration)
+	Set(pipelineId uuid.UUID, tag Tag, value interface{}, expTime time.Duration)
 }
 
 // GetNewCache returns new cache to save and read value
-func GetNewCache() Cache {
-	switch os.Getenv("storage") {
+func GetNewCache(cacheType string) Cache {
+	switch cacheType {
 	default:
 		return newLocalCache()
 	}
-}
-
-// GetKey returns key for cache by id and tag
-func GetKey(pipelineId uuid.UUID, tag Tag) string {
-	return fmt.Sprintf("%s_%s", pipelineId, tag)
 }

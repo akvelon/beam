@@ -16,15 +16,16 @@
 package cache
 
 import (
-	"context"
 	"fmt"
-	"runtime"
+	"github.com/google/uuid"
 	"time"
 )
 
+const cleanupInterval = 5 * time.Second
+
 type LocalCache struct {
 	cleanupInterval time.Duration
-	items           map[string]Item
+	items           map[uuid.UUID]map[Tag]Item
 }
 
 type Item struct {
@@ -34,72 +35,78 @@ type Item struct {
 }
 
 func newLocalCache() *LocalCache {
-	items := make(map[string]Item)
+	items := make(map[uuid.UUID]map[Tag]Item)
 	ls := &LocalCache{
-		cleanupInterval: 5 * time.Second,
+		cleanupInterval: cleanupInterval,
 		items:           items,
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	runtime.SetFinalizer(ls, cancel)
-	go ls.startGC(ctx)
+
+	go ls.startGC()
 	return ls
 
 }
 
-func (ls *LocalCache) Get(key string) (interface{}, error) {
-	item, found := ls.items[key]
+func (ls *LocalCache) Get(pipelineId uuid.UUID, tag Tag) (interface{}, error) {
+	item, found := ls.items[pipelineId][tag]
 	if !found {
-		return nil, fmt.Errorf("item with key %s not found", key)
+		return nil, fmt.Errorf("Item with pipelineId: %s and tag: %s not found.", pipelineId, tag)
 	}
 
 	if item.expiration > 0 {
 		if time.Now().UnixNano() > item.expiration {
-			delete(ls.items, key)
-			return nil, fmt.Errorf("item with key %s is expired", key)
+			delete(ls.items[pipelineId], tag)
+			return nil, fmt.Errorf("item with pipelineId: %s and tag: %s is expired", pipelineId, tag)
 		}
 	}
 
 	return item.value, nil
 }
 
-func (ls *LocalCache) Set(key string, value interface{}, expTime time.Duration) {
+func (ls *LocalCache) Set(pipelineId uuid.UUID, tag Tag, value interface{}, expTime time.Duration) {
 	expiration := time.Now().Add(expTime).UnixNano()
-
-	item := ls.items[key]
+	if _, ok := ls.items[pipelineId]; !ok {
+		ls.items[pipelineId] = make(map[Tag]Item)
+	}
+	item := ls.items[pipelineId][tag]
 	item.value = value
 	item.expiration = expiration
 	item.created = time.Now()
-	ls.items[key] = item
+	ls.items[pipelineId][tag] = item
 }
 
-func (ls *LocalCache) startGC(ctx context.Context) {
-	ticker := time.NewTicker(ls.cleanupInterval)
+func (ls *LocalCache) startGC() {
 	for {
-		select {
-		case <-ticker.C:
-			if keys := ls.expiredKeys(); len(keys) != 0 {
-				ls.clearItems(keys)
-			}
-		case <-ctx.Done():
-			ticker.Stop()
+		<-time.After(ls.cleanupInterval)
+
+		if ls.items == nil {
 			return
 		}
 
+		if keys := ls.expiredKeys(); len(keys) != 0 {
+			ls.clearItems(keys)
+		}
 	}
 }
 
-func (ls *LocalCache) expiredKeys() (keys []string) {
-
-	for key, item := range ls.items {
-		if time.Now().UnixNano() > item.expiration && item.expiration > 0 {
-			keys = append(keys, key)
+func (ls *LocalCache) expiredKeys() (keys map[uuid.UUID][]Tag) {
+	keys = make(map[uuid.UUID][]Tag)
+	for pipeline := range ls.items {
+		for tag, item := range ls.items[pipeline] {
+			if time.Now().UnixNano() > item.expiration && item.expiration > 0 {
+				keys[pipeline] = append(keys[pipeline], tag)
+			}
 		}
 	}
 	return
 }
 
-func (ls *LocalCache) clearItems(keys []string) {
-	for _, key := range keys {
-		delete(ls.items, key)
+func (ls *LocalCache) clearItems(keys map[uuid.UUID][]Tag) {
+	for pipeline := range keys {
+		for _, tag := range keys[pipeline] {
+			delete(ls.items[pipeline], tag)
+		}
+		if len(ls.items[pipeline]) == 0 {
+			delete(ls.items, pipeline)
+		}
 	}
 }

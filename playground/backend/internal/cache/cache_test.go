@@ -16,14 +16,12 @@
 package cache
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"reflect"
 	"testing"
-	"time"
 )
 
-func TestGetNewCache1(t *testing.T) {
+func TestGetNewCache(t *testing.T) {
 	tests := []struct {
 		name string
 		want Cache
@@ -31,8 +29,8 @@ func TestGetNewCache1(t *testing.T) {
 		{
 			name: "NewCache",
 			want: &LocalCache{
-				cleanupInterval: 5 * time.Second,
-				items:           make(map[string]Item),
+				cleanupInterval: cleanupInterval,
+				items:           make(map[uuid.UUID]map[Tag]Item),
 			},
 		},
 	}
@@ -40,35 +38,6 @@ func TestGetNewCache1(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetNewCache(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetNewCache() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGetKey(t *testing.T) {
-	pipelineId := uuid.New()
-	type args struct {
-		pipelineId uuid.UUID
-		tag        Tag
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "GetKey",
-			args: args{
-				pipelineId: pipelineId,
-				tag:        Tag_StatusTag,
-			},
-			want: fmt.Sprintf("%s_%s", pipelineId, Tag_StatusTag),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetKey(tt.args.pipelineId, tt.args.tag); got != tt.want {
-				t.Errorf("GetKey() = %v, want %v", got, tt.want)
 			}
 		})
 	}
