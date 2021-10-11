@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:playground/modules/examples/models/example_model.dart';
 import 'package:playground/modules/sdk/models/sdk.dart';
@@ -28,9 +30,10 @@ class PlaygroundState with ChangeNotifier {
   ExampleModel? _selectedExample;
   String _source = '';
 
-  String get examplesTitle => _selectedExample!.name.length > kTitleLength
-      ? _selectedExample?.name.substring(0, kTitleLength) ?? kTitle
-      : _selectedExample?.name ?? kTitle;
+  String get examplesTitle {
+    final name = _selectedExample?.name ?? '';
+    return name.substring(0, min(kTitleLength, name.length));
+  }
 
   PlaygroundState([this._sdk = SDK.java, this._selectedExample]);
 
