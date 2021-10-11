@@ -19,25 +19,32 @@ import (
 	"github.com/google/uuid"
 	"reflect"
 	"testing"
+	"time"
 )
 
-func TestGetNewCache(t *testing.T) {
+func TestNewCache(t *testing.T) {
+	type args struct {
+		cacheType string
+	}
 	tests := []struct {
 		name string
+		args args
 		want Cache
 	}{
 		{
-			name: "NewCache",
+			name: "New Cache",
+			args: args{cacheType: "TEST_VALUE"},
 			want: &LocalCache{
-				cleanupInterval: cleanupInterval,
-				items:           make(map[uuid.UUID]map[Tag]Item),
+				cleanupInterval:     cleanupInterval,
+				items:               make(map[uuid.UUID]map[SubKey]interface{}),
+				pipelinesExpiration: make(map[uuid.UUID]time.Time),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetNewCache(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetNewCache() = %v, want %v", got, tt.want)
+			if got := NewCache(tt.args.cacheType); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewCache() = %v, want %v", got, tt.want)
 			}
 		})
 	}

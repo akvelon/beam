@@ -20,24 +20,27 @@ import (
 	"time"
 )
 
-type Tag string
+type SubKey string
 
 const (
-	Tag_StatusTag        Tag = "STATUS_TAG"
-	Tag_RunOutputTag     Tag = "RUN_OUTPUT_TAG"
-	Tag_CompileOutputTag Tag = "COMPILE_OUTPUT_TAG"
+	SubKey_Status        SubKey = "STATUS_TAG"
+	Subkey_RunOutput     SubKey = "RUN_OUTPUT_TAG"
+	SubKey_CompileOutput SubKey = "COMPILE_OUTPUT_TAG"
 )
 
 type Cache interface {
-	// Get returns value from cache by key.
-	Get(pipelineId uuid.UUID, tag Tag) (interface{}, error)
+	// GetValue returns value from cache by pipelineId and subKey.
+	GetValue(pipelineId uuid.UUID, subKey SubKey) (interface{}, error)
 
-	// Set adds value to cache by key.
-	Set(pipelineId uuid.UUID, tag Tag, value interface{}, expTime time.Duration)
+	// SetValue adds value to cache by pipelineId and subKey.
+	SetValue(pipelineId uuid.UUID, subKey SubKey, value interface{})
+
+	// SetExpTime adds expiration time of the pipeline to cache by pipelineId.
+	SetExpTime(pipelineId uuid.UUID, expTime time.Duration)
 }
 
-// GetNewCache returns new cache to save and read value
-func GetNewCache(cacheType string) Cache {
+// NewCache returns new cache to save and read value
+func NewCache(cacheType string) Cache {
 	switch cacheType {
 	default:
 		return newLocalCache()

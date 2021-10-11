@@ -18,27 +18,26 @@ package cache
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"sync"
 	"time"
 )
 
 const cleanupInterval = 5 * time.Second
 
 type LocalCache struct {
-	cleanupInterval time.Duration
-	items           map[uuid.UUID]map[Tag]Item
-}
-
-type Item struct {
-	value      interface{}
-	created    time.Time
-	expiration int64
+	sync.RWMutex
+	cleanupInterval     time.Duration
+	items               map[uuid.UUID]map[SubKey]interface{}
+	pipelinesExpiration map[uuid.UUID]time.Time
 }
 
 func newLocalCache() *LocalCache {
-	items := make(map[uuid.UUID]map[Tag]Item)
+	items := make(map[uuid.UUID]map[SubKey]interface{})
+	pipelinesExpiration := make(map[uuid.UUID]time.Time)
 	ls := &LocalCache{
-		cleanupInterval: cleanupInterval,
-		items:           items,
+		cleanupInterval:     cleanupInterval,
+		items:               items,
+		pipelinesExpiration: pipelinesExpiration,
 	}
 
 	go ls.startGC()
@@ -46,67 +45,74 @@ func newLocalCache() *LocalCache {
 
 }
 
-func (ls *LocalCache) Get(pipelineId uuid.UUID, tag Tag) (interface{}, error) {
-	item, found := ls.items[pipelineId][tag]
+func (lc *LocalCache) GetValue(pipelineId uuid.UUID, subKey SubKey) (interface{}, error) {
+	lc.RLock()
+	value, found := lc.items[pipelineId][subKey]
 	if !found {
-		return nil, fmt.Errorf("Item with pipelineId: %s and tag: %s not found.", pipelineId, tag)
+		return nil, fmt.Errorf("value with pipelineId: %s and subKey: %s not found", pipelineId, subKey)
+	}
+	expTime, found := lc.pipelinesExpiration[pipelineId]
+	if !found {
+		return nil, fmt.Errorf("expiration time of the pipeline: %s not found", pipelineId)
+	}
+	lc.RUnlock()
+
+	if expTime.Before(time.Now()) {
+		lc.Lock()
+		delete(lc.items[pipelineId], subKey)
+		lc.Unlock()
+		return nil, fmt.Errorf("value with pipelineId: %s and subKey: %s is expired", pipelineId, subKey)
 	}
 
-	if item.expiration > 0 {
-		if time.Now().UnixNano() > item.expiration {
-			delete(ls.items[pipelineId], tag)
-			return nil, fmt.Errorf("item with pipelineId: %s and tag: %s is expired", pipelineId, tag)
-		}
-	}
-
-	return item.value, nil
+	return value, nil
 }
 
-func (ls *LocalCache) Set(pipelineId uuid.UUID, tag Tag, value interface{}, expTime time.Duration) {
-	expiration := time.Now().Add(expTime).UnixNano()
-	if _, ok := ls.items[pipelineId]; !ok {
-		ls.items[pipelineId] = make(map[Tag]Item)
+func (lc *LocalCache) SetValue(pipelineId uuid.UUID, subKey SubKey, value interface{}) {
+	lc.Lock()
+	defer lc.Unlock()
+
+	_, ok := lc.items[pipelineId]
+	if !ok {
+		lc.items[pipelineId] = make(map[SubKey]interface{})
 	}
-	item := ls.items[pipelineId][tag]
-	item.value = value
-	item.expiration = expiration
-	item.created = time.Now()
-	ls.items[pipelineId][tag] = item
+	lc.items[pipelineId][subKey] = value
 }
 
-func (ls *LocalCache) startGC() {
+func (lc *LocalCache) SetExpTime(pipelineId uuid.UUID, expTime time.Duration) {
+	lc.Lock()
+	defer lc.Unlock()
+	lc.pipelinesExpiration[pipelineId] = time.Now().Add(expTime)
+}
+
+func (lc *LocalCache) startGC() {
 	for {
-		<-time.After(ls.cleanupInterval)
+		<-time.After(lc.cleanupInterval)
 
-		if ls.items == nil {
+		if lc.items == nil {
 			return
 		}
 
-		if keys := ls.expiredKeys(); len(keys) != 0 {
-			ls.clearItems(keys)
+		if pipelines := lc.expiredPipelines(); len(pipelines) != 0 {
+			lc.clearItems(pipelines)
 		}
 	}
 }
 
-func (ls *LocalCache) expiredKeys() (keys map[uuid.UUID][]Tag) {
-	keys = make(map[uuid.UUID][]Tag)
-	for pipeline := range ls.items {
-		for tag, item := range ls.items[pipeline] {
-			if time.Now().UnixNano() > item.expiration && item.expiration > 0 {
-				keys[pipeline] = append(keys[pipeline], tag)
-			}
+func (lc *LocalCache) expiredPipelines() (pipelines []uuid.UUID) {
+	lc.RLock()
+	defer lc.RUnlock()
+	for pipelineId, expTime := range lc.pipelinesExpiration {
+		if expTime.Before(time.Now()) {
+			pipelines = append(pipelines, pipelineId)
 		}
 	}
 	return
 }
 
-func (ls *LocalCache) clearItems(keys map[uuid.UUID][]Tag) {
-	for pipeline := range keys {
-		for _, tag := range keys[pipeline] {
-			delete(ls.items[pipeline], tag)
-		}
-		if len(ls.items[pipeline]) == 0 {
-			delete(ls.items, pipeline)
-		}
+func (lc *LocalCache) clearItems(pipelines []uuid.UUID) {
+	for _, pipeline := range pipelines {
+		lc.Lock()
+		delete(lc.items, pipeline)
+		lc.Unlock()
 	}
 }

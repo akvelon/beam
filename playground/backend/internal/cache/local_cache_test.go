@@ -1,46 +1,46 @@
-//Licensed to the Apache Software Foundation (ASF) under one or more
-// contributor license agreements.  See the NOTICE file distributed with
-// this work for additional information regarding copyright ownership.
-// The ASF licenses this file to You under the Apache License, Version 2.0
-// (the "License"); you may not use this file except in compliance with
-// the License.  You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+////Licensed to the Apache Software Foundation (ASF) under one or more
+//// contributor license agreements.  See the NOTICE file distributed with
+//// this work for additional information regarding copyright ownership.
+//// The ASF licenses this file to You under the Apache License, Version 2.0
+//// (the "License"); you may not use this file except in compliance with
+//// the License.  You may obtain a copy of the License at
+////
+////    http://www.apache.org/licenses/LICENSE-2.0
+////
+//// Unless required by applicable law or agreed to in writing, software
+//// distributed under the License is distributed on an "AS IS" BASIS,
+//// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//// See the License for the specific language governing permissions and
+//// limitations under the License.
 
 package cache
 
 import (
-	pb "beam.apache.org/playground/backend/internal/api"
 	"github.com/google/uuid"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 )
 
-func TestLocalCache_Get(t *testing.T) {
+func TestLocalCache_GetValue(t *testing.T) {
 	preparedId, _ := uuid.NewUUID()
-	preparedTag := Tag_CompileOutputTag
+	preparedSubKey := SubKey_CompileOutput
 	value := "TEST_VALUE"
-	preparedMap := make(map[uuid.UUID]map[Tag]Item)
-	preparedMap[preparedId] = make(map[Tag]Item)
-	preparedMap[preparedId][preparedTag] = Item{
-		value:      value,
-		created:    time.Time{},
-		expiration: time.Now().Add(time.Minute).UnixNano(),
-	}
+	preparedItemsMap := make(map[uuid.UUID]map[SubKey]interface{})
+	preparedItemsMap[preparedId] = make(map[SubKey]interface{})
+	preparedItemsMap[preparedId][preparedSubKey] = value
+	preparedExpMap := make(map[uuid.UUID]time.Time)
+	preparedExpMap[preparedId] = time.Now().Add(time.Millisecond)
 	type fields struct {
-		cleanupInterval time.Duration
-		items           map[uuid.UUID]map[Tag]Item
+		RWMutex             sync.RWMutex
+		cleanupInterval     time.Duration
+		items               map[uuid.UUID]map[SubKey]interface{}
+		pipelinesExpiration map[uuid.UUID]time.Time
 	}
 	type args struct {
 		pipelineId uuid.UUID
-		tag        Tag
+		subKey     SubKey
 	}
 	tests := []struct {
 		name    string
@@ -50,27 +50,28 @@ func TestLocalCache_Get(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "LocalCache_GetExistItem",
+			name: "Get exist value",
 			fields: fields{
-				cleanupInterval: cleanupInterval,
-				items:           preparedMap,
+				cleanupInterval:     cleanupInterval,
+				items:               preparedItemsMap,
+				pipelinesExpiration: preparedExpMap,
 			},
 			args: args{
 				pipelineId: preparedId,
-				tag:        preparedTag,
+				subKey:     preparedSubKey,
 			},
 			want:    value,
 			wantErr: false,
 		},
 		{
-			name: "LocalCache_GetNotExistItem",
+			name: "Get not exist value",
 			fields: fields{
 				cleanupInterval: cleanupInterval,
-				items:           make(map[uuid.UUID]map[Tag]Item),
+				items:           make(map[uuid.UUID]map[SubKey]interface{}),
 			},
 			args: args{
 				pipelineId: preparedId,
-				tag:        preparedTag,
+				subKey:     preparedSubKey,
 			},
 			want:    nil,
 			wantErr: true,
@@ -79,31 +80,80 @@ func TestLocalCache_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ls := &LocalCache{
-				cleanupInterval: tt.fields.cleanupInterval,
-				items:           tt.fields.items,
+				cleanupInterval:     tt.fields.cleanupInterval,
+				items:               tt.fields.items,
+				pipelinesExpiration: tt.fields.pipelinesExpiration,
 			}
-			got, err := ls.Get(tt.args.pipelineId, tt.args.tag)
+			got, err := ls.GetValue(tt.args.pipelineId, tt.args.subKey)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetValue() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Get() got = %v, want %v", got, tt.want)
+				t.Errorf("GetValue() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestLocalCache_Set(t *testing.T) {
+func TestLocalCache_SetValue(t *testing.T) {
 	preparedId, _ := uuid.NewUUID()
+	preparedExpMap := make(map[uuid.UUID]time.Time)
+	preparedExpMap[preparedId] = time.Now().Add(time.Millisecond)
 	type fields struct {
-		cleanupInterval time.Duration
-		items           map[uuid.UUID]map[Tag]Item
+		cleanupInterval     time.Duration
+		items               map[uuid.UUID]map[SubKey]interface{}
+		pipelinesExpiration map[uuid.UUID]time.Time
 	}
 	type args struct {
 		pipelineId uuid.UUID
-		tag        Tag
+		subKey     SubKey
 		value      interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "Set value",
+			fields: fields{
+				cleanupInterval:     cleanupInterval,
+				items:               make(map[uuid.UUID]map[SubKey]interface{}),
+				pipelinesExpiration: preparedExpMap,
+			},
+			args: args{
+				pipelineId: preparedId,
+				subKey:     Subkey_RunOutput,
+				value:      "TEST_VALUE",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lc := &LocalCache{
+				cleanupInterval:     tt.fields.cleanupInterval,
+				items:               tt.fields.items,
+				pipelinesExpiration: tt.fields.pipelinesExpiration,
+			}
+			lc.SetValue(tt.args.pipelineId, tt.args.subKey, tt.args.value)
+			_, err := lc.GetValue(tt.args.pipelineId, tt.args.subKey)
+			if err != nil {
+				t.Errorf("Value with pipelineId: %s and subKey: %v not set in cache.", tt.args.pipelineId, tt.args.subKey)
+			}
+		})
+	}
+}
+
+func TestLocalCache_SetExpTime(t *testing.T) {
+	preparedId, _ := uuid.NewUUID()
+	type fields struct {
+		cleanupInterval     time.Duration
+		items               map[uuid.UUID]map[SubKey]interface{}
+		pipelinesExpiration map[uuid.UUID]time.Time
+	}
+	type args struct {
+		pipelineId uuid.UUID
 		expTime    time.Duration
 	}
 	tests := []struct {
@@ -112,29 +162,29 @@ func TestLocalCache_Set(t *testing.T) {
 		args   args
 	}{
 		{
-			name: "LocalCache_Set",
+			name: "Set expiration time",
 			fields: fields{
-				cleanupInterval: cleanupInterval,
-				items:           make(map[uuid.UUID]map[Tag]Item),
+				cleanupInterval:     cleanupInterval,
+				items:               nil,
+				pipelinesExpiration: make(map[uuid.UUID]time.Time),
 			},
 			args: args{
 				pipelineId: preparedId,
-				tag:        Tag_RunOutputTag,
-				value:      "TEST_VALUE",
 				expTime:    time.Minute,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ls := &LocalCache{
-				cleanupInterval: tt.fields.cleanupInterval,
-				items:           tt.fields.items,
+			lc := &LocalCache{
+				cleanupInterval:     tt.fields.cleanupInterval,
+				items:               tt.fields.items,
+				pipelinesExpiration: tt.fields.pipelinesExpiration,
 			}
-			ls.Set(tt.args.pipelineId, tt.args.tag, tt.args.value, tt.args.expTime)
-			_, err := ls.Get(tt.args.pipelineId, tt.args.tag)
-			if err != nil {
-				t.Errorf("Item with pipelineId: %s and tag: %v not set in cache.", tt.args.pipelineId, tt.args.tag)
+			lc.SetExpTime(tt.args.pipelineId, tt.args.expTime)
+			expTime, found := lc.pipelinesExpiration[tt.args.pipelineId]
+			if expTime.Round(time.Second) != time.Now().Add(tt.args.expTime).Round(time.Second) || !found {
+				t.Errorf("Expiration time of the pipeline: %s not set in cache.", tt.args.pipelineId)
 			}
 		})
 	}
@@ -142,100 +192,84 @@ func TestLocalCache_Set(t *testing.T) {
 
 func TestLocalCache_startGC(t *testing.T) {
 	preparedId, _ := uuid.NewUUID()
-	preparedTag := Tag_CompileOutputTag
-	value := "TEST_VALUE"
-	preparedMap := make(map[uuid.UUID]map[Tag]Item)
-	preparedMap[preparedId] = make(map[Tag]Item)
-	preparedMap[preparedId][preparedTag] = Item{
-		value:      value,
-		created:    time.Time{},
-		expiration: time.Now().Add(time.Microsecond).UnixNano(),
-	}
+	preparedItemsMap := make(map[uuid.UUID]map[SubKey]interface{})
+	preparedItemsMap[preparedId] = make(map[SubKey]interface{})
+	preparedItemsMap[preparedId][SubKey_CompileOutput] = "TEST_VALUE1"
+	preparedItemsMap[preparedId][Subkey_RunOutput] = "TEST_VALUE2"
+	preparedExpMap := make(map[uuid.UUID]time.Time)
+	preparedExpMap[preparedId] = time.Now().Add(time.Microsecond)
 	type fields struct {
-		cleanupInterval time.Duration
-		items           map[uuid.UUID]map[Tag]Item
+		cleanupInterval     time.Duration
+		items               map[uuid.UUID]map[SubKey]interface{}
+		pipelinesExpiration map[uuid.UUID]time.Time
 	}
 	tests := []struct {
 		name   string
 		fields fields
 	}{
 		{
-			name: "LocalCache_startGC",
+			name: "Checking for deleting expired pipelines",
 			fields: fields{
-				cleanupInterval: time.Microsecond,
-				items:           preparedMap,
+				cleanupInterval:     time.Microsecond,
+				items:               preparedItemsMap,
+				pipelinesExpiration: preparedExpMap,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ls := &LocalCache{
-				cleanupInterval: tt.fields.cleanupInterval,
-				items:           tt.fields.items,
+			lc := &LocalCache{
+				cleanupInterval:     tt.fields.cleanupInterval,
+				items:               tt.fields.items,
+				pipelinesExpiration: tt.fields.pipelinesExpiration,
 			}
-			go ls.startGC()
+			go lc.startGC()
 			time.Sleep(time.Millisecond)
 			if len(tt.fields.items) != 0 {
-				t.Errorf("Item with pipelineId: %s and tag: %v not deleted in time.", preparedId, preparedTag)
+				t.Errorf("Pipeline: %s not deleted in time.", preparedId)
 			}
 		})
 	}
 }
 
-func TestLocalCache_expiredKeys(t *testing.T) {
+func TestLocalCache_expiredPipelines(t *testing.T) {
 	preparedId1, _ := uuid.NewUUID()
 	preparedId2, _ := uuid.NewUUID()
-	expiredValue := "EXPIRED_VALUE"
-	notExpiredValue := pb.Status_STATUS_FINISHED
-	preparedMap := make(map[uuid.UUID]map[Tag]Item)
-	preparedMap[preparedId1] = make(map[Tag]Item)
-	preparedMap[preparedId2] = make(map[Tag]Item)
-	preparedMap[preparedId1][Tag_StatusTag] = Item{
-		value:      expiredValue,
-		created:    time.Time{},
-		expiration: time.Now().Add(time.Microsecond).UnixNano(),
-	}
-	preparedMap[preparedId1][Tag_RunOutputTag] = Item{
-		value:      notExpiredValue,
-		created:    time.Time{},
-		expiration: time.Now().Add(time.Second).UnixNano(),
-	}
-	preparedMap[preparedId2][Tag_StatusTag] = Item{
-		value:      expiredValue,
-		created:    time.Time{},
-		expiration: time.Now().Add(time.Microsecond).UnixNano(),
-	}
-	preparedMap[preparedId2][Tag_RunOutputTag] = Item{
-		value:      expiredValue,
-		created:    time.Time{},
-		expiration: time.Now().Add(time.Microsecond).UnixNano(),
-	}
+	preparedId3, _ := uuid.NewUUID()
+	preparedExpMap := make(map[uuid.UUID]time.Time)
+	preparedExpMap[preparedId1] = time.Now().Add(time.Microsecond)
+	preparedExpMap[preparedId2] = time.Now().Add(time.Microsecond)
+	preparedExpMap[preparedId3] = time.Now().Add(time.Second)
 	type fields struct {
-		cleanupInterval time.Duration
-		items           map[uuid.UUID]map[Tag]Item
+		cleanupInterval     time.Duration
+		items               map[uuid.UUID]map[SubKey]interface{}
+		pipelinesExpiration map[uuid.UUID]time.Time
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		wantKeys map[uuid.UUID][]Tag
+		name          string
+		fields        fields
+		wantPipelines []uuid.UUID
 	}{
 		{
-			name: "LocalCache_expiredKeys",
+			name: "Getting expired pipelines",
 			fields: fields{
-				cleanupInterval: cleanupInterval,
-				items:           preparedMap,
+				cleanupInterval:     cleanupInterval,
+				items:               nil,
+				pipelinesExpiration: preparedExpMap,
 			},
-			wantKeys: map[uuid.UUID][]Tag{preparedId1: {Tag_StatusTag}, preparedId2: {Tag_StatusTag, Tag_RunOutputTag}},
+			wantPipelines: []uuid.UUID{preparedId1, preparedId2},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ls := &LocalCache{
-				cleanupInterval: tt.fields.cleanupInterval,
-				items:           tt.fields.items,
+			lc := &LocalCache{
+				cleanupInterval:     tt.fields.cleanupInterval,
+				items:               tt.fields.items,
+				pipelinesExpiration: tt.fields.pipelinesExpiration,
 			}
-			if gotKeys := ls.expiredKeys(); !reflect.DeepEqual(gotKeys, tt.wantKeys) {
-				t.Errorf("expiredKeys() = %v, want %v", gotKeys, tt.wantKeys)
+			time.Sleep(time.Microsecond)
+			if gotPipelines := lc.expiredPipelines(); !reflect.DeepEqual(gotPipelines, tt.wantPipelines) {
+				t.Errorf("expiredPipelines() = %v, want %v", gotPipelines, tt.wantPipelines)
 			}
 		})
 	}
@@ -243,31 +277,13 @@ func TestLocalCache_expiredKeys(t *testing.T) {
 
 func TestLocalCache_clearItems(t *testing.T) {
 	preparedId1, _ := uuid.NewUUID()
-	preparedId2, _ := uuid.NewUUID()
-	preparedMap := make(map[uuid.UUID]map[Tag]Item)
-	preparedMap[preparedId1] = make(map[Tag]Item)
-	preparedMap[preparedId2] = make(map[Tag]Item)
-	preparedMap[preparedId1][Tag_RunOutputTag] = Item{
-		value:      "TEST_VALUE",
-		created:    time.Time{},
-		expiration: time.Now().Add(time.Second).UnixNano(),
-	}
-	preparedMap[preparedId2][Tag_RunOutputTag] = Item{
-		value:      "TEST_VALUE",
-		created:    time.Time{},
-		expiration: time.Now().Add(time.Second).UnixNano(),
-	}
-	preparedMap[preparedId2][Tag_CompileOutputTag] = Item{
-		value:      "TEST_VALUE",
-		created:    time.Time{},
-		expiration: time.Now().Add(time.Second).UnixNano(),
-	}
 	type fields struct {
-		cleanupInterval time.Duration
-		items           map[uuid.UUID]map[Tag]Item
+		cleanupInterval     time.Duration
+		items               map[uuid.UUID]map[SubKey]interface{}
+		pipelinesExpiration map[uuid.UUID]time.Time
 	}
 	type args struct {
-		keys map[uuid.UUID][]Tag
+		pipelines []uuid.UUID
 	}
 	tests := []struct {
 		name   string
@@ -275,29 +291,27 @@ func TestLocalCache_clearItems(t *testing.T) {
 		args   args
 	}{
 		{
-			name: "LocalCache_clearItems",
+			name: "Clear items",
 			fields: fields{
-				cleanupInterval: cleanupInterval,
-				items:           preparedMap,
+				cleanupInterval:     cleanupInterval,
+				items:               make(map[uuid.UUID]map[SubKey]interface{}),
+				pipelinesExpiration: make(map[uuid.UUID]time.Time),
 			},
-			args: args{keys: map[uuid.UUID][]Tag{preparedId1: {Tag_RunOutputTag}, preparedId2: {Tag_CompileOutputTag}}},
+			args: args{pipelines: []uuid.UUID{preparedId1}},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ls := &LocalCache{
-				cleanupInterval: tt.fields.cleanupInterval,
-				items:           tt.fields.items,
+			lc := &LocalCache{
+				cleanupInterval:     tt.fields.cleanupInterval,
+				items:               tt.fields.items,
+				pipelinesExpiration: tt.fields.pipelinesExpiration,
 			}
-			ls.clearItems(tt.args.keys)
-			if _, err := ls.Get(preparedId2, Tag_RunOutputTag); err != nil {
-				t.Error(err)
-			}
-			if _, err := ls.Get(preparedId1, Tag_RunOutputTag); err == nil {
-				t.Errorf("The desired item with pipelineId: %s and tag:%v has not been deleted.", preparedId2, Tag_RunOutputTag)
-			}
+			lc.SetValue(preparedId1, Subkey_RunOutput, "TEST_VALUE")
+			lc.SetExpTime(preparedId1, time.Microsecond)
+			lc.clearItems(tt.args.pipelines)
 			if _, found := tt.fields.items[preparedId1]; found {
-				t.Errorf("The empty map which key: %s without item has not been deleted.", preparedId1)
+				t.Errorf("Pipeline: %s has not been deleted.", preparedId1)
 			}
 		})
 	}

@@ -35,11 +35,11 @@ const _ = grpc.SupportPackageIsVersion7
 type PlaygroundServiceClient interface {
 	// Submit the job for an execution and get the pipeline uuid.
 	RunCode(ctx context.Context, in *RunCodeRequest, opts ...grpc.CallOption) (*RunCodeResponse, error)
-	// Get the status of pipeline execution.
+	// GetValue the status of pipeline execution.
 	CheckStatus(ctx context.Context, in *CheckStatusRequest, opts ...grpc.CallOption) (*CheckStatusResponse, error)
-	// Get the result of pipeline execution.
+	// GetValue the result of pipeline execution.
 	GetRunOutput(ctx context.Context, in *GetRunOutputRequest, opts ...grpc.CallOption) (*GetRunOutputResponse, error)
-	// Get the result of pipeline compilation.
+	// GetValue the result of pipeline compilation.
 	GetCompileOutput(ctx context.Context, in *GetCompileOutputRequest, opts ...grpc.CallOption) (*GetCompileOutputResponse, error)
 }
 
@@ -93,11 +93,11 @@ func (c *playgroundServiceClient) GetCompileOutput(ctx context.Context, in *GetC
 type PlaygroundServiceServer interface {
 	// Submit the job for an execution and get the pipeline uuid.
 	RunCode(context.Context, *RunCodeRequest) (*RunCodeResponse, error)
-	// Get the status of pipeline execution.
+	// GetValue the status of pipeline execution.
 	CheckStatus(context.Context, *CheckStatusRequest) (*CheckStatusResponse, error)
-	// Get the result of pipeline execution.
+	// GetValue the result of pipeline execution.
 	GetRunOutput(context.Context, *GetRunOutputRequest) (*GetRunOutputResponse, error)
-	// Get the result of pipeline compilation.
+	// GetValue the result of pipeline compilation.
 	GetCompileOutput(context.Context, *GetCompileOutputRequest) (*GetCompileOutputResponse, error)
 	mustEmbedUnimplementedPlaygroundServiceServer()
 }
