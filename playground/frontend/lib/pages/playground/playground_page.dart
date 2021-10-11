@@ -17,49 +17,59 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:playground/components/logo/logo_component.dart';
 import 'package:playground/components/toggle_theme_button/toggle_theme_button.dart';
 import 'package:playground/constants/sizes.dart';
-import 'package:playground/pages/playground/components/playground_page_providers.dart';
-import 'package:provider/provider.dart';
-import 'package:playground/pages/playground/components/editor_textarea_wrapper.dart';
+import 'package:playground/modules/examples/example_selector.dart';
 import 'package:playground/modules/output/components/output_area.dart';
-import 'package:playground/pages/playground/states/playground_state.dart';
 import 'package:playground/modules/sdk/components/sdk_selector.dart';
-import 'package:playground/components/logo/logo_component.dart';
+import 'package:playground/pages/playground/components/editor_textarea_wrapper.dart';
+import 'package:playground/pages/playground/states/examples_state.dart';
+import 'package:playground/pages/playground/states/playground_state.dart';
+import 'package:provider/provider.dart';
 
 class PlaygroundPage extends StatelessWidget {
   const PlaygroundPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return PlaygroundPageProviders(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: kLgSpacing,
-            children: [
-              const Logo(),
-              Consumer<PlaygroundState>(
-                builder: (context, state, child) {
-                  return SDKSelector(
-                    sdk: state.sdk,
-                    setSdk: state.setSdk,
-                  );
-                },
-              ),
-            ],
-          ),
-          actions: const [ToggleThemeButton()],
-        ),
-        body: Column(
+    return Scaffold(
+      appBar: AppBar(
+        title: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: kXlSpacing,
           children: [
-            const Expanded(child: CodeTextAreaWrapper()),
-            Container(
-                height: kLgSpacing, color: Theme.of(context).backgroundColor),
-            const Expanded(child: OutputArea()),
+            const Logo(),
+            Consumer<ExampleState>(
+              builder: (context, state, child) {
+                return ExampleSelector(
+                  changeSelectorVisibility: state.changeSelectorVisibility,
+                  isSelectorOpened: state.isSelectorOpened,
+                  categories: state.categories!,
+                );
+              },
+            ),
+            Consumer<PlaygroundState>(
+              builder: (context, state, child) {
+                return SDKSelector(
+                  sdk: state.sdk,
+                  setSdk: state.setSdk,
+                );
+              },
+            ),
           ],
         ),
+        actions: const [ToggleThemeButton()],
+      ),
+      body: Column(
+        children: [
+          const Expanded(child: CodeTextAreaWrapper()),
+          Container(
+            height: kXlSpacing,
+            color: Theme.of(context).backgroundColor,
+          ),
+          const Expanded(child: OutputArea()),
+        ],
       ),
     );
   }
