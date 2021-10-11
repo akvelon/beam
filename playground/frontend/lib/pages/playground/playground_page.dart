@@ -45,7 +45,7 @@ class PlaygroundPage extends StatelessWidget {
                 return ExampleSelector(
                   changeSelectorVisibility: state.changeSelectorVisibility,
                   isSelectorOpened: state.isSelectorOpened,
-                  examples: state.categories!,
+                  categories: state.categories!,
                 );
               },
             ),

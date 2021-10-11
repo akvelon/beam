@@ -19,6 +19,8 @@
 import 'package:flutter/material.dart';
 import 'package:playground/config/theme.dart';
 import 'package:playground/constants/sizes.dart';
+import 'package:playground/pages/playground/states/example_dropdown_state.dart';
+import 'package:provider/provider.dart';
 
 class CategoryBubble extends StatelessWidget {
   final String name;
@@ -29,19 +31,31 @@ class CategoryBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: kMdSpacing),
-      child: GestureDetector(
-        onTap: () {},
-        child: Container(
-          height: kContainerHeight,
-          padding: const EdgeInsets.symmetric(horizontal: kXlSpacing),
-          decoration: BoxDecoration(
-            color: ThemeColors.of(context).primary,
-            borderRadius: BorderRadius.circular(kXlBorderRadius),
-          ),
-          child: Center(
-            child: Text(
-              name,
-              style: const TextStyle(color: Colors.white),
+      child: Consumer<ExampleDropdownState>(
+        builder: (context, state, child) => GestureDetector(
+          onTap: () {
+            if (name != state.selectedCategory) {
+              state.setSelectedCategory(name);
+            }
+          },
+          child: Container(
+            height: kContainerHeight,
+            padding: const EdgeInsets.symmetric(horizontal: kXlSpacing),
+            decoration: BoxDecoration(
+              color: name == state.selectedCategory
+                  ? ThemeColors.of(context).primary
+                  : ThemeColors.of(context).lightGreyColor,
+              borderRadius: BorderRadius.circular(kXlBorderRadius),
+            ),
+            child: Center(
+              child: Text(
+                name,
+                style: TextStyle(
+                  color: name == state.selectedCategory
+                      ? Colors.white
+                      : Colors.black,
+                ),
+              ),
             ),
           ),
         ),

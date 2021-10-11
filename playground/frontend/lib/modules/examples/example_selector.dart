@@ -20,7 +20,11 @@ import 'package:flutter/material.dart';
 import 'package:playground/config/theme.dart';
 import 'package:playground/constants/sizes.dart';
 import 'package:playground/modules/examples/components/examples_components.dart';
+import 'package:playground/modules/examples/models/category_model.dart';
 import 'package:playground/modules/examples/models/selector_size_model.dart';
+import 'package:playground/pages/playground/states/example_dropdown_state.dart';
+import 'package:playground/pages/playground/states/playground_state.dart';
+import 'package:provider/provider.dart';
 
 const int kAnimationDurationInMilliseconds = 80;
 const Offset kAnimationBeginOffset = Offset(0.0, -0.02);
@@ -32,13 +36,13 @@ const double kLgContainerWidth = 400.0;
 class ExampleSelector extends StatefulWidget {
   final Function changeSelectorVisibility;
   final bool isSelectorOpened;
-  final List examples;
+  final List<CategoryModel> categories;
 
   const ExampleSelector({
     Key? key,
     required this.changeSelectorVisibility,
     required this.isSelectorOpened,
-    required this.examples,
+    required this.categories,
   }) : super(key: key);
 
   @override
@@ -51,6 +55,9 @@ class _ExampleSelectorState extends State<ExampleSelector>
   late OverlayEntry? examplesDropdown;
   late AnimationController animationController;
   late Animation<Offset> offsetAnimation;
+
+  final TextEditingController textController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
@@ -66,6 +73,14 @@ class _ExampleSelectorState extends State<ExampleSelector>
   }
 
   @override
+  void dispose() {
+    animationController.dispose();
+    textController.dispose();
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       height: kContainerHeight,
@@ -73,26 +88,30 @@ class _ExampleSelectorState extends State<ExampleSelector>
         color: ThemeColors.of(context).greyColor,
         borderRadius: BorderRadius.circular(kSmBorderRadius),
       ),
-      child: TextButton(
-        key: selectorKey,
-        onPressed: () {
-          if (widget.isSelectorOpened) {
-            animationController.reverse();
-            examplesDropdown?.remove();
-          } else {
-            animationController.forward();
-            examplesDropdown = createExamplesDropdown();
-            Overlay.of(context)?.insert(examplesDropdown!);
-          }
-          widget.changeSelectorVisibility();
-        },
-        child: Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: const [
-            Text('Catalog'),
-            Icon(Icons.keyboard_arrow_down),
-          ],
+      child: Consumer<PlaygroundState>(
+        builder: (context, state, child) => TextButton(
+          key: selectorKey,
+          onPressed: () {
+            if (widget.isSelectorOpened) {
+              animationController.reverse();
+              examplesDropdown?.remove();
+            } else {
+              animationController.forward();
+              examplesDropdown = createExamplesDropdown();
+              Overlay.of(context)?.insert(examplesDropdown!);
+            }
+            widget.changeSelectorVisibility();
+          },
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Consumer<PlaygroundState>(
+                builder: (context, state, child) => Text(state.examplesTitle!),
+              ),
+              const Icon(Icons.keyboard_arrow_down),
+            ],
+          ),
         ),
       ),
     );
@@ -100,8 +119,6 @@ class _ExampleSelectorState extends State<ExampleSelector>
 
   OverlayEntry createExamplesDropdown() {
     SelectorPositionModel posModel = findSelectorPositionData();
-    final TextEditingController textController = TextEditingController();
-    final ScrollController scrollController = ScrollController();
 
     return OverlayEntry(
       builder: (context) {
@@ -119,29 +136,32 @@ class _ExampleSelectorState extends State<ExampleSelector>
                 width: double.infinity,
               ),
             ),
-            Positioned(
-              left: posModel.xAlignment,
-              top: posModel.yAlignment + kAdditionalDyAlignment,
-              child: SlideTransition(
-                position: offsetAnimation,
-                child: Material(
-                  elevation: kElevation.toDouble(),
-                  child: Container(
-                    height: kLgContainerHeight,
-                    width: kLgContainerWidth,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).backgroundColor,
-                      borderRadius: BorderRadius.circular(kMdBorderRadius),
-                    ),
-                    child: Column(
-                      children: [
-                        SearchField(controller: textController),
-                        const TypeFilter(),
-                        ExampleList(
-                          controller: scrollController,
-                          items: widget.examples,
-                        ),
-                      ],
+            ChangeNotifierProvider(
+              create: (context) => ExampleDropdownState(),
+              builder: (context, _) => Positioned(
+                left: posModel.xAlignment,
+                top: posModel.yAlignment + kAdditionalDyAlignment,
+                child: SlideTransition(
+                  position: offsetAnimation,
+                  child: Material(
+                    elevation: kElevation.toDouble(),
+                    child: Container(
+                      height: kLgContainerHeight,
+                      width: kLgContainerWidth,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).backgroundColor,
+                        borderRadius: BorderRadius.circular(kMdBorderRadius),
+                      ),
+                      child: Column(
+                        children: [
+                          SearchField(controller: textController),
+                          const TypeFilter(),
+                          ExampleList(
+                            controller: scrollController,
+                            items: widget.categories,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

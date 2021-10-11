@@ -23,7 +23,8 @@ import 'package:playground/modules/sdk/models/sdk.dart';
 class PlaygroundState with ChangeNotifier {
   SDK _sdk;
   ExampleModel? _selectedExample;
-  String _source = "";
+  String _source = '';
+  String _examplesTitle = 'Catalog';
 
   PlaygroundState([this._sdk = SDK.java, this._selectedExample]);
 
@@ -32,6 +33,8 @@ class PlaygroundState with ChangeNotifier {
   SDK get sdk => _sdk;
 
   String get source => _source;
+
+  String? get examplesTitle => _examplesTitle;
 
   setExample(ExampleModel example) {
     _selectedExample = example;
@@ -48,8 +51,20 @@ class PlaygroundState with ChangeNotifier {
     _source = source;
   }
 
+  setExamplesTitle(String examplesTitle) {
+    if (examplesTitle.length > 15) {
+      _examplesTitle = examplesTitle.substring(0, 15) + '..';
+    } else {
+      _examplesTitle = examplesTitle;
+    }
+    notifyListeners();
+  }
+
   @override
   String toString() {
-    return 'PlaygroundState{_sdk: $_sdk, _selectedExample: $_selectedExample}';
+    return 'PlaygroundState{'
+        ' _sdk: $_sdk,'
+        ' _selectedExample: $_selectedExample,'
+        ' _examplesTitle: $_examplesTitle}';
   }
 }

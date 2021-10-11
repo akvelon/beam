@@ -19,6 +19,8 @@
 import 'package:flutter/material.dart';
 import 'package:playground/constants/sizes.dart';
 import 'package:playground/modules/examples/models/example_model.dart';
+import 'package:playground/pages/playground/states/playground_state.dart';
+import 'package:provider/provider.dart';
 
 class ExpansionPanelItem extends StatelessWidget {
   final ExampleModel example;
@@ -27,16 +29,24 @@ class ExpansionPanelItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-        margin: const EdgeInsets.only(left: kXxlSpacing),
-        height: kContainerHeight,
-        child: Row(
-          children: [
-            // Wrapped with Row for better user interaction and positioning
-            Text(example.name),
-          ],
+    return Consumer<PlaygroundState>(
+      builder: (context, state, child) => GestureDetector(
+        onTap: () {
+          if (state.selectedExample != example) {
+            state.setExample(example);
+            state.setExamplesTitle(example.name);
+          }
+        },
+        child: Container(
+          color: Colors.transparent,
+          margin: const EdgeInsets.only(left: kXxlSpacing),
+          height: kContainerHeight,
+          child: Row(
+            children: [
+              // Wrapped with Row for better user interaction and positioning
+              Text(example.name),
+            ],
+          ),
         ),
       ),
     );
