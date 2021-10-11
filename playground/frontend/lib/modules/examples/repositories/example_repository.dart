@@ -26,7 +26,7 @@ const javaHelloWorld = '''class HelloWorld {
   }
 }''';
 
-const pythonHelloWorld = "print(‘Hello World’)";
+const pythonHelloWorld = 'print(‘Hello World’)';
 
 const goHelloWorld = '''package main
 

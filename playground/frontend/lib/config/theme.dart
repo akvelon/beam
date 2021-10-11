@@ -84,4 +84,8 @@ class ThemeColors {
   Color get lightGreyColor => isDark ? kLightGrey1 : kLightGrey;
 
   Color get primary => isDark ? kLightPrimary : kDarkPrimary;
+
+  Color get primaryBackgroundTextColor => Colors.white;
+
+  Color get lightGreyBackgroundTextColor => Colors.black;
 }

@@ -107,7 +107,7 @@ class _ExampleSelectorState extends State<ExampleSelector>
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Consumer<PlaygroundState>(
-                builder: (context, state, child) => Text(state.examplesTitle!),
+                builder: (context, state, child) => Text(state.examplesTitle),
               ),
               const Icon(Icons.keyboard_arrow_down),
             ],

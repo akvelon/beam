@@ -20,11 +20,17 @@ import 'package:flutter/material.dart';
 import 'package:playground/modules/examples/models/example_model.dart';
 import 'package:playground/modules/sdk/models/sdk.dart';
 
+const kTitleLength = 15;
+const kTitle = 'Catalog';
+
 class PlaygroundState with ChangeNotifier {
   SDK _sdk;
   ExampleModel? _selectedExample;
   String _source = '';
-  String _examplesTitle = 'Catalog';
+
+  String get examplesTitle => _selectedExample!.name.length > kTitleLength
+      ? _selectedExample?.name.substring(0, kTitleLength) ?? kTitle
+      : _selectedExample?.name ?? kTitle;
 
   PlaygroundState([this._sdk = SDK.java, this._selectedExample]);
 
@@ -34,11 +40,9 @@ class PlaygroundState with ChangeNotifier {
 
   String get source => _source;
 
-  String? get examplesTitle => _examplesTitle;
-
   setExample(ExampleModel example) {
     _selectedExample = example;
-    _source = example.sources[_sdk] ?? "";
+    _source = example.sources[_sdk] ?? '';
     notifyListeners();
   }
 
@@ -51,20 +55,8 @@ class PlaygroundState with ChangeNotifier {
     _source = source;
   }
 
-  setExamplesTitle(String examplesTitle) {
-    if (examplesTitle.length > 15) {
-      _examplesTitle = examplesTitle.substring(0, 15) + '..';
-    } else {
-      _examplesTitle = examplesTitle;
-    }
-    notifyListeners();
-  }
-
   @override
   String toString() {
-    return 'PlaygroundState{'
-        ' _sdk: $_sdk,'
-        ' _selectedExample: $_selectedExample,'
-        ' _examplesTitle: $_examplesTitle}';
+    return 'PlaygroundState{_sdk: $_sdk, _selectedExample: $_selectedExample}';
   }
 }

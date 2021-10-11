@@ -34,7 +34,6 @@ class ExpansionPanelItem extends StatelessWidget {
         onTap: () {
           if (state.selectedExample != example) {
             state.setExample(example);
-            state.setExamplesTitle(example.name);
           }
         },
         child: Container(

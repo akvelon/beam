@@ -52,8 +52,8 @@ class CategoryBubble extends StatelessWidget {
                 name,
                 style: TextStyle(
                   color: name == state.selectedCategory
-                      ? Colors.white
-                      : Colors.black,
+                      ? ThemeColors.of(context).primaryBackgroundTextColor
+                      : ThemeColors.of(context).lightGreyBackgroundTextColor,
                 ),
               ),
             ),
