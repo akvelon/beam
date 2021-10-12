@@ -23,9 +23,9 @@ import (
 type SubKey string
 
 const (
-	SubKey_Status        SubKey = "STATUS_TAG"
-	Subkey_RunOutput     SubKey = "RUN_OUTPUT_TAG"
-	SubKey_CompileOutput SubKey = "COMPILE_OUTPUT_TAG"
+	SubKey_Status        SubKey = "STATUS"
+	Subkey_RunOutput     SubKey = "RUN_OUTPUT"
+	SubKey_CompileOutput SubKey = "COMPILE_OUTPUT"
 )
 
 type Cache interface {
@@ -33,10 +33,10 @@ type Cache interface {
 	GetValue(pipelineId uuid.UUID, subKey SubKey) (interface{}, error)
 
 	// SetValue adds value to cache by pipelineId and subKey.
-	SetValue(pipelineId uuid.UUID, subKey SubKey, value interface{})
+	SetValue(pipelineId uuid.UUID, subKey SubKey, value interface{}) error
 
 	// SetExpTime adds expiration time of the pipeline to cache by pipelineId.
-	SetExpTime(pipelineId uuid.UUID, expTime time.Duration)
+	SetExpTime(pipelineId uuid.UUID, expTime time.Duration) error
 }
 
 // NewCache returns new cache to save and read value

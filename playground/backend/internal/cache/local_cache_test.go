@@ -111,9 +111,10 @@ func TestLocalCache_SetValue(t *testing.T) {
 		value      interface{}
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
 	}{
 		{
 			name: "Set value",
@@ -127,6 +128,7 @@ func TestLocalCache_SetValue(t *testing.T) {
 				subKey:     Subkey_RunOutput,
 				value:      "TEST_VALUE",
 			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -136,7 +138,9 @@ func TestLocalCache_SetValue(t *testing.T) {
 				items:               tt.fields.items,
 				pipelinesExpiration: tt.fields.pipelinesExpiration,
 			}
-			lc.SetValue(tt.args.pipelineId, tt.args.subKey, tt.args.value)
+			if err := lc.SetValue(tt.args.pipelineId, tt.args.subKey, tt.args.value); (err != nil) != tt.wantErr {
+				t.Errorf("SetValue() error = %v, wantErr %v", err, tt.wantErr)
+			}
 			_, err := lc.GetValue(tt.args.pipelineId, tt.args.subKey)
 			if err != nil {
 				t.Errorf("Value with pipelineId: %s and subKey: %v not set in cache.", tt.args.pipelineId, tt.args.subKey)
@@ -181,7 +185,10 @@ func TestLocalCache_SetExpTime(t *testing.T) {
 				items:               tt.fields.items,
 				pipelinesExpiration: tt.fields.pipelinesExpiration,
 			}
-			lc.SetExpTime(tt.args.pipelineId, tt.args.expTime)
+			err := lc.SetExpTime(tt.args.pipelineId, tt.args.expTime)
+			if err != nil {
+				t.Error(err)
+			}
 			expTime, found := lc.pipelinesExpiration[tt.args.pipelineId]
 			if expTime.Round(time.Second) != time.Now().Add(tt.args.expTime).Round(time.Second) || !found {
 				t.Errorf("Expiration time of the pipeline: %s not set in cache.", tt.args.pipelineId)
@@ -307,8 +314,14 @@ func TestLocalCache_clearItems(t *testing.T) {
 				items:               tt.fields.items,
 				pipelinesExpiration: tt.fields.pipelinesExpiration,
 			}
-			lc.SetValue(preparedId1, Subkey_RunOutput, "TEST_VALUE")
-			lc.SetExpTime(preparedId1, time.Microsecond)
+			err := lc.SetValue(preparedId1, Subkey_RunOutput, "TEST_VALUE")
+			if err != nil {
+				t.Error(err)
+			}
+			err = lc.SetExpTime(preparedId1, time.Microsecond)
+			if err != nil {
+				t.Error(err)
+			}
 			lc.clearItems(tt.args.pipelines)
 			if _, found := tt.fields.items[preparedId1]; found {
 				t.Errorf("Pipeline: %s has not been deleted.", preparedId1)

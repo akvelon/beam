@@ -51,15 +51,13 @@ func (lc *LocalCache) GetValue(pipelineId uuid.UUID, subKey SubKey) (interface{}
 	if !found {
 		return nil, fmt.Errorf("value with pipelineId: %s and subKey: %s not found", pipelineId, subKey)
 	}
-	expTime, found := lc.pipelinesExpiration[pipelineId]
-	if !found {
-		return nil, fmt.Errorf("expiration time of the pipeline: %s not found", pipelineId)
-	}
+	expTime := lc.pipelinesExpiration[pipelineId]
 	lc.RUnlock()
 
 	if expTime.Before(time.Now()) {
 		lc.Lock()
 		delete(lc.items[pipelineId], subKey)
+		delete(lc.pipelinesExpiration, pipelineId)
 		lc.Unlock()
 		return nil, fmt.Errorf("value with pipelineId: %s and subKey: %s is expired", pipelineId, subKey)
 	}
@@ -67,21 +65,24 @@ func (lc *LocalCache) GetValue(pipelineId uuid.UUID, subKey SubKey) (interface{}
 	return value, nil
 }
 
-func (lc *LocalCache) SetValue(pipelineId uuid.UUID, subKey SubKey, value interface{}) {
+func (lc *LocalCache) SetValue(pipelineId uuid.UUID, subKey SubKey, value interface{}) error {
 	lc.Lock()
 	defer lc.Unlock()
 
 	_, ok := lc.items[pipelineId]
 	if !ok {
 		lc.items[pipelineId] = make(map[SubKey]interface{})
+		lc.pipelinesExpiration[pipelineId] = time.Now().Add(time.Hour)
 	}
 	lc.items[pipelineId][subKey] = value
+	return nil
 }
 
-func (lc *LocalCache) SetExpTime(pipelineId uuid.UUID, expTime time.Duration) {
+func (lc *LocalCache) SetExpTime(pipelineId uuid.UUID, expTime time.Duration) error {
 	lc.Lock()
 	defer lc.Unlock()
 	lc.pipelinesExpiration[pipelineId] = time.Now().Add(expTime)
+	return nil
 }
 
 func (lc *LocalCache) startGC() {
@@ -113,6 +114,7 @@ func (lc *LocalCache) clearItems(pipelines []uuid.UUID) {
 	for _, pipeline := range pipelines {
 		lc.Lock()
 		delete(lc.items, pipeline)
+		delete(lc.pipelinesExpiration, pipeline)
 		lc.Unlock()
 	}
 }
