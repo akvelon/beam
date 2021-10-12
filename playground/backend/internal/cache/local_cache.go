@@ -111,10 +111,10 @@ func (lc *LocalCache) expiredPipelines() (pipelines []uuid.UUID) {
 }
 
 func (lc *LocalCache) clearItems(pipelines []uuid.UUID) {
+	lc.Lock()
+	defer lc.Unlock()
 	for _, pipeline := range pipelines {
-		lc.Lock()
 		delete(lc.items, pipeline)
 		delete(lc.pipelinesExpiration, pipeline)
-		lc.Unlock()
 	}
 }
