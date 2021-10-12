@@ -16,19 +16,19 @@ package main
 
 import (
 	pb "beam.apache.org/playground/backend/internal/api"
+	"beam.apache.org/playground/backend/internal/cache"
 	"beam.apache.org/playground/backend/internal/errors"
 	"context"
-	"fmt"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/grpclog"
+	"os"
 )
 
 type playgroundController struct {
 	pb.UnimplementedPlaygroundServiceServer
 }
 
-// TODO change to using cache
-var results = make(map[string]interface{})
+var cacheService = cache.NewCache(os.Getenv("cache"))
 
 //RunCode is running code from requests using a particular SDK
 func (controller *playgroundController) RunCode(ctx context.Context, info *pb.RunCodeRequest) (*pb.RunCodeResponse, error) {
@@ -41,18 +41,16 @@ func (controller *playgroundController) RunCode(ctx context.Context, info *pb.Ru
 //CheckStatus is checking status for the specific pipeline by PipelineUuid
 func (controller *playgroundController) CheckStatus(ctx context.Context, info *pb.CheckStatusRequest) (*pb.CheckStatusResponse, error) {
 	pipelineId := info.PipelineUuid
-	key := fmt.Sprintf("%s:%s", pipelineId, "StatusTag")
-	statusInterface, exists := results[key]
-	if !exists {
-		grpclog.Error("CheckStatus: there is no Status for pipelineId: " + pipelineId)
-		return nil, errors.NotFoundError("CheckStatus", "there is no Status for pipelineId: "+pipelineId)
+	statusInterface, err := cacheService.GetValue(uuid.MustParse(pipelineId), cache.SubKey_Status)
+	if err != nil {
+		grpclog.Error("CheckStatus: cache.GetValue: error: " + err.Error())
+		return nil, errors.NotFoundError("CheckStatus", "Error during getting cache by pipelineId: "+pipelineId+", subKey: cache.SubKey_Status")
 	}
 	status, converted := statusInterface.(pb.Status)
 	if !converted {
 		return nil, errors.InternalError("CheckStatus", "status value from cache couldn't be converted to correct status enum")
 	}
 	return &pb.CheckStatusResponse{Status: status}, nil
-
 }
 
 //GetRunOutput is returning output of execution for specific pipeline by PipelineUuid
