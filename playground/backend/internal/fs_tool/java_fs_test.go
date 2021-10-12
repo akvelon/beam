@@ -16,6 +16,7 @@
 package fs_tool
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"reflect"
 	"testing"
@@ -23,6 +24,10 @@ import (
 
 func Test_newJavaLifeCycle(t *testing.T) {
 	pipelineId := uuid.New()
+	baseFileFolder := fmt.Sprintf("%s_%s", javaBaseFileFolder, pipelineId)
+	srcFileFolder := baseFileFolder + "/src"
+	binFileFolder := baseFileFolder + "/bin"
+
 	type args struct {
 		pipelineId uuid.UUID
 	}
@@ -35,11 +40,11 @@ func Test_newJavaLifeCycle(t *testing.T) {
 			name: "newJavaLifeCycle",
 			args: args{pipelineId: pipelineId},
 			want: &LifeCycle{
-				folderGlobs: javaGlobs,
+				folderGlobs: []string{baseFileFolder, srcFileFolder, binFileFolder},
 				Folder: Folder{
-					BaseFolder:       javaBaseFileFolder,
-					ExecutableFolder: javaSrcFileFolder,
-					CompiledFolder:   javaBinFileFolder,
+					BaseFolder:       baseFileFolder,
+					ExecutableFolder: srcFileFolder,
+					CompiledFolder:   binFileFolder,
 				},
 				Extension: Extension{
 					ExecutableExtension: javaExecutableFileExtension,

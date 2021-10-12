@@ -17,11 +17,13 @@ package fs_tool
 
 import (
 	pb "beam.apache.org/playground/backend/internal/api"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -61,6 +63,10 @@ func NewLifeCycle(sdk pb.Sdk, pipelineId uuid.UUID) (*LifeCycle, error) {
 
 // CreateFolders creates all folders which will be used for code execution.
 func (l *LifeCycle) CreateFolders() error {
+	err := os.Chdir("../..")
+	if err != nil {
+		return err
+	}
 	for _, folder := range l.folderGlobs {
 		err := os.MkdirAll(folder, fs.ModePerm)
 		if err != nil {
@@ -123,6 +129,18 @@ func (l *LifeCycle) GetRelativeExecutableFilePath() string {
 	fileName := getFileName(l.pipelineId, l.Extension.ExecutableExtension)
 	filePath := filepath.Join(l.Folder.ExecutableFolder, fileName)
 	return filePath[len(l.Folder.BaseFolder)+1:]
+}
+
+// GetExecutableName returns name that should be executed (HelloWorld for HelloWorld.class for java SDK)
+func (l *LifeCycle) GetExecutableName() (string, error) {
+	dirEntries, err := os.ReadDir(l.Folder.CompiledFolder)
+	if err != nil {
+		return "", err
+	}
+	if len(dirEntries) != 1 {
+		return "", errors.New("number of executable files should be equal to one")
+	}
+	return strings.Split(dirEntries[0].Name(), ".")[0], nil
 }
 
 // getFileName returns fileName by pipelineId and fileType (pipelineId.java for java SDK).

@@ -13,36 +13,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package fs_tool
+package cache
 
 import (
-	"fmt"
 	"github.com/google/uuid"
+	"time"
 )
+
+type SubKey string
 
 const (
-	javaBaseFileFolder          = parentBaseFileFolder + "/executable_files"
-	javaExecutableFileExtension = "java"
-	javaCompiledFileExtension   = "class"
+	SubKey_Status        SubKey = "STATUS"
+	Subkey_RunOutput     SubKey = "RUN_OUTPUT"
+	SubKey_CompileOutput SubKey = "COMPILE_OUTPUT"
 )
 
-// newJavaLifeCycle creates LifeCycle with java SDK environment.
-func newJavaLifeCycle(pipelineId uuid.UUID) *LifeCycle {
-	baseFileFolder := fmt.Sprintf("%s_%s", javaBaseFileFolder, pipelineId)
-	srcFileFolder := baseFileFolder + "/src"
-	binFileFolder := baseFileFolder + "/bin"
+type Cache interface {
+	// GetValue returns value from cache by pipelineId and subKey.
+	GetValue(pipelineId uuid.UUID, subKey SubKey) (interface{}, error)
 
-	return &LifeCycle{
-		folderGlobs: []string{baseFileFolder, srcFileFolder, binFileFolder},
-		Folder: Folder{
-			BaseFolder:       baseFileFolder,
-			ExecutableFolder: srcFileFolder,
-			CompiledFolder:   binFileFolder,
-		},
-		Extension: Extension{
-			ExecutableExtension: javaExecutableFileExtension,
-			CompiledExtension:   javaCompiledFileExtension,
-		},
-		pipelineId: pipelineId,
+	// SetValue adds value to cache by pipelineId and subKey.
+	SetValue(pipelineId uuid.UUID, subKey SubKey, value interface{}) error
+
+	// SetExpTime adds expiration time of the pipeline to cache by pipelineId.
+	SetExpTime(pipelineId uuid.UUID, expTime time.Duration) error
+}
+
+// NewCache returns new cache to save and read value
+func NewCache(cacheType string) Cache {
+	switch cacheType {
+	default:
+		return newLocalCache()
 	}
 }

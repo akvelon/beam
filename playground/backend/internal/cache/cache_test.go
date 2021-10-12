@@ -13,36 +13,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package fs_tool
+package cache
 
 import (
-	"fmt"
 	"github.com/google/uuid"
+	"reflect"
+	"testing"
+	"time"
 )
 
-const (
-	javaBaseFileFolder          = parentBaseFileFolder + "/executable_files"
-	javaExecutableFileExtension = "java"
-	javaCompiledFileExtension   = "class"
-)
-
-// newJavaLifeCycle creates LifeCycle with java SDK environment.
-func newJavaLifeCycle(pipelineId uuid.UUID) *LifeCycle {
-	baseFileFolder := fmt.Sprintf("%s_%s", javaBaseFileFolder, pipelineId)
-	srcFileFolder := baseFileFolder + "/src"
-	binFileFolder := baseFileFolder + "/bin"
-
-	return &LifeCycle{
-		folderGlobs: []string{baseFileFolder, srcFileFolder, binFileFolder},
-		Folder: Folder{
-			BaseFolder:       baseFileFolder,
-			ExecutableFolder: srcFileFolder,
-			CompiledFolder:   binFileFolder,
+func TestNewCache(t *testing.T) {
+	type args struct {
+		cacheType string
+	}
+	tests := []struct {
+		name string
+		args args
+		want Cache
+	}{
+		{
+			name: "New Cache",
+			args: args{cacheType: "TEST_VALUE"},
+			want: &LocalCache{
+				cleanupInterval:     cleanupInterval,
+				items:               make(map[uuid.UUID]map[SubKey]interface{}),
+				pipelinesExpiration: make(map[uuid.UUID]time.Time),
+			},
 		},
-		Extension: Extension{
-			ExecutableExtension: javaExecutableFileExtension,
-			CompiledExtension:   javaCompiledFileExtension,
-		},
-		pipelineId: pipelineId,
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewCache(tt.args.cacheType); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewCache() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
