@@ -13,14 +13,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module beam.apache.org/playground/backend
+package cache
 
-go 1.16
-
-require (
-	github.com/google/uuid v1.3.0
-	github.com/improbable-eng/grpc-web v0.14.1
-	github.com/rs/cors v1.8.0
-	google.golang.org/grpc v1.41.0
-	google.golang.org/protobuf v1.27.1
+import (
+	"github.com/google/uuid"
+	"reflect"
+	"testing"
+	"time"
 )
+
+func TestNewCache(t *testing.T) {
+	type args struct {
+		cacheType string
+	}
+	tests := []struct {
+		name string
+		args args
+		want Cache
+	}{
+		{
+			name: "New Cache",
+			args: args{cacheType: "TEST_VALUE"},
+			want: &LocalCache{
+				cleanupInterval:     cleanupInterval,
+				items:               make(map[uuid.UUID]map[SubKey]interface{}),
+				pipelinesExpiration: make(map[uuid.UUID]time.Time),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewCache(tt.args.cacheType); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewCache() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

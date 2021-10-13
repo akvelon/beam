@@ -18,6 +18,7 @@ package executors
 
 import (
 	pb "beam.apache.org/playground/backend/internal/api"
+	"beam.apache.org/playground/backend/internal/fs_tool"
 	"fmt"
 	"os/exec"
 )
@@ -111,4 +112,3 @@ type CompileError struct {
 
 func (e *CompileError) Error() string {
 	return fmt.Sprintf("Compilation error: %v", e.error)
-}

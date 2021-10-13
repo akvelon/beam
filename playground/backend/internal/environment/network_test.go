@@ -13,14 +13,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module beam.apache.org/playground/backend
+package environment
 
-go 1.16
-
-require (
-	github.com/google/uuid v1.3.0
-	github.com/improbable-eng/grpc-web v0.14.1
-	github.com/rs/cors v1.8.0
-	google.golang.org/grpc v1.41.0
-	google.golang.org/protobuf v1.27.1
+import (
+	"fmt"
+	"testing"
 )
+
+func TestServerEnvs_GetAddress(t *testing.T) {
+	type fields struct {
+		ip   string
+		port int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name:   "ip and port concatenated through ':'",
+			fields: fields{ip: defaultIp, port: defaultPort},
+			want:   fmt.Sprintf("%s:%d", defaultIp, defaultPort),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			serverEnvs := ServerEnvs{
+				ip:   tt.fields.ip,
+				port: tt.fields.port,
+			}
+			if got := serverEnvs.Address(); got != tt.want {
+				t.Errorf("Address() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

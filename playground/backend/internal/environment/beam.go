@@ -13,14 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module beam.apache.org/playground/backend
+package environment
 
-go 1.16
+import pb "beam.apache.org/playground/backend/internal/api"
 
-require (
-	github.com/google/uuid v1.3.0
-	github.com/improbable-eng/grpc-web v0.14.1
-	github.com/rs/cors v1.8.0
-	google.golang.org/grpc v1.41.0
-	google.golang.org/protobuf v1.27.1
-)
+// BeamEnvs contains all environments related of ApacheBeam. These will use to run pipelines
+type BeamEnvs struct {
+	ApacheBeamSdk pb.Sdk
+}
+
+// NewBeamEnvs is a BeamEnvs constructor
+func NewBeamEnvs(apacheBeamSdk pb.Sdk) *BeamEnvs {
+	return &BeamEnvs{ApacheBeamSdk: apacheBeamSdk}
+}
