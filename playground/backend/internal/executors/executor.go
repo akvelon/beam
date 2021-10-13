@@ -18,7 +18,6 @@ package executors
 
 import (
 	pb "beam.apache.org/playground/backend/internal/api"
-	"beam.apache.org/playground/backend/internal/fs_tool"
 	"fmt"
 	"os/exec"
 )
@@ -28,6 +27,11 @@ type validatorWithArgs struct {
 	args      []interface{}
 }
 
+type preparationWithArgs struct {
+	prepare func(filePath string, args ...interface{}) error
+	args    []interface{}
+}
+
 // Executor interface for all executors (Java/Python/Go/SCIO)
 type Executor struct {
 	relativeFilePath string
@@ -35,6 +39,7 @@ type Executor struct {
 	dirPath          string
 	executableDir    string
 	validators       []validatorWithArgs
+	preparation      []preparationWithArgs
 	compileName      string
 	compileArgs      []string
 	runName          string
@@ -46,6 +51,18 @@ type Executor struct {
 func (ex *Executor) Validate() error {
 	for _, validator := range ex.validators {
 		err := validator.validator(ex.absoulteFilePath, validator.args...)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Prepare makes preparation with file.
+// Return error if it occurs
+func (ex *Executor) Prepare() error {
+	for _, preparation := range ex.preparation {
+		err := preparation.prepare(ex.absoulteFilePath, preparation.args...)
 		if err != nil {
 			return err
 		}
@@ -82,7 +99,7 @@ func (ex *Executor) Run(name string) (string, error) {
 func NewExecutor(apacheBeamSdk pb.Sdk, fs *fs_tool.LifeCycle) (*Executor, error) {
 	switch apacheBeamSdk {
 	case pb.Sdk_SDK_JAVA:
-		return NewJavaExecutor(fs, GetJavaValidators()), nil
+		return NewJavaExecutor(fs, GetJavaValidators(), GetJavaPreparation()), nil
 	default:
 		return nil, fmt.Errorf("%s isn't supported now", apacheBeamSdk)
 	}

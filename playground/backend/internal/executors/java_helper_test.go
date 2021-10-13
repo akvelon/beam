@@ -19,6 +19,7 @@ import (
 	pb "beam.apache.org/playground/backend/internal/api"
 	"beam.apache.org/playground/backend/internal/fs_tool"
 	"github.com/google/uuid"
+	"reflect"
 	"testing"
 )
 
@@ -72,5 +73,105 @@ func TestRunJavaFile(t *testing.T) {
 	out, err := javaExecutor.Run(className)
 	if expected != out || err != nil {
 		t.Fatalf(`TestRunJavaFile: '%q, %v' doesn't match for '%#q', nil`, out, err, expected)
+	}
+}
+
+func TestGetJavaPreparation(t *testing.T) {
+	prep1 := preparationWithArgs{
+		prepare: removePublicClassModification,
+	}
+	prep2 := preparationWithArgs{
+		prepare: removeAdditionalPackage,
+	}
+	prep := []preparationWithArgs{prep1, prep2}
+	tests := []struct {
+		name string
+		want *[]preparationWithArgs
+	}{
+		{
+			name: "GetJavaPreparation",
+			want: &prep,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetJavaPreparation(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetJavaPreparation() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_removeAdditionalPackage(t *testing.T) {
+	javaFS, _ := fs_tool.NewLifeCycle(pb.Sdk_SDK_JAVA, pipelineId)
+	type args struct {
+		filePath string
+		args     []interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "original file doesn't exist",
+			args: args{
+				filePath: "someFile.java",
+				args:     make([]interface{}, 0),
+			},
+			wantErr: true,
+		},
+		{
+			name: "original file exists",
+			args: args{
+				filePath: javaFS.GetAbsoluteExecutableFilePath(),
+				args:     make([]interface{}, 0),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := removeAdditionalPackage(tt.args.filePath, tt.args.args...); (err != nil) != tt.wantErr {
+				t.Errorf("removeAdditionalPackage() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_removePublicClassModification(t *testing.T) {
+	javaFS, _ := fs_tool.NewLifeCycle(pb.Sdk_SDK_JAVA, pipelineId)
+	type args struct {
+		filePath string
+		args     []interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "original file doesn't exist",
+			args: args{
+				filePath: "someFile.java",
+				args:     make([]interface{}, 0),
+			},
+			wantErr: true,
+		},
+		{
+			name: "original file exists",
+			args: args{
+				filePath: javaFS.GetAbsoluteExecutableFilePath(),
+				args:     make([]interface{}, 0),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := removePublicClassModification(tt.args.filePath, tt.args.args...); (err != nil) != tt.wantErr {
+				t.Errorf("removeAdditionalPackage() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }
