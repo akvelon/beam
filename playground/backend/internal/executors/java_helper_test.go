@@ -19,7 +19,8 @@ import (
 	pb "beam.apache.org/playground/backend/internal/api"
 	"beam.apache.org/playground/backend/internal/fs_tool"
 	"github.com/google/uuid"
-	"reflect"
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -42,7 +43,7 @@ func setup() *fs_tool.LifeCycle {
 	javaFS, _ := fs_tool.NewLifeCycle(pb.Sdk_SDK_JAVA, pipelineId)
 	_ = javaFS.CreateFolders()
 	_, _ = javaFS.CreateExecutableFile(javaCode)
-	javaExecutor = NewJavaExecutor(javaFS, GetJavaValidators())
+	javaExecutor = NewJavaExecutor(javaFS, GetJavaValidators(), GetJavaPreparation())
 	return javaFS
 }
 
@@ -76,42 +77,26 @@ func TestRunJavaFile(t *testing.T) {
 	}
 }
 
-func TestGetJavaPreparation(t *testing.T) {
-	prep1 := preparationWithArgs{
-		prepare: removePublicClassModification,
-	}
-	prep2 := preparationWithArgs{
-		prepare: removeAdditionalPackage,
-	}
-	prep := []preparationWithArgs{prep1, prep2}
-	tests := []struct {
-		name string
-		want *[]preparationWithArgs
-	}{
-		{
-			name: "GetJavaPreparation",
-			want: &prep,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetJavaPreparation(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetJavaPreparation() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_removeAdditionalPackage(t *testing.T) {
+	codeWithPackage := "package org.some.package;\n\nclass Class {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World!\");\n    }\n}"
+	codeWithoutPackage := "\n\nclass Class {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World!\");\n    }\n}"
+
 	javaFS, _ := fs_tool.NewLifeCycle(pb.Sdk_SDK_JAVA, pipelineId)
+	_, err := javaFS.CreateExecutableFile(codeWithPackage)
+	if err != nil {
+		t.Errorf("removeAdditionalPackage() error during preparing files for test, err: %s", err)
+		return
+	}
+
 	type args struct {
 		filePath string
 		args     []interface{}
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name     string
+		args     args
+		wantCode string
+		wantErr  bool
 	}{
 		{
 			name: "original file doesn't exist",
@@ -127,7 +112,8 @@ func Test_removeAdditionalPackage(t *testing.T) {
 				filePath: javaFS.GetAbsoluteExecutableFilePath(),
 				args:     make([]interface{}, 0),
 			},
-			wantErr: false,
+			wantCode: codeWithoutPackage,
+			wantErr:  false,
 		},
 	}
 	for _, tt := range tests {
@@ -135,20 +121,39 @@ func Test_removeAdditionalPackage(t *testing.T) {
 			if err := removeAdditionalPackage(tt.args.filePath, tt.args.args...); (err != nil) != tt.wantErr {
 				t.Errorf("removeAdditionalPackage() error = %v, wantErr %v", err, tt.wantErr)
 			}
+			if !tt.wantErr {
+				data, err := os.ReadFile(tt.args.filePath)
+				if err != nil {
+					t.Errorf("removeAdditionalPackage() unexpected error = %v", err)
+				}
+				if !strings.EqualFold(string(data), tt.wantCode) {
+					t.Errorf("removeAdditionalPackage() code = {%v}, wantCode {%v}", string(data), tt.wantCode)
+				}
+			}
 		})
 	}
 }
 
-func Test_removePublicClassModification(t *testing.T) {
+func Test_removePublicClassModifier(t *testing.T) {
+	codeWithPublicClass := "public class Class {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World!\");\n    }\n}"
+	codeWithoutPublicClass := "class Class {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World!\");\n    }\n}"
+
 	javaFS, _ := fs_tool.NewLifeCycle(pb.Sdk_SDK_JAVA, pipelineId)
+	_, err := javaFS.CreateExecutableFile(codeWithPublicClass)
+	if err != nil {
+		t.Errorf("removePublicClassModifie() error during preparing files for test, err: %s", err)
+		return
+	}
+
 	type args struct {
 		filePath string
 		args     []interface{}
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name     string
+		args     args
+		wantCode string
+		wantErr  bool
 	}{
 		{
 			name: "original file doesn't exist",
@@ -164,13 +169,23 @@ func Test_removePublicClassModification(t *testing.T) {
 				filePath: javaFS.GetAbsoluteExecutableFilePath(),
 				args:     make([]interface{}, 0),
 			},
-			wantErr: false,
+			wantCode: codeWithoutPublicClass,
+			wantErr:  false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := removePublicClassModification(tt.args.filePath, tt.args.args...); (err != nil) != tt.wantErr {
-				t.Errorf("removeAdditionalPackage() error = %v, wantErr %v", err, tt.wantErr)
+			if err := removePublicClassModifier(tt.args.filePath, tt.args.args...); (err != nil) != tt.wantErr {
+				t.Errorf("removePublicClassModifier() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if !tt.wantErr {
+				data, err := os.ReadFile(tt.args.filePath)
+				if err != nil {
+					t.Errorf("removePublicClassModifier() unexpected error = %v", err)
+				}
+				if !strings.EqualFold(string(data), tt.wantCode) {
+					t.Errorf("removePublicClassModifier() code = {%v}, wantCode {%v}", string(data), tt.wantCode)
+				}
 			}
 		})
 	}

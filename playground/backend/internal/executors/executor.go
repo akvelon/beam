@@ -23,14 +23,9 @@ import (
 	"os/exec"
 )
 
-type validatorWithArgs struct {
-	validator func(filePath string, args ...interface{}) error
-	args      []interface{}
-}
-
-type preparationWithArgs struct {
-	prepare func(filePath string, args ...interface{}) error
-	args    []interface{}
+type functionWithArgs struct {
+	do   func(filePath string, args ...interface{}) error
+	args []interface{}
 }
 
 // Executor interface for all executors (Java/Python/Go/SCIO)
@@ -39,8 +34,8 @@ type Executor struct {
 	absoulteFilePath string
 	dirPath          string
 	executableDir    string
-	validators       []validatorWithArgs
-	preparation      []preparationWithArgs
+	validators       []functionWithArgs
+	preparation      []functionWithArgs
 	compileName      string
 	compileArgs      []string
 	runName          string
@@ -51,7 +46,7 @@ type Executor struct {
 // Return result of validation (true/false) and error if it occurs
 func (ex *Executor) Validate() error {
 	for _, validator := range ex.validators {
-		err := validator.validator(ex.absoulteFilePath, validator.args...)
+		err := validator.do(ex.absoulteFilePath, validator.args...)
 		if err != nil {
 			return err
 		}
@@ -63,7 +58,7 @@ func (ex *Executor) Validate() error {
 // Return error if it occurs
 func (ex *Executor) Prepare() error {
 	for _, preparation := range ex.preparation {
-		err := preparation.prepare(ex.absoulteFilePath, preparation.args...)
+		err := preparation.do(ex.absoulteFilePath, preparation.args...)
 		if err != nil {
 			return err
 		}
@@ -112,3 +107,4 @@ type CompileError struct {
 
 func (e *CompileError) Error() string {
 	return fmt.Sprintf("Compilation error: %v", e.error)
+}

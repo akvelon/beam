@@ -38,13 +38,17 @@ const (
 )
 
 // NewJavaExecutor creates an executor with Go specifics
-func NewJavaExecutor(fs *fs_tool.LifeCycle, javaValidators *[]validatorWithArgs, javaPreparation *[]preparationWithArgs) *Executor {
+func NewJavaExecutor(fs *fs_tool.LifeCycle, javaValidators, javaPreparation *[]functionWithArgs) *Executor {
 	compileArgs := []string{"-d", binFolder, "-classpath", beamJarPath}
 	fullClassPath := strings.Join([]string{binFolder, beamJarPath, runnerJarPath, slf4jPath}, ":")
 	runArgs := []string{"-cp", fullClassPath}
 	if javaValidators == nil {
-		v := make([]validatorWithArgs, 0)
+		v := make([]functionWithArgs, 0)
 		javaValidators = &v
+	}
+	if javaPreparation == nil {
+		v := make([]functionWithArgs, 0)
+		javaPreparation = &v
 	}
 	path, _ := os.Getwd()
 
@@ -62,125 +66,130 @@ func NewJavaExecutor(fs *fs_tool.LifeCycle, javaValidators *[]validatorWithArgs,
 }
 
 // GetJavaValidators return validators methods that needed for Java file
-func GetJavaValidators() *[]validatorWithArgs {
+func GetJavaValidators() *[]functionWithArgs {
 	validatorArgs := make([]interface{}, 1)
 	validatorArgs[0] = javaExtension
-	pathCheckerValidator := validatorWithArgs{
-		validator: fs_tool.CheckPathIsValid,
-		args:      validatorArgs,
+	pathCheckerValidator := functionWithArgs{
+		do:   fs_tool.CheckPathIsValid,
+		args: validatorArgs,
 	}
-	validators := []validatorWithArgs{pathCheckerValidator}
+	validators := []functionWithArgs{pathCheckerValidator}
 	return &validators
 }
 
 // GetJavaPreparation return validation methods that needed for Java file
-func GetJavaPreparation() *[]preparationWithArgs {
-	publicClassModification := preparationWithArgs{
-		prepare: removePublicClassModification,
+func GetJavaPreparation() *[]functionWithArgs {
+	publicClassModification := functionWithArgs{
+		do: removePublicClassModifier,
 	}
-	additionalPackage := preparationWithArgs{
-		prepare: removeAdditionalPackage,
+	additionalPackage := functionWithArgs{
+		do: removeAdditionalPackage,
 	}
-	validators := []preparationWithArgs{publicClassModification, additionalPackage}
+	validators := []functionWithArgs{publicClassModification, additionalPackage}
 	return &validators
+}
+
+func removePublicClassModifier(filePath string, args ...interface{}) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		grpclog.Errorf("Preparation: remove public modification for class: Error during open file: %s, err: %s", filePath, err.Error())
+		return err
+	}
+
+	pathSlice := strings.Split(filePath, "/")
+	fileName := pathSlice[len(pathSlice)-1]
+	folderPath := ""
+	pathSlice = pathSlice[:len(pathSlice)-1]
+	for _, folder := range pathSlice {
+		folderPath = filepath.Join(folderPath, folder)
+	}
+	tmp, err := os.Create(fileName)
+	if err != nil {
+		grpclog.Errorf("Preparation: remove public modification for class: Error during create new temporary file, err: %s", err.Error())
+		return err
+	}
+
+	if err := transferWithReplace(file, tmp, "public class ", "class "); err != nil {
+		grpclog.Errorf("Preparation: remove public modification for class: Error during replace and move data from original file to to temporary file, err: %s", err.Error())
+		return err
+	}
+
+	if err := tmp.Close(); err != nil {
+		grpclog.Errorf("Preparation: remove public modification for class: Error during Close temporary file, err: %s", err.Error())
+		return err
+	}
+	if err := file.Close(); err != nil {
+		grpclog.Errorf("Preparation: remove public modification for class: Error during Close original file, err: %s", err.Error())
+		return err
+	}
+
+	if err := os.Rename(tmp.Name(), filePath); err != nil {
+		grpclog.Errorf("Preparation: remove public modification for class: Error during rename temporary file, err: %s", err.Error())
+		return err
+	}
+	return nil
 }
 
 func removeAdditionalPackage(filePath string, args ...interface{}) error {
 	file, err := os.Open(filePath)
 	if err != nil {
-		grpclog.Errorf("Preparation:  remove additional package: Error during open file: %s", filePath)
-		return err
-	}
-
-	tmp, err := os.Create("temporary.java")
-	if err != nil {
-		grpclog.Error("Preparation: remove additional package: Error during create new temporary file")
-		return err
-	}
-
-	if err := removePackageString(file, tmp); err != nil {
-		grpclog.Error("Preparation: remove additional package: Error during move data from original file to to temporary file")
-		return err
-	}
-
-	if err := tmp.Close(); err != nil {
-		grpclog.Error("Preparation: remove additional package: Error during Close temporary file")
-		return err
-	}
-	if err := file.Close(); err != nil {
-		grpclog.Error("Preparation: remove additional package: Error during Close original file")
+		grpclog.Errorf("Preparation:  remove additional package: Error during open file: %s, err: %s", filePath, err.Error())
 		return err
 	}
 
 	pathSlice := strings.Split(filePath, "/")
 	fileName := pathSlice[len(pathSlice)-1]
-	if err := os.Rename(tmp.Name(), fileName); err != nil {
-		grpclog.Error("Preparation: remove additional package: Error during rename temporary file")
+	folderPath := ""
+	pathSlice = pathSlice[:len(pathSlice)-1]
+	for _, folder := range pathSlice {
+		folderPath = filepath.Join(folderPath, folder)
+	}
+	tmp, err := os.Create(fileName)
+	if err != nil {
+		grpclog.Errorf("Preparation: remove additional package: Error during create new temporary file, err: %s", err.Error())
+		return err
+	}
+
+	if err := transferWithReplace(file, tmp, `package ([\w]+\.)+[\w]+;`, ""); err != nil {
+		grpclog.Errorf("Preparation: remove additional package: Error during move data from original file to to temporary file, err: %s", err.Error())
+		return err
+	}
+
+	if err := tmp.Close(); err != nil {
+		grpclog.Errorf("Preparation: remove additional package: Error during Close temporary file, err: %s", err.Error())
+		return err
+	}
+	if err := file.Close(); err != nil {
+		grpclog.Errorf("Preparation: remove additional package: Error during Close original file, err: %s", err.Error())
+		return err
+	}
+
+	if err := os.Rename(tmp.Name(), filePath); err != nil {
+		grpclog.Errorf("Preparation: remove additional package: Error during rename temporary file, err: %s", err.Error())
 		return err
 	}
 	return nil
 }
 
-func removePackageString(reader io.Reader, writer io.Writer) error {
-	reg := regexp.MustCompile(`package ([\w]+\.)+[\w]+;`)
+func transferWithReplace(reader io.Reader, writer io.Writer, pattern, new string) error {
+	reg := regexp.MustCompile(pattern)
 	scanner := bufio.NewScanner(reader)
+	firstLine := true
 	for scanner.Scan() {
+		if !firstLine {
+			if _, err := io.WriteString(writer, "\n"); err != nil {
+				return err
+			}
+		}
 		line := scanner.Text()
 		matches := reg.FindAllString(line, -1)
 		for _, str := range matches {
-			line = strings.ReplaceAll(line, str, "")
+			line = strings.ReplaceAll(line, str, new)
 		}
-		if _, err := io.WriteString(writer, line+"\n"); err != nil {
+		if _, err := io.WriteString(writer, line); err != nil {
 			return err
 		}
-	}
-	return scanner.Err()
-}
-
-func removePublicClassModification(filePath string, args ...interface{}) error {
-	file, err := os.Open(filePath)
-	if err != nil {
-		grpclog.Errorf("Preparation: remove public modification for class: Error during open file: %s", filePath)
-		return err
-	}
-
-	tmp, err := os.Create("temporary.java")
-	if err != nil {
-		grpclog.Error("Preparation: remove public modification for class: Error during create new temporary file")
-		return err
-	}
-
-	if err := replace(file, tmp); err != nil {
-		grpclog.Error("Preparation: remove public modification for class: Error during replace and move data from original file to to temporary file")
-		return err
-	}
-
-	if err := tmp.Close(); err != nil {
-		grpclog.Error("Preparation: remove public modification for class: Error during Close temporary file")
-		return err
-	}
-	if err := file.Close(); err != nil {
-		grpclog.Error("Preparation: remove public modification for class: Error during Close original file")
-		return err
-	}
-
-	pathSlice := strings.Split(filePath, "/")
-	fileName := pathSlice[len(pathSlice)-1]
-	if err := os.Rename(tmp.Name(), fileName); err != nil {
-		grpclog.Error("Preparation: remove public modification for class: Error during rename temporary file")
-		return err
-	}
-	return nil
-}
-
-func replace(reader io.Reader, writer io.Writer) error {
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		line := scanner.Text()
-		line = strings.ReplaceAll(line, "public class ", "class ")
-		if _, err := io.WriteString(writer, line+"\n"); err != nil {
-			return err
-		}
+		firstLine = false
 	}
 	return scanner.Err()
 }

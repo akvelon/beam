@@ -16,12 +16,14 @@
 // Package executors
 package executors
 
+import "beam.apache.org/playground/backend/internal/fs_tool"
+
 // NewGoExecutor creates an executor with Go specifics
-func NewGoExecutor(fs *fs_tool.LifeCycle, javaValidators *[]validatorWithArgs) *Executor {
+func NewGoExecutor(fs *fs_tool.LifeCycle, javaValidators *[]functionWithArgs) *Executor {
 	return nil
 }
 
 // GetGoValidators return validators methods that needed for Go file
-func GetGoValidators() *[]validatorWithArgs {
+func GetGoValidators() *[]functionWithArgs {
 	return nil
 }
