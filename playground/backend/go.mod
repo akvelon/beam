@@ -18,6 +18,7 @@ module beam.apache.org/playground/backend
 go 1.16
 
 require (
+	github.com/go-redis/redis/v8 v8.11.4
 	github.com/google/uuid v1.3.0
 	github.com/improbable-eng/grpc-web v0.14.1
 	github.com/rs/cors v1.8.0
