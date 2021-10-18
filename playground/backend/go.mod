@@ -21,6 +21,9 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/improbable-eng/grpc-web v0.14.1
 	github.com/rs/cors v1.8.0
+	cloud.google.com/go/logging v1.4.2
+	github.com/google/uuid v1.1.2
+	google.golang.org/api v0.58.0 // indirect
 	google.golang.org/grpc v1.41.0
 	google.golang.org/protobuf v1.27.1
 )
