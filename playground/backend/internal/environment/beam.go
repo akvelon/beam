@@ -13,14 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module beam.apache.org/playground/backend
+package environment
 
-go 1.16
-
-require (
-	github.com/google/uuid v1.3.0
-	github.com/tkanos/gonfig v0.0.0-20210106201359-53e13348de2f
-	github.com/google/uuid v1.3.0
-	google.golang.org/grpc v1.41.0
-	google.golang.org/protobuf v1.27.1
+import (
+	pb "beam.apache.org/playground/backend/internal/api"
 )
+
+// ExecutorConfig contains needed for compiling and execution of the code commands
+type ExecutorConfig struct {
+	CompileCmd  string   `json:"compile_cmd"`
+	RunCmd      string   `json:"run_cmd"`
+	CompileArgs []string `json:"compile_args"`
+	RunArgs     []string `json:"run_args"`
+}
+
+// BeamEnvs contains all environments related of ApacheBeam. These will use to run pipelines
+type BeamEnvs struct {
+	ApacheBeamSdk  pb.Sdk
+	ExecutorConfig *ExecutorConfig
+}
+
+// NewBeamEnvs is a BeamEnvs constructor
+func NewBeamEnvs(apacheBeamSdk pb.Sdk, executorConfig *ExecutorConfig) *BeamEnvs {
+	return &BeamEnvs{ApacheBeamSdk: apacheBeamSdk, ExecutorConfig: executorConfig}
+}
