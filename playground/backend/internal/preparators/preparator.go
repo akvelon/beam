@@ -13,13 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module beam.apache.org/playground/backend
+package preparators
 
-go 1.16
-
-require (
-	github.com/google/uuid v1.3.0
-	github.com/tkanos/gonfig v0.0.0-20210106201359-53e13348de2f
-	google.golang.org/grpc v1.41.0
-	google.golang.org/protobuf v1.27.1
-)
+type Preparator struct {
+	Prepare func(args ...interface{}) error
+	Args    []interface{}
+}
