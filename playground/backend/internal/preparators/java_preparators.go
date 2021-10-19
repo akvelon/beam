@@ -31,7 +31,7 @@ const (
 	packagePattern                    = `package ([\w]+\.)+[\w]+;`
 	emptyStringPattern                = ""
 	newLinePattern                    = "\n"
-	pathSeparatorPattern              = "/"
+	pathSeparatorPattern              = os.PathSeparator
 	tmpFileSuffix                     = "tmp"
 )
 
@@ -90,17 +90,9 @@ func writeWithReplace(from *os.File, to *os.File, pattern, newPattern string) er
 	scanner := bufio.NewScanner(from)
 
 	for scanner.Scan() {
-		err := addNewLine(newLine, to)
-		if err != nil {
-			log.Printf("Preparation: Error during write \"%s\" to tmp file, err: %s\n", newLinePattern, err.Error())
-			return err
-		}
 		line := scanner.Text()
-		matches := reg.FindAllString(line, -1)
-		for _, str := range matches {
-			line = strings.ReplaceAll(line, str, newPattern)
-		}
-		if _, err = io.WriteString(to, line); err != nil {
+		err := replaceAndWriteLine(newLine, to, line, reg, newPattern)
+		if err != nil {
 			log.Printf("Preparation: Error during write \"%s\" to tmp file, err: %s\n", line, err.Error())
 			return err
 		}
@@ -109,10 +101,28 @@ func writeWithReplace(from *os.File, to *os.File, pattern, newPattern string) er
 	return scanner.Err()
 }
 
+// replaceAndWriteLine replaces pattern to newPattern and writes line to file
+func replaceAndWriteLine(newLine bool, to *os.File, line string, reg *regexp.Regexp, newPattern string) error {
+	err := addNewLine(newLine, to)
+	if err != nil {
+		log.Printf("Preparation: Error during write \"%s\" to tmp file, err: %s\n", newLinePattern, err.Error())
+		return err
+	}
+	matches := reg.FindAllString(line, -1)
+	for _, str := range matches {
+		line = strings.ReplaceAll(line, str, newPattern)
+	}
+	if _, err = io.WriteString(to, line); err != nil {
+		log.Printf("Preparation: Error during write \"%s\" to tmp file, err: %s\n", line, err.Error())
+		return err
+	}
+	return nil
+}
+
 // createTempFile creates temporary file next to originalFile
 func createTempFile(originalFilePath string) (*os.File, error) {
 	// all folders which are included in filePath
-	filePathSlice := strings.Split(originalFilePath, pathSeparatorPattern)
+	filePathSlice := strings.Split(originalFilePath, string(pathSeparatorPattern))
 	fileName := filePathSlice[len(filePathSlice)-1]
 
 	tmpFileName := fmt.Sprintf("%s_%s", tmpFileSuffix, fileName)
