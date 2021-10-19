@@ -17,71 +17,44 @@ package preparators
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"log"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 )
 
+const (
+	classWithPublicModifierPattern    = "public class "
+	classWithoutPublicModifierPattern = "class "
+	packagePattern                    = `package ([\w]+\.)+[\w]+;`
+	emptyStringPattern                = ""
+	newLinePattern                    = "\n"
+	pathSeparatorPattern              = "/"
+	tmpFileSuffix                     = "tmp"
+)
+
 // GetJavaPreparation return preparation methods that should be applied to Java code
 func GetJavaPreparation(filePath string) *[]Preparator {
-	preparatorArgs := make([]interface{}, 1)
-	preparatorArgs[0] = filePath
-
 	publicClassModification := Preparator{
-		Prepare: removePublicClassModifier,
-		Args:    preparatorArgs,
+		Prepare: replace,
+		Args:    []interface{}{filePath, classWithPublicModifierPattern, classWithoutPublicModifierPattern},
 	}
 	additionalPackage := Preparator{
-		Prepare: removeAdditionalPackage,
-		Args:    preparatorArgs,
+		Prepare: replace,
+		Args:    []interface{}{filePath, packagePattern, emptyStringPattern},
 	}
 	preparation := []Preparator{publicClassModification, additionalPackage}
 	return &preparation
 }
 
-// removePublicClassModifier removes public modification for class from java file
-func removePublicClassModifier(args ...interface{}) error {
+// replace process file by filePath and replace all patterns to newPattern
+func replace(args ...interface{}) error {
 	filePath := args[0].(string)
-	if err := replace(filePath, "public class ", "class "); err != nil {
-		log.Printf("Preparation: Error during remove public modification for class, err: %s\n", err.Error())
-		return err
-	}
-	return nil
-}
+	pattern := args[1].(string)
+	newPattern := args[2].(string)
 
-// removeAdditionalPackage removes packages from java file
-func removeAdditionalPackage(args ...interface{}) error {
-	filePath := args[0].(string)
-	if err := replace(filePath, `package ([\w]+\.)+[\w]+;`, ""); err != nil {
-		log.Printf("Preparation: Error during remove additional package, err: %s\n", err.Error())
-		return err
-	}
-	return nil
-}
-
-// createTempFile creates temporary file near with originalFile
-func createTempFile(originalFilePath string) (*os.File, error) {
-	// all folders which are included in filePath
-	filePathSlice := strings.Split(originalFilePath, "/")
-	fileName := filePathSlice[len(filePathSlice)-1]
-
-	// find parent folder for file
-	folderPath := "/"
-	filePathSlice = filePathSlice[:len(filePathSlice)-1]
-	for _, folder := range filePathSlice {
-		if folder == "" {
-			continue
-		}
-		folderPath = filepath.Join(folderPath, folder)
-	}
-	return os.Create(folderPath + "/tmp_" + fileName)
-}
-
-// replace process file by filePath and replace all patterns to new
-func replace(filePath, pattern, new string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
 		log.Printf("Preparation: Error during open file: %s, err: %s\n", filePath, err.Error())
@@ -98,31 +71,54 @@ func replace(filePath, pattern, new string) error {
 
 	reg := regexp.MustCompile(pattern)
 	scanner := bufio.NewScanner(file)
-	firstLine := true
+
+	// uses to indicate when need to add new line to tmp file
+	newLine := false
 	for scanner.Scan() {
-		if !firstLine {
-			if _, err := io.WriteString(tmp, "\n"); err != nil {
-				log.Printf("Preparation: Error during write \"\\n\" to tmp file, err: %s\n", err.Error())
-				return err
-			}
+		err = addNewLine(newLine, tmp)
+		if err != nil {
+			log.Printf("Preparation: Error during write \"%s\" to tmp file, err: %s\n", newLinePattern, err.Error())
+			return err
 		}
 		line := scanner.Text()
 		matches := reg.FindAllString(line, -1)
 		for _, str := range matches {
-			line = strings.ReplaceAll(line, str, new)
+			line = strings.ReplaceAll(line, str, newPattern)
 		}
 		if _, err = io.WriteString(tmp, line); err != nil {
 			log.Printf("Preparation: Error during write \"%s\" to tmp file, err: %s\n", line, err.Error())
 			return err
 		}
-		firstLine = false
+		newLine = true
 	}
 	if scanner.Err() != nil {
 		return scanner.Err()
 	}
 
-	if err := os.Rename(tmp.Name(), filePath); err != nil {
+	if err = os.Rename(tmp.Name(), filePath); err != nil {
 		log.Printf("Preparation: Error during rename temporary file, err: %s\n", err.Error())
+		return err
+	}
+	return nil
+}
+
+// createTempFile creates temporary file near with originalFile
+func createTempFile(originalFilePath string) (*os.File, error) {
+	// all folders which are included in filePath
+	filePathSlice := strings.Split(originalFilePath, pathSeparatorPattern)
+	fileName := filePathSlice[len(filePathSlice)-1]
+
+	tmpFileName := fmt.Sprintf("%s_%s", tmpFileSuffix, fileName)
+	tmpFilePath := strings.Replace(originalFilePath, fileName, tmpFileName, 1)
+	return os.Create(tmpFilePath)
+}
+
+// addNewLine add new line to tmp file
+func addNewLine(newLine bool, tmp *os.File) error {
+	if !newLine {
+		return nil
+	}
+	if _, err := io.WriteString(tmp, newLinePattern); err != nil {
 		return err
 	}
 	return nil

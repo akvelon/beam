@@ -24,7 +24,7 @@ import (
 	"testing"
 )
 
-func Test_removePublicClassModifier(t *testing.T) {
+func Test_replace(t *testing.T) {
 	codeWithPublicClass := "public class Class {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World!\");\n    }\n}"
 	codeWithoutPublicClass := "class Class {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World!\");\n    }\n}"
 
@@ -44,19 +44,19 @@ func Test_removePublicClassModifier(t *testing.T) {
 	}{
 		{
 			name:    "original file doesn't exist",
-			args:    args{[]interface{}{"someFile.java"}},
+			args:    args{[]interface{}{"someFile.java", classWithPublicModifierPattern, classWithoutPublicModifierPattern}},
 			wantErr: true,
 		},
 		{
 			name:     "original file exists",
-			args:     args{[]interface{}{lc.GetAbsoluteExecutableFilePath()}},
+			args:     args{[]interface{}{lc.GetAbsoluteExecutableFilePath(), classWithPublicModifierPattern, classWithoutPublicModifierPattern}},
 			wantCode: codeWithoutPublicClass,
 			wantErr:  false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := removePublicClassModifier(tt.args.args...); (err != nil) != tt.wantErr {
+			if err := replace(tt.args.args...); (err != nil) != tt.wantErr {
 				t.Errorf("removePublicClassModifier() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if !tt.wantErr {
@@ -66,54 +66,6 @@ func Test_removePublicClassModifier(t *testing.T) {
 				}
 				if !strings.EqualFold(string(data), tt.wantCode) {
 					t.Errorf("removePublicClassModifier() code = {%v}, wantCode {%v}", string(data), tt.wantCode)
-				}
-			}
-		})
-	}
-}
-
-func Test_removeAdditionalPackage(t *testing.T) {
-	codeWithPackage := "package org.some.package;\n\nclass Class {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World!\");\n    }\n}"
-	codeWithoutPackage := "\n\nclass Class {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World!\");\n    }\n}"
-
-	lc, _ := fs_tool.NewLifeCycle(playground.Sdk_SDK_JAVA, uuid.New())
-	_ = lc.CreateFolders()
-	defer lc.DeleteFolders()
-	_, _ = lc.CreateExecutableFile(codeWithPackage)
-
-	type args struct {
-		args []interface{}
-	}
-	tests := []struct {
-		name     string
-		args     args
-		wantCode string
-		wantErr  bool
-	}{
-		{
-			name:    "original file doesn't exist",
-			args:    args{[]interface{}{"someFile.java"}},
-			wantErr: true,
-		},
-		{
-			name:     "original file exists",
-			args:     args{[]interface{}{lc.GetAbsoluteExecutableFilePath()}},
-			wantCode: codeWithoutPackage,
-			wantErr:  false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := removeAdditionalPackage(tt.args.args...); (err != nil) != tt.wantErr {
-				t.Errorf("removeAdditionalPackage() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if !tt.wantErr {
-				data, err := os.ReadFile(tt.args.args[0].(string))
-				if err != nil {
-					t.Errorf("removeAdditionalPackage() unexpected error = %v", err)
-				}
-				if !strings.EqualFold(string(data), tt.wantCode) {
-					t.Errorf("removeAdditionalPackage() code = {%v}, wantCode {%v}", string(data), tt.wantCode)
 				}
 			}
 		})
