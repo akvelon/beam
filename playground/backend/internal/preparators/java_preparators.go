@@ -35,7 +35,7 @@ const (
 	tmpFileSuffix                     = "tmp"
 )
 
-// GetJavaPreparation return preparation methods that should be applied to Java code
+// GetJavaPreparation returns preparation methods that should be applied to Java code
 func GetJavaPreparation(filePath string) *[]Preparator {
 	publicClassModification := Preparator{
 		Prepare: replace,
@@ -49,7 +49,7 @@ func GetJavaPreparation(filePath string) *[]Preparator {
 	return &preparation
 }
 
-// replace process file by filePath and replace all patterns to newPattern
+// replace processes file by filePath and replaces all patterns to newPattern
 func replace(args ...interface{}) error {
 	filePath := args[0].(string)
 	pattern := args[1].(string)
@@ -69,30 +69,11 @@ func replace(args ...interface{}) error {
 	}
 	defer tmp.Close()
 
-	reg := regexp.MustCompile(pattern)
-	scanner := bufio.NewScanner(file)
-
 	// uses to indicate when need to add new line to tmp file
-	newLine := false
-	for scanner.Scan() {
-		err = addNewLine(newLine, tmp)
-		if err != nil {
-			log.Printf("Preparation: Error during write \"%s\" to tmp file, err: %s\n", newLinePattern, err.Error())
-			return err
-		}
-		line := scanner.Text()
-		matches := reg.FindAllString(line, -1)
-		for _, str := range matches {
-			line = strings.ReplaceAll(line, str, newPattern)
-		}
-		if _, err = io.WriteString(tmp, line); err != nil {
-			log.Printf("Preparation: Error during write \"%s\" to tmp file, err: %s\n", line, err.Error())
-			return err
-		}
-		newLine = true
-	}
-	if scanner.Err() != nil {
-		return scanner.Err()
+	err = writeWithReplace(file, tmp, pattern, newPattern)
+	if err != nil {
+		log.Printf("Preparation: Error during write data to tmp file, err: %s\n", err.Error())
+		return err
 	}
 
 	if err = os.Rename(tmp.Name(), filePath); err != nil {
@@ -102,7 +83,33 @@ func replace(args ...interface{}) error {
 	return nil
 }
 
-// createTempFile creates temporary file near with originalFile
+// writeWithReplace writes data with replacing all patterns to newPattern
+func writeWithReplace(from *os.File, to *os.File, pattern, newPattern string) error {
+	newLine := false
+	reg := regexp.MustCompile(pattern)
+	scanner := bufio.NewScanner(from)
+
+	for scanner.Scan() {
+		err := addNewLine(newLine, to)
+		if err != nil {
+			log.Printf("Preparation: Error during write \"%s\" to tmp file, err: %s\n", newLinePattern, err.Error())
+			return err
+		}
+		line := scanner.Text()
+		matches := reg.FindAllString(line, -1)
+		for _, str := range matches {
+			line = strings.ReplaceAll(line, str, newPattern)
+		}
+		if _, err = io.WriteString(to, line); err != nil {
+			log.Printf("Preparation: Error during write \"%s\" to tmp file, err: %s\n", line, err.Error())
+			return err
+		}
+		newLine = true
+	}
+	return scanner.Err()
+}
+
+// createTempFile creates temporary file next to originalFile
 func createTempFile(originalFilePath string) (*os.File, error) {
 	// all folders which are included in filePath
 	filePathSlice := strings.Split(originalFilePath, pathSeparatorPattern)
@@ -113,12 +120,12 @@ func createTempFile(originalFilePath string) (*os.File, error) {
 	return os.Create(tmpFilePath)
 }
 
-// addNewLine add new line to tmp file
-func addNewLine(newLine bool, tmp *os.File) error {
+// addNewLine adds a new line at the end of the file
+func addNewLine(newLine bool, file *os.File) error {
 	if !newLine {
 		return nil
 	}
-	if _, err := io.WriteString(tmp, newLinePattern); err != nil {
+	if _, err := io.WriteString(file, newLinePattern); err != nil {
 		return err
 	}
 	return nil
