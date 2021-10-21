@@ -17,12 +17,12 @@ const (
 
 var handlers []Handler
 
-// SetHandlers set new array of logger handlers
+// SetHandlers set a new array of logger handlers
 func SetHandlers(h []Handler) {
 	handlers = h
 }
 
-// AddHandler add a new handler to the array
+// AddHandler adds a new handler to the array
 func AddHandler(h Handler) {
 	handlers = append(handlers, h)
 }

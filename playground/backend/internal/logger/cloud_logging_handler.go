@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+const logId = "playground-log"
+
 type CloudLoggingHandler struct {
 	logger *logging.Logger
 	client *logging.Client
@@ -13,7 +15,7 @@ type CloudLoggingHandler struct {
 
 // NewCloudLoggingHandler creates CloudLoggingHandler
 func NewCloudLoggingHandler(client *logging.Client) *CloudLoggingHandler {
-	return &CloudLoggingHandler{client: client, logger: client.Logger("playground-log")}
+	return &CloudLoggingHandler{client: client, logger: client.Logger(logId)}
 }
 
 func (c CloudLoggingHandler) Info(args ...interface{}) {
@@ -65,7 +67,7 @@ func (c CloudLoggingHandler) logMessage(severity logging.Severity, args ...inter
 	})
 }
 
-// CloseConn waits for all opened loggers to be flushed and closes the client if you use GC loggers.
+// CloseConn waits for all opened loggers to be flushed and closes the client.
 func (c CloudLoggingHandler) CloseConn() error {
 	return c.client.Close()
 }
