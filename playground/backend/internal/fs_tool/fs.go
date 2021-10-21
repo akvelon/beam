@@ -102,20 +102,6 @@ func (l *LifeCycle) CreateExecutableFile(code string) (string, error) {
 	return fileName, nil
 }
 
-// DeleteExecutableFile deletes executable file (file.java for java SDK).
-func (l *LifeCycle) DeleteExecutableFile() error {
-	fileName := getFileName(l.pipelineId, l.Extension.ExecutableExtension)
-	filePath := filepath.Join(l.Folder.ExecutableFolder, fileName)
-	return os.RemoveAll(filePath)
-}
-
-// DeleteCompiledFile deletes compiled file (file.class for java SDK).
-func (l *LifeCycle) DeleteCompiledFile() error {
-	fileName := getFileName(l.pipelineId, l.Extension.CompiledExtension)
-	filePath := filepath.Join(l.Folder.CompiledFolder, fileName)
-	return os.RemoveAll(filePath)
-}
-
 // GetAbsoluteExecutableFilePath returns absolute filepath to executable file (.../internal/executable_files/src/file.java for java SDK).
 func (l *LifeCycle) GetAbsoluteExecutableFilePath() string {
 	fileName := getFileName(l.pipelineId, l.Extension.ExecutableExtension)
