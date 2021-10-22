@@ -15,6 +15,7 @@
 
 package preparators
 
+// Preparator is used to make preparations with file with code.
 type Preparator struct {
 	Prepare func(args ...interface{}) error
 	Args    []interface{}
