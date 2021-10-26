@@ -15,13 +15,18 @@
 package main
 
 import (
+	"beam.apache.org/playground/backend/internal/cache"
+	"beam.apache.org/playground/backend/internal/errors"
 	"context"
+	"log"
 
 	pb "beam.apache.org/playground/backend/internal/api/v1"
 	"github.com/google/uuid"
 )
 
 type playgroundController struct {
+	cacheService cache.Cache
+
 	pb.UnimplementedPlaygroundServiceServer
 }
 
@@ -50,7 +55,17 @@ func (controller *playgroundController) GetRunOutput(ctx context.Context, info *
 
 //GetCompileOutput is returning output of compilation for specific pipeline by PipelineUuid
 func (controller *playgroundController) GetCompileOutput(ctx context.Context, info *pb.GetCompileOutputRequest) (*pb.GetCompileOutputResponse, error) {
-	// TODO implement this method
-	compileOutput := pb.GetCompileOutputResponse{Output: "test compile output"}
-	return &compileOutput, nil
+	pipelineId := info.PipelineUuid
+	compileOutputInterface, err := controller.cacheService.GetValue(ctx, uuid.MustParse(pipelineId), cache.CompileOutput)
+	if err != nil {
+		log.Printf("%s: GetCompileOutput(): cache.GetValue: error: %s", pipelineId, err.Error())
+		return nil, errors.NotFoundError("GetCompileOutput", "there is no compile output for pipelineId: "+pipelineId+", subKey: cache.SubKey_CompileOutput")
+	}
+	compileOutput, converted := compileOutputInterface.(string)
+	if !converted {
+		return nil, errors.InternalError("GetCompileOutput", "compile output can't be converted to string")
+	}
+	pipelineResult := pb.GetCompileOutputResponse{Output: compileOutput}
+
+	return &pipelineResult, nil
 }
