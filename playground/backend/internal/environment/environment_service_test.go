@@ -49,6 +49,7 @@ func setup() error {
 	if err != nil {
 		return err
 	}
+	os.Clearenv()
 	return nil
 }
 
@@ -128,7 +129,6 @@ func Test_getSdkEnvsFromOsEnvs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Clearenv()
 			if err := setOsEnvs(tt.envsToSet); err != nil {
 				t.Fatalf("couldn't setup os env")
 			}
@@ -142,6 +142,7 @@ func Test_getSdkEnvsFromOsEnvs(t *testing.T) {
 			}
 		})
 	}
+	os.Clearenv()
 }
 
 func Test_getNetworkEnvsFromOsEnvs(t *testing.T) {
@@ -182,6 +183,7 @@ func Test_getNetworkEnvsFromOsEnvs(t *testing.T) {
 			}
 		})
 	}
+	os.Clearenv()
 }
 
 func Test_getApplicationEnvsFromOsEnvs(t *testing.T) {
@@ -208,9 +210,9 @@ func Test_getApplicationEnvsFromOsEnvs(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getApplicationEnvsFromOsEnvs() got = %v, want %v", got, tt.want)
 			}
-			os.Clearenv()
 		})
 	}
+	os.Clearenv()
 }
 
 func Test_createExecutorConfig(t *testing.T) {
