@@ -36,6 +36,7 @@ enum Status {
   STATUS_ERROR = 3;
   STATUS_COMPILE_ERROR = 4;
   STATUS_RUN_TIMEOUT = 5;
+  STATUS_VALIDATION_ERROR = 6;
 }
 
 // RunCodeRequest represents a code text and options of SDK which executes the code.

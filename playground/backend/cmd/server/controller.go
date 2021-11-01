@@ -219,10 +219,7 @@ func processCode(ctx context.Context, cacheService cache.Cache, lc *fs_tool.Life
 	logger.Infof("%s: Validate() ...\n", pipelineId)
 	validateFunc := exec.Validate()
 	if err := validateFunc(); err != nil {
-		// error during validation
-		// TODO move to processError when status for validation error will be added
-		logger.Errorf("%s: Validate: %s\n", pipelineId, err.Error())
-		setToCache(ctx, cacheService, pipelineId, cache.Status, pb.Status_STATUS_ERROR)
+		processError(ctx, err, nil, pipelineId, cacheService, pb.Status_STATUS_VALIDATION_ERROR)
 		return
 	}
 	logger.Infof("%s: Validate() finish\n", pipelineId)
@@ -287,6 +284,11 @@ func processError(ctx context.Context, err error, data []byte, pipelineId uuid.U
 
 		// set to cache pipelineId: cache.SubKey_Status: pb.Status_STATUS_ERROR
 		setToCache(ctx, cacheService, pipelineId, cache.Status, pb.Status_STATUS_COMPILE_ERROR)
+	case pb.Status_STATUS_VALIDATION_ERROR:
+		logger.Errorf("%s: Validate: %s\n", pipelineId, err.Error())
+
+		// set to cache pipelineId: cache.SubKey_Status: pb.Status_STATUS_VALIDATION_ERROR
+		setToCache(ctx, cacheService, pipelineId, cache.Status, pb.Status_STATUS_VALIDATION_ERROR)
 	}
 }
 

@@ -429,7 +429,7 @@ func Test_processCode(t *testing.T) {
 			name:                  "validation failed",
 			createExecFile:        false,
 			code:                  "",
-			expectedStatus:        pb.Status_STATUS_ERROR,
+			expectedStatus:        pb.Status_STATUS_VALIDATION_ERROR,
 			expectedCompileOutput: nil,
 			expectedRunOutput:     nil,
 			args: args{
