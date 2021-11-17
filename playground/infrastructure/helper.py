@@ -15,9 +15,9 @@
 
 import os
 import re
-
 from dataclasses import dataclass
 from typing import List
+
 from api.v1.api_pb2 import Sdk, SDK_JAVA, SDK_UNSPECIFIED, STATUS_UNSPECIFIED
 
 SUPPORTED_SDK = {'java': SDK_JAVA}
@@ -98,7 +98,7 @@ def _get_example(filepath: str, filename: str) -> Example:
     with open(filepath) as parsed_file:
         content = parsed_file.read()
 
-    return Example(name, "", sdk, filepath, content, "", Status)
+    return Example(name, "", sdk, filepath, content, "", STATUS_UNSPECIFIED)
 
 
 def _match_pattern(filepath: str) -> bool:
