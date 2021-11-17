@@ -18,7 +18,7 @@ import re
 
 from dataclasses import dataclass
 from typing import List
-from api.v1.api_pb2 import Sdk, SDK_JAVA, Status
+from api.v1.api_pb2 import Sdk, SDK_JAVA, SDK_UNSPECIFIED, STATUS_UNSPECIFIED
 
 SUPPORTED_SDK = {'java': SDK_JAVA}
 PATTERN = re.compile(
@@ -31,11 +31,11 @@ class Example:
     """
     name: str
     pipeline_id: str
-    sdk: Sdk
+    sdk: SDK_UNSPECIFIED
     filepath: str
     code: str
     output: str
-    status: Status
+    status: STATUS_UNSPECIFIED
 
 
 def find_examples(work_dir: str) -> List[Example]:
