@@ -23,6 +23,7 @@ from api.v1.api_pb2 import Sdk, SDK_JAVA, SDK_UNSPECIFIED, STATUS_UNSPECIFIED, S
 SUPPORTED_SDK = {'java': SDK_JAVA, 'go': SDK_GO, 'py': SDK_PYTHON, "scala": SDK_SCIO}
 END_OF_LICENCE = "limitations under the License."
 START_OF_IMPORT = "\nimport "
+START_OF_FROM = "\nfrom "
 BEAM_PLAYGROUND = "Beam-playground"
 
 
@@ -97,10 +98,13 @@ def get_tag(filepath):
     index_of_licence_end = content.find(END_OF_LICENCE) + len(END_OF_LICENCE)
     index_of_import_start = content.find(START_OF_IMPORT)
     content = content[index_of_licence_end:index_of_import_start]
+
     index_of_tag_start = content.find(BEAM_PLAYGROUND)
     if index_of_tag_start < 0:
         return None
-    content = content[index_of_tag_start:]
+    index_of_from_start = content.find(START_OF_FROM)
+    if index_of_from_start > 0:
+        content = content[index_of_tag_start:index_of_from_start]
     yaml_tag = content.replace("//", "").replace("#", "")
     try:
         object_meta = yaml.load(yaml_tag, Loader=yaml.SafeLoader)
