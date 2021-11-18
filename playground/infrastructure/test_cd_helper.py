@@ -13,18 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import mock
 
 from cd_helper import CDHelper
 
 
-class Test(unittest.TestCase):
-    @mock.patch('cd_helper.CDHelper._save_to_cloud_all_examples')
-    @mock.patch('cd_helper.CDHelper._run_code_all_examples')
-    def test_store_examples(self, mock_run_code, mock_save_to_cloud):
-        helper = CDHelper()
-        helper.store_examples([])
+@mock.patch('cd_helper.CDHelper._save_to_cloud_all_examples')
+@mock.patch('cd_helper.CDHelper._run_code_all_examples')
+def test_store_examples(mock_run_code, mock_save_to_cloud):
+    helper = CDHelper()
+    helper.store_examples([])
 
-        mock_run_code.assert_called_once_with([])
-        mock_save_to_cloud.assert_called_once_with([])
+    mock_run_code.assert_called_once_with([])
+    mock_save_to_cloud.assert_called_once_with([])

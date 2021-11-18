@@ -13,35 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import mock
 
 from ci_cd import ci_step, cd_step
 
 
-class Test(unittest.TestCase):
-    @mock.patch('ci_helper.CIHelper.verify_examples')
-    @mock.patch('ci_cd.find_examples')
-    @mock.patch('ci_cd.os.getenv')
-    def test_ci_step(self, mock_os_getenv, mock_find_examples, mock_verify_examples):
-        mock_os_getenv.return_value = "MOCK_VALUE"
-        mock_find_examples.return_value = []
+@mock.patch('ci_helper.CIHelper.verify_examples')
+@mock.patch('ci_cd.find_examples')
+@mock.patch('ci_cd.os.getenv')
+def test_ci_step(mock_os_getenv, mock_find_examples, mock_verify_examples):
+    mock_os_getenv.return_value = "MOCK_VALUE"
+    mock_find_examples.return_value = []
 
-        ci_step()
+    ci_step()
 
-        mock_os_getenv.assert_called_once_with("BEAM_ROOT_DIR")
-        mock_find_examples.assert_called_once_with("MOCK_VALUE")
-        mock_verify_examples.assert_called_once_with([])
+    mock_os_getenv.assert_called_once_with("BEAM_ROOT_DIR")
+    mock_find_examples.assert_called_once_with("MOCK_VALUE")
+    mock_verify_examples.assert_called_once_with([])
 
-    @mock.patch('cd_helper.CDHelper.store_examples')
-    @mock.patch('ci_cd.find_examples')
-    @mock.patch('ci_cd.os.getenv')
-    def test_cd_step(self, mock_os_getenv, mock_find_examples, mock_store_examples):
-        mock_os_getenv.return_value = "MOCK_VALUE"
-        mock_find_examples.return_value = []
 
-        cd_step()
+@mock.patch('cd_helper.CDHelper.store_examples')
+@mock.patch('ci_cd.find_examples')
+@mock.patch('ci_cd.os.getenv')
+def test_cd_step(mock_os_getenv, mock_find_examples, mock_store_examples):
+    mock_os_getenv.return_value = "MOCK_VALUE"
+    mock_find_examples.return_value = []
 
-        mock_os_getenv.assert_called_once_with("BEAM_ROOT_DIR")
-        mock_find_examples.assert_called_once_with("MOCK_VALUE")
-        mock_store_examples.assert_called_once_with([])
+    cd_step()
+
+    mock_os_getenv.assert_called_once_with("BEAM_ROOT_DIR")
+    mock_find_examples.assert_called_once_with("MOCK_VALUE")
+    mock_store_examples.assert_called_once_with([])
