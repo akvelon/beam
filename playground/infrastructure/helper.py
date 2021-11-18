@@ -18,9 +18,9 @@ import yaml
 
 from dataclasses import dataclass
 from typing import List
-from api.v1.api_pb2 import Sdk, SDK_JAVA, SDK_UNSPECIFIED, STATUS_UNSPECIFIED, SDK_GO, SDK_PYTHON, SDK_SCIO
+from api.v1.api_pb2 import Sdk, SDK_JAVA, SDK_UNSPECIFIED, STATUS_UNSPECIFIED, SDK_GO, SDK_PYTHON
 
-SUPPORTED_SDK = {'java': SDK_JAVA, 'go': SDK_GO, 'py': SDK_PYTHON, "scala": SDK_SCIO}
+SUPPORTED_SDK = {'java': SDK_JAVA, 'go': SDK_GO, 'py': SDK_PYTHON}
 END_OF_LICENCE = "limitations under the License."
 START_OF_IMPORT = "\nimport "
 START_OF_FROM = "\nfrom "
@@ -105,6 +105,8 @@ def get_tag(filepath):
     index_of_from_start = content.find(START_OF_FROM)
     if index_of_from_start > 0:
         content = content[index_of_tag_start:index_of_from_start]
+    else:
+        content = content[index_of_tag_start:]
     yaml_tag = content.replace("//", "").replace("#", "")
     try:
         object_meta = yaml.load(yaml_tag, Loader=yaml.SafeLoader)
@@ -146,10 +148,9 @@ def _match_pattern(filepath: str) -> bool:
     extension = filepath.split(os.extsep)[-1]
     if extension in SUPPORTED_SDK:
         tag = get_tag(filepath)
-        if tag is None:
-            return False
-        _validate(tag)
-        return True
+        if tag:
+            _validate(tag)
+            return True
     return False
 
 
@@ -174,7 +175,7 @@ def _validate(tag: dict):
         raise ValueError("tag doesn't contain categories field: " + tag.__str__())
 
 
-def _get_name(filename) -> str:
+def _get_name(filename: str) -> str:
     """ Return name of the example by his filepath.
 
     Get name of the example by his filename.
@@ -188,7 +189,7 @@ def _get_name(filename) -> str:
     return filename.split(os.extsep)[0]
 
 
-def _get_sdk(filename) -> Sdk:
+def _get_sdk(filename: str) -> Sdk:
     """ Return SDK of example by his filename.
 
     Get extension of the example's file and returns associated SDK.
