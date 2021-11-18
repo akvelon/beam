@@ -15,6 +15,7 @@
 
 import os
 import re
+
 from dataclasses import dataclass
 from typing import List
 
@@ -23,7 +24,6 @@ from api.v1.api_pb2 import Sdk, SDK_JAVA, SDK_UNSPECIFIED, STATUS_UNSPECIFIED
 SUPPORTED_SDK = {'java': SDK_JAVA}
 PATTERN = re.compile(
     'Beam-playground:\n {2} *name: \w+\n {2} *description: .+\n {2} *multifile: (true|false)\n {2} *categories:\n( {4} *- [\w\-]+\n)+')
-
 
 @dataclass
 class Example:
