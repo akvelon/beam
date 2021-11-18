@@ -13,15 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-
 from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED
 from helper import find_examples, Example
 
 
-class Test(unittest.TestCase):
-    def test_find_examples(self):
-        result = find_examples("")
+def test_find_examples():
+    result = find_examples("")
 
-        assert len(result) == 1
-        assert result[0] == Example("", "", SDK_UNSPECIFIED, "", "", "", STATUS_UNSPECIFIED)
+    assert len(result) == 1
+    assert result[0] == Example("", "", SDK_UNSPECIFIED, "", "", "", STATUS_UNSPECIFIED)
