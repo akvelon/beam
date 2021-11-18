@@ -14,16 +14,17 @@
 # limitations under the License.
 
 import os
-import re
+import yaml
 
 from dataclasses import dataclass
 from typing import List
-
 from api.v1.api_pb2 import Sdk, SDK_JAVA, SDK_UNSPECIFIED, STATUS_UNSPECIFIED
 
 SUPPORTED_SDK = {'java': SDK_JAVA}
-PATTERN = re.compile(
-    'Beam-playground:\n {2} *name: \w+\n {2} *description: .+\n {2} *multifile: (true|false)\n {2} *categories:\n( {4} *- [\w\-]+\n)+')
+END_OF_LICENCE = "limitations under the License."
+START_OF_IMPORT = "\nimport "
+BEAM_PLAYGROUND = "Beam-playground"
+
 
 @dataclass
 class Example:
@@ -42,7 +43,6 @@ def find_examples(work_dir: str) -> List[Example]:
     """ Find and return beam examples.
 
     Search throws all child files of work_dir directory files with beam tag:
-    /*
     Beam-playground:
         name: NameOfExample
         description: Description of NameOfExample.
@@ -50,7 +50,6 @@ def find_examples(work_dir: str) -> List[Example]:
         categories:
             - category-1
             - category-2
-    */
 
     Args:
         work_dir: directory where to search examples.
@@ -81,6 +80,34 @@ def get_statuses(examples: [Example]):
     """
     # TODO [BEAM-13267] Implement
     pass
+
+
+def get_tag(filepath):
+    """Parse file by filepath and find beam tag (after the licence part, before the import part)
+
+    If file contains tag, returns tag as a map.
+    If file contains tag but tag has incorrect format, raise error
+    If file doesn't contain tag, returns None
+
+    Args:
+        filepath: path of the file
+    """
+    with open(filepath) as parsed_file:
+        content = parsed_file.read()
+    index_of_licence_end = content.find(END_OF_LICENCE) + len(END_OF_LICENCE)
+    index_of_import_start = content.find(START_OF_IMPORT)
+    content = content[index_of_licence_end:index_of_import_start]
+    index_of_tag_start = content.find(BEAM_PLAYGROUND)
+    if index_of_tag_start < 0:
+        return None
+    content = content[index_of_tag_start:]
+    yaml_tag = content.replace("//", "").replace("#", "")
+    try:
+        object_meta = yaml.load(yaml_tag, Loader=yaml.SafeLoader)
+        return object_meta[BEAM_PLAYGROUND]
+    except Exception as exp:
+        print(exp)  ## todo add logErr
+        raise ValueError("found tag is not correct: " + exp.__str__())
 
 
 def _get_example(filepath: str, filename: str) -> Example:
@@ -114,9 +141,33 @@ def _match_pattern(filepath: str) -> bool:
     """
     extension = filepath.split(os.extsep)[-1]
     if extension in SUPPORTED_SDK:
-        with open(filepath) as parsed_file:
-            content = parsed_file.read()
-        return re.search(PATTERN, content) is not None
+        tag = get_tag(filepath)
+        if tag is None:
+            return False
+        _validate(tag)
+        return True
+    return False
+
+
+def _validate(tag: dict):
+    """Validate all tag's fields
+
+    If some of the fields has incorrect format, raise error
+
+    Args:
+        tag: beam tag to validate
+    """
+    if tag.get("name") is None:
+        raise ValueError("tag doesn't contain name field: " + tag.__str__())
+    if tag.get("description") is None:
+        raise ValueError("tag doesn't contain description field: " + tag.__str__())
+    if tag.get("multifile") is None:
+        raise ValueError("tag doesn't contain multifile field: " + tag.__str__())
+    multifile = tag.get("multifile")
+    if str(multifile).lower() not in ["true", "false"]:
+        raise ValueError("tag's field multifile is incorrect: " + tag.__str__())
+    if tag.get("categories") is None:
+        raise ValueError("tag doesn't contain categories field: " + tag.__str__())
 
 
 def _get_name(filename) -> str:
