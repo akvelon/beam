@@ -18,9 +18,9 @@ import yaml
 
 from dataclasses import dataclass
 from typing import List
-from api.v1.api_pb2 import Sdk, SDK_JAVA, SDK_UNSPECIFIED, STATUS_UNSPECIFIED
+from api.v1.api_pb2 import Sdk, SDK_JAVA, SDK_UNSPECIFIED, STATUS_UNSPECIFIED, SDK_GO, SDK_PYTHON, SDK_SCIO
 
-SUPPORTED_SDK = {'java': SDK_JAVA}
+SUPPORTED_SDK = {'java': SDK_JAVA, 'go': SDK_GO, 'py': SDK_PYTHON, "scala": SDK_SCIO}
 END_OF_LICENCE = "limitations under the License."
 START_OF_IMPORT = "\nimport "
 BEAM_PLAYGROUND = "Beam-playground"
