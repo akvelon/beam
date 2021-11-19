@@ -16,6 +16,7 @@
 import logging
 
 from dataclasses import dataclass
+from typing import List
 from api.v1.api_pb2 import SDK_JAVA
 from helper import Example, get_statuses
 
@@ -32,7 +33,7 @@ class CIHelper:
     def __init__(self):
         logging.info("Start validation examples")
 
-    def verify_examples(self, examples: [Example]):
+    def verify_examples(self, examples: List[Example]):
         """
         Verify correctness of beam examples.
 
@@ -43,7 +44,7 @@ class CIHelper:
         get_statuses(examples)
         self._verify_examples_status(examples)
 
-    def _verify_examples_status(self, examples: [Example]):
+    def _verify_examples_status(self, examples: List[Example]):
         """
         Verify statuses of beam examples.
 

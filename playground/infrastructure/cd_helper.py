@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List
 from helper import Example
 
 
@@ -23,14 +24,14 @@ class CDHelper:
     It is used to save beam examples/katas/tests and their output on the Google Cloud.
     """
 
-    def store_examples(self, examples: [Example]):
+    def store_examples(self, examples: List[Example]):
         """
         Store beam examples and their output in the Google Cloud.
         """
         self._run_code_all_examples(examples)
         self._save_to_cloud_all_examples(examples)
 
-    def _run_code_all_examples(self, examples: [Example]):
+    def _run_code_all_examples(self, examples: List[Example]):
         """
         Run beam examples and keep their ouput.
 
@@ -42,7 +43,7 @@ class CDHelper:
         # TODO [BEAM-13258] Implement logic
         pass
 
-    def _save_to_cloud_all_examples(self, examples: [Example]):
+    def _save_to_cloud_all_examples(self, examples: List[Example]):
         """
         Save beam examples and their output using backend instance.
 
