@@ -24,8 +24,9 @@ def ci_step():
     """ CI step to verify all beam examples/tests/katas
     """
     root_dir = os.getenv("BEAM_ROOT_DIR")
+    categories_file = os.getenv("BEAM_EXAMPLE_CATEGORIES")
     ci_helper = CIHelper()
-    examples = find_examples(root_dir)
+    examples = find_examples(root_dir, categories_file)
     ci_helper.verify_examples(examples)
 
 
@@ -33,6 +34,7 @@ def cd_step():
     """ CD step to save all beam examples/tests/katas and their outputs on the Google Cloud
     """
     root_dir = os.getenv("BEAM_ROOT_DIR")
+    categories_file = os.getenv("BEAM_EXAMPLE_CATEGORIES")
     cd_helper = CDHelper()
-    examples = find_examples(root_dir)
+    examples = find_examples(root_dir, categories_file)
     cd_helper.store_examples(examples)
