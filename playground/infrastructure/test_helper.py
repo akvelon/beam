@@ -14,59 +14,62 @@
 # limitations under the License.
 
 import mock
+import pytest
 
 from unittest.mock import mock_open
-from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED, SDK_JAVA
-from helper import find_examples, Example, _get_example, _match_pattern, _get_name, _get_sdk, get_tag, _validate
+from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED, SDK_JAVA, SDK_PYTHON, SDK_SCIO, SDK_GO
+from helper import find_examples, Example, _get_example, _get_name, _get_sdk, get_tag, _validate
 
 
 @mock.patch('helper._get_example')
-@mock.patch('helper._match_pattern')
-@mock.patch('helper.os.path.join')
+@mock.patch('helper._validate')
+@mock.patch('helper.get_tag')
 @mock.patch('helper.os.walk')
-def test_find_examples(mock_os_walk, mock_os_path_join, mock_match_pattern, mock_get_example):
+def test_find_examples_with_valid_tag(mock_os_walk, mock_get_tag, mock_validate, mock_get_example):
     example = Example("file", "pipeline_id", SDK_UNSPECIFIED, "root/file.extension", "code", "output",
                       STATUS_UNSPECIFIED)
-    mock_os_walk.return_value = [("/root", (), ("file.extension",))]
-    mock_os_path_join.return_value = "/root/file.extension"
-    mock_match_pattern.return_value = True
+    mock_os_walk.return_value = [("/root", (), ("file.java",))]
+    mock_get_tag.return_value = {"name": "Name"}
+    mock_validate.return_value = True
     mock_get_example.return_value = example
 
-    find_examples("")
+    result = find_examples("", "")
+
+    assert result == [example]
+    mock_os_walk.assert_called_once_with("")
+    mock_get_tag.assert_called_once_with("/root/file.java")
+    mock_validate.assert_called_once_with({"name": "Name"}, "")
+    mock_get_example.assert_called_once_with("/root/file.java", "file.java")
+
+
+@mock.patch('helper._validate')
+@mock.patch('helper.get_tag')
+@mock.patch('helper.os.walk')
+def test_find_examples_with_invalid_tag(mock_os_walk, mock_get_tag, mock_validate):
+    mock_os_walk.return_value = [("/root", (), ("file.java",))]
+    mock_get_tag.return_value = {"name": "Name"}
+    mock_validate.return_value = False
+
+    with pytest.raises(ValueError, match="some of the beam examples contain beam playground tag with incorrect format"):
+        find_examples("", "")
 
     mock_os_walk.assert_called_once_with("")
-    mock_os_path_join.assert_any_call("/root", "file.extension")
-    mock_match_pattern.assert_called_once_with("/root/file.extension")
-    mock_get_example.assert_called_once_with("/root/file.extension", "file.extension")
+    mock_get_tag.assert_called_once_with("/root/file.java")
+    mock_validate.assert_called_once_with({"name": "Name"}, "")
 
 
-@mock.patch('builtins.open',
-            mock_open(
-                read_data="...\n# limitations under the License.\n# Beam-playground:\n#     name: Name\n\nimport ..."))
+@mock.patch('builtins.open', mock_open(read_data="...\n# Beam-playground:\n#     name: Name\n..."))
 def test_get_tag_when_tag_is_exists():
     result = get_tag("")
 
     assert result.get("name") == "Name"
 
 
-@mock.patch('builtins.open',
-            mock_open(
-                read_data="...\n# limitations under the License.\n\nimport ..."))
+@mock.patch('builtins.open', mock_open(read_data="...\n..."))
 def test_get_tag_when_tag_does_not_exist():
     result = get_tag("")
 
     assert result is None
-
-
-@mock.patch('builtins.open',
-            mock_open(
-                read_data="...\n# limitations under the License.\n# Beam-playground:\n# additional string\n#     name: Name\n\nimport ..."))
-def test_get_tag_when_tag_has_incorrect_format():
-    try:
-        get_tag("")
-        assert False
-    except Exception:
-        assert True
 
 
 @mock.patch('builtins.open', mock_open(read_data="data"))
@@ -84,77 +87,46 @@ def test__get_example(mock_get_name, mock_get_sdk):
     mock_get_sdk.assert_called_once_with("filepath.extension")
 
 
-@mock.patch('helper._validate')
-@mock.patch('helper.get_tag')
-def test__match_pattern_with_correct_tag(mock_get_tag, mock_validate):
-    mock_get_tag.return_value = {"name": "Name"}
-
-    result = _match_pattern("/root/filepath.java")
-
-    assert result
-    mock_get_tag.assert_called_once_with("/root/filepath.java")
-    mock_validate.assert_called_once_with({"name": "Name"})
-
-
-@mock.patch('helper.get_tag')
-def test__match_pattern_without_tag(mock_get_tag):
-    mock_get_tag.return_value = None
-
-    result = _match_pattern("/root/filepath.java")
-
-    assert result is False
-    mock_get_tag.assert_called_once_with("/root/filepath.java")
-
-
-def test__match_pattern_with_unsupported_extension():
-    result = _match_pattern("/root/filepath.extension")
-
-    assert result is False
-
-
 def test__validate_without_name_field():
-    try:
-        _validate({})
-        assert False
-    except Exception:
-        assert True
+    tag = {}
+    assert _validate(tag, "") is False
 
 
 def test__validate_without_description_field():
-    try:
-        _validate({"name": "Name"})
-        assert False
-    except Exception:
-        assert True
+    tag = {"name": "Name"}
+    assert _validate(tag, "") is False
 
 
 def test__validate_without_multifile_field():
-    try:
-        _validate({"name": "Name", "description": "Description"})
-        assert False
-    except Exception:
-        assert True
+    tag = {"name": "Name", "description": "Description"}
+    assert _validate(tag, "") is False
 
 
 def test__validate_with_incorrect_multifile_field():
-    try:
-        _validate({"name": "Name", "description": "Description", "multifile": "Multifile"})
-        assert False
-    except Exception:
-        assert True
+    tag = {"name": "Name", "description": "Description", "multifile": "Multifile"}
+    assert _validate(tag, "") is False
 
 
 def test__validate_without_categories_field():
-    try:
-        _validate({"name": "Name", "description": "Description", "multifile": "true"})
-        assert False
-    except Exception:
-        assert True
+    tag = {"name": "Name", "description": "Description", "multifile": "true"}
+    assert _validate(tag, "") is False
 
 
+def test__validate_without_incorrect_categories_field():
+    tag = {"name": "Name", "description": "Description", "multifile": "true", "categories": "Categories"}
+    assert _validate(tag, "") is False
+
+
+@mock.patch('builtins.open', mock_open(read_data="categories:\n    - category"))
+def test__validate_with_not_supported_category():
+    tag = {"name": "Name", "description": "Description", "multifile": "true", "categories": ["category1"]}
+    assert _validate(tag, "") is False
+
+
+@mock.patch('builtins.open', mock_open(read_data="categories:\n    - category"))
 def test__validate_with_all_fields():
-    _validate({"name": "Name", "description": "Description", "multifile": "true", "categories": []})
-    assert True
+    tag = {"name": "Name", "description": "Description", "multifile": "true", "categories": ["category"]}
+    assert _validate(tag, "") is True
 
 
 def test__get_name():
@@ -165,11 +137,10 @@ def test__get_name():
 
 def test__get_sdk_with_supported_extension():
     assert _get_sdk("filename.java") == SDK_JAVA
+    assert _get_sdk("filename.go") == SDK_GO
+    assert _get_sdk("filename.py") == SDK_PYTHON
 
 
 def test__get_sdk_with_unsupported_extension():
-    try:
+    with pytest.raises(ValueError, match="extension is not supported"):
         _get_sdk("filename.extension")
-        assert False
-    except Exception:
-        assert True
