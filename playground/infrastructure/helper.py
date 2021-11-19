@@ -20,7 +20,8 @@ from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED
 
 @dataclass
 class Example:
-    """ Class which contains all information about beam example
+    """
+    Class which contains all information about beam example
     """
     name: str
     pipeline_id: str
@@ -32,10 +33,10 @@ class Example:
 
 
 def find_examples(work_dir: str) -> List[Example]:
-    """ Find and return beam examples.
+    """
+    Find and return beam examples.
 
     Search throws all child files of work_dir directory files with beam tag:
-    /*
     Beam-playground:
         name: NameOfExample
         description: Description of NameOfExample.
@@ -43,7 +44,6 @@ def find_examples(work_dir: str) -> List[Example]:
         categories:
             - category-1
             - category-2
-    */
 
     Args:
         work_dir: directory where to search examples.
@@ -51,12 +51,13 @@ def find_examples(work_dir: str) -> List[Example]:
     Returns:
         List of Examples.
     """
-    examples = [Example("", "", SDK_UNSPECIFIED, "", "", "", STATUS_UNSPECIFIED)]
-    return examples
+    # TODO [BEAM-13135] Implement
+    pass
 
 
-def get_statuses(examples: [Example]):
-    """ Receive statuses for examples and update example.status and example.pipelineId
+def get_statuses(examples: List[Example]):
+    """
+    Receive statuses for examples and update example.status and example.pipelineId
 
     Use client to send requests to the backend:
     1. Start code processing.

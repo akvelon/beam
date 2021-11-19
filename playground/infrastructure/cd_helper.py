@@ -17,19 +17,22 @@ from helper import Example
 
 
 class CDHelper:
-    """ Helper for CD step.
+    """
+    Helper for CD step.
 
     It is used to save beam examples/katas/tests and their output on the Google Cloud.
     """
 
     def store_examples(self, examples: [Example]):
-        """ Store beam examples and their output in the Google Cloud.
+        """
+        Store beam examples and their output in the Google Cloud.
         """
         self._run_code_all_examples(examples)
         self._save_to_cloud_all_examples(examples)
 
     def _run_code_all_examples(self, examples: [Example]):
-        """ Run beam examples and keep their ouput.
+        """
+        Run beam examples and keep their ouput.
 
         Call the backend to start code processing for the examples. Then receive code output.
 
@@ -40,7 +43,8 @@ class CDHelper:
         pass
 
     def _save_to_cloud_all_examples(self, examples: [Example]):
-        """ Save beam examples and their output using backend instance.
+        """
+        Save beam examples and their output using backend instance.
 
         Args:
             examples: beam examples with their output
