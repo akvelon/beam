@@ -29,7 +29,8 @@ CATEGORIES = "categories"
 
 @dataclass
 class Example:
-    """ Class which contains all information about beam example
+    """
+    Class which contains all information about beam example
     """
     name: str
     pipeline_id: str
@@ -80,7 +81,7 @@ def find_examples(work_dir: str, categories_path: str) -> List[Example]:
     return examples
 
 
-def get_statuses(examples: [Example]):
+def get_statuses(examples: List[Example]):
     """
     Receive statuses for examples and update example.status and example.pipeline_id
 

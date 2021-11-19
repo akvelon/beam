@@ -15,23 +15,27 @@
 
 import logging
 
+from dataclasses import dataclass
+from typing import List
 from api.v1.api_pb2 import SDK_JAVA
 from helper import Example, get_statuses
 
-SUPPORTED_SDK = {'java': SDK_JAVA}
 
-
+@dataclass(frozen=True)
 class CIHelper:
-    """ Helper for CI step.
+    """
+    Helper for CI step.
 
     It is used to find and verify correctness if beam examples/katas/tests.
     """
+    SUPPORTED_SDK = {'java': SDK_JAVA}
 
     def __init__(self):
         logging.info("Start validation examples")
 
-    def verify_examples(self, examples: [Example]):
-        """ Verify correctness of beam examples.
+    def verify_examples(self, examples: List[Example]):
+        """
+        Verify correctness of beam examples.
 
         1. Find all beam examples starting from directory os.getenv("BEAM_ROOT_DIR").
         2. Group code of examples by their SDK.
@@ -40,8 +44,9 @@ class CIHelper:
         get_statuses(examples)
         self._verify_examples_status(examples)
 
-    def _verify_examples_status(self, examples: [Example]):
-        """ Verify statuses of beam examples.
+    def _verify_examples_status(self, examples: List[Example]):
+        """
+        Verify statuses of beam examples.
 
         Check example.status for each examples. If the status of the example is:
         - STATUS_VALIDATION_ERROR/STATUS_PREPARATION_ERROR/STATUS_ERROR/STATUS_RUN_TIMEOUT: log error
