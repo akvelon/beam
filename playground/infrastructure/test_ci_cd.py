@@ -27,8 +27,8 @@ def test_ci_step(mock_os_getenv, mock_find_examples, mock_verify_examples):
 
     ci_step()
 
-    mock_os_getenv.assert_called_once_with("BEAM_ROOT_DIR")
-    mock_find_examples.assert_called_once_with("MOCK_VALUE")
+    mock_os_getenv.assert_has_calls([mock.call("BEAM_ROOT_DIR"), mock.call("BEAM_EXAMPLE_CATEGORIES")])
+    mock_find_examples.assert_called_once_with("MOCK_VALUE", "MOCK_VALUE")
     mock_verify_examples.assert_called_once_with([])
 
 
@@ -41,6 +41,6 @@ def test_cd_step(mock_os_getenv, mock_find_examples, mock_store_examples):
 
     cd_step()
 
-    mock_os_getenv.assert_called_once_with("BEAM_ROOT_DIR")
-    mock_find_examples.assert_called_once_with("MOCK_VALUE")
+    mock_os_getenv.assert_has_calls([mock.call("BEAM_ROOT_DIR"), mock.call("BEAM_EXAMPLE_CATEGORIES")])
+    mock_find_examples.assert_called_once_with("MOCK_VALUE", "MOCK_VALUE")
     mock_store_examples.assert_called_once_with([])
