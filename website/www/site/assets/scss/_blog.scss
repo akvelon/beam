@@ -194,7 +194,7 @@
  }
  .post {
    .post-content {
-     max-width: 853px;
+     max-width: 696px;
      margin: 0 auto;
      margin-bottom: 120px;
      padding-top: 55px;
@@ -203,12 +203,6 @@
        word-break: break-word;
        margin-top: 85px;
      }
-   }
-
-   .post-header {
-     border-bottom: 2px solid rgba(255, 109, 5, 0.24);
-     margin-bottom: 24px;
-     padding-bottom: 26px;
    }
    .post-card {
      width: 381px;
@@ -223,15 +217,6 @@
        padding: 24px 19.2px 24.7px 20px;
      }
    }
-   .post-info {
-     margin: 0;
-     p {
-       font-size: 14px;
-       font-weight: bold;
-       line-height: normal;
-       letter-spacing: 2px;
-     }
-   }
    .post-title {
      margin-bottom: 12px !important;
      font-size: 18px !important;
@@ -239,5 +224,267 @@
      letter-spacing: 0.43px !important;
      text-overflow: ellipsis;
      max-height: 4.8em;
+   }
+   .post-header1 {
+     position: static;
+     width: 696px;
+     height: 120px;
+     left: calc(50% - 696px/2);
+     top: calc(50% - 120px/2 - 2324px);
+
+     font-family: Source Sans Pro;
+     font-style: normal;
+     font-weight: 600;
+     font-size: 48px;
+     line-height: 60px;
+     display: flex;
+     align-items: center;
+     letter-spacing: -0.042px;
+     color: #242639;
+     flex: none;
+     order: 0;
+     align-self: stretch;
+     flex-grow: 0;
+     margin: 38px 0px;
+   }
+   .post-block {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        padding: 0px;
+        position: static;
+        width: 696px;
+        height: 165px;
+        left: 0px;
+        top: 158px;
+        flex: none;
+        order: 1;
+        align-self: stretch;
+        flex-grow: 0;
+        margin: 38px 0px;
+      }
+      .post-block-image {
+        position: static;
+        width: 340px;
+        height: 165px;
+        left: 0px;
+        top: 0px;
+        flex: none;
+        order: 0;
+        flex-grow: 1;
+        margin: 0px 16px;
+      }
+      .post-block-text {
+        position: static;
+        width: 340px;
+        height: 112px;
+        left: calc(50% - 340px/2);
+        top: calc(50% - 112px/2);
+        font-family: Source Sans Pro;
+        font-style: italic;
+        font-weight: normal;
+        font-size: 18px;
+        line-height: 155.2%;
+        letter-spacing: -0.042px;
+        color: #242639;
+      }
+      .post-block-text-author {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 0px;
+        position: static;
+        width: 213px;
+        height: 41px;
+        left: 0px;
+        top: 124px;
+        flex: none;
+        order: 1;
+        flex-grow: 0;
+        margin: 12px 0px;
+      }
+      .post-block-text-author-image {
+        position: static;
+        width: 40px;
+        height: 40px;
+        left: 0px;
+        top: 0.5px;
+
+        border-radius: 59px;
+
+        /* Inside Auto Layout */
+
+        flex: none;
+        order: 0;
+        flex-grow: 0;
+        margin: 0px 10px;
+      }
+      .post-block-text-author-column {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0px;
+
+        position: static;
+        width: 163px;
+        height: 41px;
+        left: 50px;
+        top: 0px;
+
+
+        /* Inside Auto Layout */
+
+        flex: none;
+        order: 1;
+        flex-grow: 1;
+        margin: 0px 10px;
+      }
+      .post-block-text-author-name {
+        position: static;
+        height: 22px;
+        left: 0px;
+        right: 70px;
+        top: calc(50% - 22px/2 - 9.5px);
+
+        font-family: Source Sans Pro;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 14px;
+        line-height: 155.2%;
+        letter-spacing: -0.042px;
+        color: #242639;
+        flex: none;
+        order: 0;
+        flex-grow: 0;
+        margin: 0px 0px;
+      }
+      .post-block-text-author-position {
+        position: static;
+        height: 19px;
+        left: 0px;
+        right: 93px;
+        top: calc(50% - 19px/2 + 11px);
+
+        font-family: Source Sans Pro;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 155.2%;
+        letter-spacing: -0.042px;
+        color: #A0A4AB;
+        flex: none;
+        order: 1;
+        flex-grow: 0;
+        margin: 0px 0px;
+      }
+   .post-quote {
+     display: flex;
+     flex-direction: column;
+     align-items: flex-end;
+     padding: 16px;
+     position: static;
+     width: 696px;
+     height: 168px;
+     left: 0px;
+     top: 250px;
+     background: #FCFCFC;
+     border: 1px solid #E6E6E6;
+     box-sizing: border-box;
+     border-radius: 8px;
+     flex: none;
+     order: 1;
+     align-self: stretch;
+     flex-grow: 0;
+     margin: 24px 0px;
+   }
+   .post-quote-position {
+     display: flex;
+     flex-direction: row;
+     align-items: flex-start;
+     padding: 0px;
+     position: static;
+     width: 664px;
+     height: 84px;
+     left: 16px;
+     top: 16px;
+     flex: none;
+     order: 0;
+     align-self: stretch;
+     flex-grow: 0;
+     margin: 0px 0px 22px;
+   }
+   .post-quote-text {
+     position: static;
+     width: 664px;
+     height: 80px;
+     left: calc(50% - 664px/2);
+     top: calc(50% - 84px/2);
+     font-family: Source Sans Pro;
+     font-style: italic;
+     font-weight: 600;
+     font-size: 18px;
+     line-height: 155.2%;
+     letter-spacing: -0.042px;
+     color: #45454E;
+     flex: none;
+     order: 0;
+     flex-grow: 1;
+     margin: 0px 0px;
+   }
+   .post-quote-author {
+     display: flex;
+     flex-direction: row;
+     align-items: center;
+     padding: 0px;
+     position: static;
+     width: 87px;
+     height: 0px;
+     left: 593px;
+     flex: none;
+     order: 1;
+     flex-grow: 0;
+     margin: 15px 22px;
+   }
+   .post-quote-author-image {
+     position: static;
+     width: 30px;
+     height: 30px;
+     left: 0px;
+     top: 0px;
+     border-radius: 59px;
+     flex: none;
+     order: 0;
+     flex-grow: 0;
+     margin: 0px 8px;
+   }
+   .post-quote-author-name {
+     position: static;
+     width: 49px;
+     height: 28px;
+     left: calc(50% - 49px/2 + 19px);
+     top: calc(50% - 28px/2);
+     font-family: Source Sans Pro;
+     font-style: italic;
+     font-weight: 600;
+     font-size: 18px;
+     line-height: 155.2%;
+     letter-spacing: -0.042px;
+     color: #45454E;
+     flex: none;
+     order: 1;
+     flex-grow: 0;
+     margin: 0px 8px;
+   }
+   .post-scheme {
+     position: static;
+     width: 696px;
+     height: 461px;
+     left: 0px;
+     top: 362px;
+     flex: none;
+     order: 1;
+     align-self: stretch;
+     flex-grow: 0;
+     margin: 24px 0px;
    }
  }
