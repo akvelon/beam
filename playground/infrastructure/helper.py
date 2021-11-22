@@ -169,37 +169,40 @@ def _validate(tag: dict, categories_path: str) -> bool:
         In case tag is valid, True
         In case tag is not valid, False
     """
+    valid = True
     if tag.get("name") is None:
         logging.error("tag doesn't contain name field: " + tag.__str__())
-        return False
+        valid = False
     if tag.get("description") is None:
         logging.error("tag doesn't contain description field: " + tag.__str__())
-        return False
+        valid = False
     if tag.get("multifile") is None:
         logging.error("tag doesn't contain multifile field: " + tag.__str__())
-        return False
+        valid = False
     multifile = tag.get("multifile")
     if str(multifile).lower() not in ["true", "false"]:
         logging.error("tag's field multifile is incorrect: " + tag.__str__())
-        return False
+        valid = False
     if tag.get("categories") is None:
         logging.error("tag doesn't contain categories field: " + tag.__str__())
-        return False
+        valid = False
     categories = tag.get("categories")
     if type(categories) is not list:
         logging.error("tag's field categories is incorrect: " + tag.__str__())
-        return False
+        valid = False
+    if valid is False:
+        return valid
     with open(categories_path) as supported_categories:
         yaml_object = yaml.load(supported_categories.read(), Loader=yaml.SafeLoader)
         supported_categories = yaml_object[CATEGORIES]
-        result = True
         for category in categories:
             if category not in supported_categories:
                 logging.error("tag contains unsupported category: " + category)
-                result = False
-        if result is False:
-            return False
-    return True
+                logging.error("If you are sure that "
+                              + category
+                              + " category should be placed in Beam Playground, you can add it to the `playground/categories.yaml` file")
+                valid = False
+    return valid
 
 
 def _get_name(filename: str) -> str:
