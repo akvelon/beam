@@ -14,8 +14,8 @@
 # limitations under the License.
 
 import os
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from api.v1.api_pb2 import SDK_JAVA
 
 

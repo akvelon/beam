@@ -19,12 +19,13 @@ import yaml
 
 from dataclasses import dataclass
 from typing import List
-from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED
-
+from config import Config
+from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED, Sdk
 
 BEAM_PLAYGROUND_TITLE = "Beam-playground:\n"
 BEAM_PLAYGROUND = "Beam-playground"
 CATEGORIES = "categories"
+
 
 @dataclass
 class Example:
@@ -67,7 +68,7 @@ def find_examples(work_dir: str, categories_path: str) -> List[Example]:
         for filename in files:
             filepath = os.path.join(root, filename)
             extension = filepath.split(os.extsep)[-1]
-            if extension in SUPPORTED_SDK:
+            if extension in Config.SUPPORTED_SDK:
                 tag = get_tag(filepath)
                 if tag:
                     if _validate(tag, categories_path) is False:
@@ -229,7 +230,7 @@ def _get_sdk(filename: str) -> Sdk:
         Sdk according to file extension.
     """
     extension = filename.split(os.extsep)[-1]
-    if extension in SUPPORTED_SDK:
-        return SUPPORTED_SDK[extension]
+    if extension in Config.SUPPORTED_SDK:
+        return Config.SUPPORTED_SDK[extension]
     else:
         raise ValueError(extension + " is not supported")
