@@ -231,7 +231,6 @@
      height: 120px;
      left: calc(50% - 696px/2);
      top: calc(50% - 120px/2 - 2324px);
-
      font-family: Source Sans Pro;
      font-style: normal;
      font-weight: 600;
@@ -309,11 +308,7 @@
         height: 40px;
         left: 0px;
         top: 0.5px;
-
         border-radius: 59px;
-
-        /* Inside Auto Layout */
-
         flex: none;
         order: 0;
         flex-grow: 0;
@@ -324,16 +319,11 @@
         flex-direction: column;
         align-items: flex-start;
         padding: 0px;
-
         position: static;
         width: 163px;
         height: 41px;
         left: 50px;
         top: 0px;
-
-
-        /* Inside Auto Layout */
-
         flex: none;
         order: 1;
         flex-grow: 1;
@@ -345,7 +335,6 @@
         left: 0px;
         right: 70px;
         top: calc(50% - 22px/2 - 9.5px);
-
         font-family: Source Sans Pro;
         font-style: normal;
         font-weight: bold;
@@ -364,7 +353,6 @@
         left: 0px;
         right: 93px;
         top: calc(50% - 19px/2 + 11px);
-
         font-family: Source Sans Pro;
         font-style: normal;
         font-weight: normal;
