@@ -18,8 +18,8 @@ import mock
 from cd_helper import CDHelper
 
 
-@mock.patch('cd_helper.CDHelper._save_to_cloud_all_examples')
-@mock.patch('cd_helper.CDHelper._run_code_all_examples')
+@mock.patch('cd_helper.CDHelper._save_to_cloud')
+@mock.patch('cd_helper.CDHelper._run_code')
 def test_store_examples(mock_run_code, mock_save_to_cloud):
     helper = CDHelper()
     helper.store_examples([])

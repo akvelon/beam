@@ -28,10 +28,10 @@ class CDHelper:
         """
         Store beam examples and their output in the Google Cloud.
         """
-        self._run_code_all_examples(examples)
-        self._save_to_cloud_all_examples(examples)
+        self._run_code(examples)
+        self._save_to_cloud(examples)
 
-    def _run_code_all_examples(self, examples: List[Example]):
+    def _run_code(self, examples: List[Example]):
         """
         Run beam examples and keep their ouput.
 
@@ -43,7 +43,7 @@ class CDHelper:
         # TODO [BEAM-13258] Implement logic
         pass
 
-    def _save_to_cloud_all_examples(self, examples: List[Example]):
+    def _save_to_cloud(self, examples: List[Example]):
         """
         Save beam examples and their output using backend instance.
 

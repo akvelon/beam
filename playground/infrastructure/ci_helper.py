@@ -13,25 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-
-from dataclasses import dataclass
 from typing import List
-from api.v1.api_pb2 import SDK_JAVA
 from helper import Example, get_statuses
 
 
-@dataclass(frozen=True)
 class CIHelper:
     """
     Helper for CI step.
 
     It is used to find and verify correctness if beam examples/katas/tests.
     """
-    SUPPORTED_SDK = {'java': SDK_JAVA}
-
-    def __init__(self):
-        logging.info("Start validation examples")
 
     def verify_examples(self, examples: List[Example]):
         """
