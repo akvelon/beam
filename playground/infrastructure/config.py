@@ -15,11 +15,14 @@
 
 import os
 from dataclasses import dataclass
-
-from api.v1.api_pb2 import SDK_JAVA
+from api.v1.api_pb2 import SDK_JAVA, SDK_GO, SDK_PYTHON
 
 
 @dataclass(frozen=True)
 class Config:
     SERVER_ADDRESS = os.getenv("SERVER_ADDRESS", "localhost:8080")
-    SUPPORTED_SDK = {'java': SDK_JAVA}
+    SUPPORTED_SDK = {'java': SDK_JAVA, 'go': SDK_GO, 'py': SDK_PYTHON}
+    BUCKET_NAME = "test_public_bucket_akvelon"
+    TEMP_FOLDER = "temp"
+    EXTENSIONS = {"SDK_JAVA": "java", "SDK_GO": "go", "SDK_PYTHON": "py"}
+    NO_STORE = 'no-store'
