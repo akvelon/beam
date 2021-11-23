@@ -17,7 +17,6 @@ import os
 
 from dataclasses import dataclass
 from typing import List
-
 from api.v1.api_pb2 import SDK_JAVA, SDK_GO, SDK_PYTHON
 
 

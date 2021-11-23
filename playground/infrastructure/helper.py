@@ -19,13 +19,14 @@ import yaml
 
 from dataclasses import dataclass
 from typing import List
+from yaml import YAMLError
 from config import Config, TagFields
 from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED, Sdk
 from collections import namedtuple
 
 BEAM_PLAYGROUND_TITLE = "Beam-playground:\n"
 BEAM_PLAYGROUND = "Beam-playground"
-CATEGORIES = "categories"
+TAG_FIELDS = ["name", "description", "multifile", "categories"]
 
 Tag = namedtuple("Tag", [TagFields.NAME, TagFields.DESCRIPTION, TagFields.MULTIFILE, TagFields.CATEGORIES])
 
@@ -68,6 +69,7 @@ def find_examples(work_dir: str, categories_path: str) -> List[Example]:
     """
     failed = False
     examples = []
+    supported_categories = _get_supported_categories(categories_path)
     for root, _, files in os.walk(work_dir):
         for filename in files:
             filepath = os.path.join(root, filename)
@@ -75,13 +77,13 @@ def find_examples(work_dir: str, categories_path: str) -> List[Example]:
             if extension in Config.SUPPORTED_SDK:
                 tag = get_tag(filepath)
                 if tag:
-                    if _validate(tag, categories_path) is False:
+                    if _validate(tag, supported_categories) is False:
                         logging.error(filepath + "contains beam playground tag with incorrect format")
                         failed = True
                     else:
                         examples.append(_get_example(filepath, filename, tag))
     if failed:
-        raise ValueError("some of the beam examples contain beam playground tag with incorrect format")
+        raise ValueError("Some of the beam examples contain beam playground tag with an incorrect format")
     return examples
 
 
@@ -130,7 +132,7 @@ def get_tag(filepath):
             try:
                 yaml.load(yaml_with_new_string, Loader=yaml.SafeLoader)
                 yaml_string += line
-            except Exception:
+            except YAMLError:
                 break
 
     if add_to_yaml:
@@ -140,12 +142,27 @@ def get_tag(filepath):
     return None
 
 
+def _get_supported_categories(categories_path: str) -> List[str]:
+    """
+    Return list of supported categories from categories_path file
+
+    Args:
+        categories_path: path to the file with categories.
+
+    Returns:
+        All supported categories as a list.
+    """
+    with open(categories_path) as supported_categories:
+        yaml_object = yaml.load(supported_categories.read(), Loader=yaml.SafeLoader)
+        return yaml_object[TagFields.CATEGORIES]
+
+
 def _get_example(filepath: str, filename: str, tag: dict) -> Example:
     """
     Return an Example by filepath and filename.
 
     Args:
-         tag:
+         tag: tag of the example.
          filepath: path of the example's file.
          filename: name of the example's file.
 
@@ -160,53 +177,43 @@ def _get_example(filepath: str, filename: str, tag: dict) -> Example:
     return Example(name, "", sdk, filepath, content, "", STATUS_UNSPECIFIED, Tag(**tag))
 
 
-def _validate(tag: dict, categories_path: str) -> bool:
+def _validate(tag: dict, supported_categories: List[str]) -> bool:
     """
     Validate all tag's fields
 
     Validate that tag contains all required fields and all fields have required format.
 
     Args:
-        tag: beam tag to validate
-        categories_path: path to the file with all supported categories.
+        tag: beam tag to validate.
+        supported_categories: list of supported categories.
 
     Returns:
         In case tag is valid, True
         In case tag is not valid, False
     """
     valid = True
-    if tag.get("name") is None:
-        logging.error("tag doesn't contain name field: " + tag.__str__())
-        valid = False
-    if tag.get("description") is None:
-        logging.error("tag doesn't contain description field: " + tag.__str__())
-        valid = False
-    if tag.get("multifile") is None:
-        logging.error("tag doesn't contain multifile field: " + tag.__str__())
-        valid = False
-    multifile = tag.get("multifile")
-    if str(multifile).lower() not in ["true", "false"]:
+    for field_name in TAG_FIELDS:
+        if tag.get(field_name) is None:
+            logging.error("tag doesn't contain " + field_name + " field: " + tag.__str__())
+            valid = False
+
+    multifile = tag.get(TagFields.MULTIFILE)
+    if (multifile is not None) & (str(multifile).lower() not in ["true", "false"]):
         logging.error("tag's field multifile is incorrect: " + tag.__str__())
         valid = False
-    if tag.get("categories") is None:
-        logging.error("tag doesn't contain categories field: " + tag.__str__())
-        valid = False
-    categories = tag.get("categories")
-    if type(categories) is not list:
-        logging.error("tag's field categories is incorrect: " + tag.__str__())
-        valid = False
-    if valid is False:
-        return valid
-    with open(categories_path) as supported_categories:
-        yaml_object = yaml.load(supported_categories.read(), Loader=yaml.SafeLoader)
-        supported_categories = yaml_object[CATEGORIES]
-        for category in categories:
-            if category not in supported_categories:
-                logging.error("tag contains unsupported category: " + category)
-                logging.error("If you are sure that "
-                              + category
-                              + " category should be placed in Beam Playground, you can add it to the `playground/categories.yaml` file")
-                valid = False
+
+    categories = tag.get(TagFields.CATEGORIES)
+    if categories is not None:
+        if type(categories) is not list:
+            logging.error("tag's field categories is incorrect: " + tag.__str__())
+            valid = False
+        else:
+            for category in categories:
+                if category not in supported_categories:
+                    logging.error("tag contains unsupported category: " + category)
+                    logging.error("If you are sure that " + category
+                                  + " category should be placed in Beam Playground, you can add it to the `playground/categories.yaml` file")
+                    valid = False
     return valid
 
 
