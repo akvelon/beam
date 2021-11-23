@@ -23,15 +23,8 @@ import 'package:playground/pages/playground/components/feedback/feedback_dropdow
 
 const kFeedbackText = 'Enjoying Playground?';
 
-class PlaygroundFeedback extends StatefulWidget {
+class PlaygroundFeedback extends StatelessWidget {
   const PlaygroundFeedback({Key? key}) : super(key: key);
-
-  @override
-  State<PlaygroundFeedback> createState() => _PlaygroundFeedbackState();
-}
-
-class _PlaygroundFeedbackState extends State<PlaygroundFeedback> {
-  final TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
