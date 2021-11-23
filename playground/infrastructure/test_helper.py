@@ -17,31 +17,27 @@ import mock
 import pytest
 
 from unittest.mock import mock_open
-from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED, SDK_JAVA, SDK_PYTHON, SDK_SCIO, SDK_GO
+from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED, SDK_JAVA, SDK_PYTHON, SDK_GO
 from helper import find_examples, Example, _get_example, _get_name, _get_sdk, get_tag, _validate, Tag, \
-    _get_supported_categories
+    get_supported_categories
 
 
 @mock.patch('helper._get_example')
 @mock.patch('helper._validate')
 @mock.patch('helper.get_tag')
 @mock.patch('helper.os.walk')
-@mock.patch('helper._get_supported_categories')
-def test_find_examples_with_valid_tag(mock_get_supported_categories, mock_os_walk, mock_get_tag, mock_validate,
-                                      mock_get_example):
+def test_find_examples_with_valid_tag(mock_os_walk, mock_get_tag, mock_validate, mock_get_example):
     example = Example("file", "pipeline_id", SDK_UNSPECIFIED, "root/file.extension", "code", "output",
                       STATUS_UNSPECIFIED, {'name': 'Name'})
 
-    mock_get_supported_categories.return_value = []
     mock_os_walk.return_value = [("/root", (), ("file.java",))]
     mock_get_tag.return_value = {"name": "Name"}
     mock_validate.return_value = True
     mock_get_example.return_value = example
 
-    result = find_examples("", "")
+    result = find_examples("", [])
 
     assert result == [example]
-    mock_get_supported_categories.assert_called_once_with("")
     mock_os_walk.assert_called_once_with("")
     mock_get_tag.assert_called_once_with("/root/file.java")
     mock_validate.assert_called_once_with({"name": "Name"}, [])
@@ -51,18 +47,15 @@ def test_find_examples_with_valid_tag(mock_get_supported_categories, mock_os_wal
 @mock.patch('helper._validate')
 @mock.patch('helper.get_tag')
 @mock.patch('helper.os.walk')
-@mock.patch('helper._get_supported_categories')
-def test_find_examples_with_invalid_tag(mock_get_supported_categories, mock_os_walk, mock_get_tag, mock_validate):
-    mock_get_supported_categories.return_value = []
+def test_find_examples_with_invalid_tag(mock_os_walk, mock_get_tag, mock_validate):
     mock_os_walk.return_value = [("/root", (), ("file.java",))]
     mock_get_tag.return_value = {"name": "Name"}
     mock_validate.return_value = False
 
     with pytest.raises(ValueError,
                        match="Some of the beam examples contain beam playground tag with an incorrect format"):
-        find_examples("", "")
+        find_examples("", [])
 
-    mock_get_supported_categories.assert_called_once_with("")
     mock_os_walk.assert_called_once_with("")
     mock_get_tag.assert_called_once_with("/root/file.java")
     mock_validate.assert_called_once_with({"name": "Name"}, [])
@@ -83,8 +76,8 @@ def test_get_tag_when_tag_does_not_exist():
 
 
 @mock.patch('builtins.open', mock_open(read_data="categories:\n    - category"))
-def test__get_supported_categories():
-    result = _get_supported_categories("")
+def test_get_supported_categories():
+    result = get_supported_categories("")
 
     assert len(result) == 1
     assert result[0] == "category"

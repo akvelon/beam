@@ -17,7 +17,7 @@ import logging
 import os
 import yaml
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import List
 from yaml import YAMLError
 from config import Config, TagFields
@@ -26,7 +26,6 @@ from collections import namedtuple
 
 BEAM_PLAYGROUND_TITLE = "Beam-playground:\n"
 BEAM_PLAYGROUND = "Beam-playground"
-TAG_FIELDS = ["name", "description", "multifile", "categories"]
 
 Tag = namedtuple("Tag", [TagFields.NAME, TagFields.DESCRIPTION, TagFields.MULTIFILE, TagFields.CATEGORIES])
 
@@ -46,7 +45,7 @@ class Example:
     tag: Tag
 
 
-def find_examples(work_dir: str, categories_path: str) -> List[Example]:
+def find_examples(work_dir: str, supported_categories: List[str]) -> List[Example]:
     """
     Find and return beam examples.
 
@@ -62,14 +61,13 @@ def find_examples(work_dir: str, categories_path: str) -> List[Example]:
 
     Args:
         work_dir: directory where to search examples.
-        categories_path: path to the file with all supported categories.
+        supported_categories: list of supported categories.
 
     Returns:
         List of Examples.
     """
     failed = False
     examples = []
-    supported_categories = _get_supported_categories(categories_path)
     for root, _, files in os.walk(work_dir):
         for filename in files:
             filepath = os.path.join(root, filename)
@@ -142,7 +140,7 @@ def get_tag(filepath):
     return None
 
 
-def _get_supported_categories(categories_path: str) -> List[str]:
+def get_supported_categories(categories_path: str) -> List[str]:
     """
     Return list of supported categories from categories_path file
 
@@ -192,9 +190,9 @@ def _validate(tag: dict, supported_categories: List[str]) -> bool:
         In case tag is not valid, False
     """
     valid = True
-    for field_name in TAG_FIELDS:
-        if tag.get(field_name) is None:
-            logging.error("tag doesn't contain " + field_name + " field: " + tag.__str__())
+    for field in fields(TagFields):
+        if tag.get(field.default) is None:
+            logging.error("tag doesn't contain " + field.default + " field: " + tag.__str__())
             valid = False
 
     multifile = tag.get(TagFields.MULTIFILE)
