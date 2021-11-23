@@ -17,36 +17,33 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:playground/constants/assets.dart';
 import 'package:playground/constants/font_weight.dart';
+import 'package:playground/pages/playground/components/feedback/feedback_dropdown_icon_button.dart';
 
 const kFeedbackText = 'Enjoying Playground?';
 
-class PlaygroundFeedback extends StatelessWidget {
+class PlaygroundFeedback extends StatefulWidget {
   const PlaygroundFeedback({Key? key}) : super(key: key);
+
+  @override
+  State<PlaygroundFeedback> createState() => _PlaygroundFeedbackState();
+}
+
+class _PlaygroundFeedbackState extends State<PlaygroundFeedback> {
+  final TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text(
+      children: const [
+        Text(
           kFeedbackText,
           style: TextStyle(fontWeight: kBoldWeight),
         ),
-        IconButton(
-          padding: EdgeInsets.zero,
-          // ignore: avoid_print
-          onPressed: () => print('Feedback Up'),
-          icon: SvgPicture.asset(kThumbUpIconAsset),
-        ),
-        IconButton(
-          padding: EdgeInsets.zero,
-          // ignore: avoid_print
-          onPressed: () => print('Feedback down'),
-          icon: SvgPicture.asset(kThumbDownIconAsset),
-        ),
+        FeedbackDropdownIconButton(iconAsset: kThumbUpIconAsset),
+        FeedbackDropdownIconButton(iconAsset: kThumbDownIconAsset),
       ],
     );
   }

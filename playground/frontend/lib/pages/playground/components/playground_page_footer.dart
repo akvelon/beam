@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:playground/config/theme.dart';
 import 'package:playground/constants/font_weight.dart';
 import 'package:playground/constants/sizes.dart';
-import 'package:playground/pages/playground/components/playground_feedback.dart';
+import 'package:playground/pages/playground/components/feedback/playground_feedback.dart';
 
 const kPrivacyPolicyText = 'Privacy Policy';
 const kReportIssueText = 'Report issue in Jira';
