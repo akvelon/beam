@@ -18,7 +18,7 @@ import pytest
 
 from unittest.mock import mock_open
 from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED, SDK_JAVA, SDK_PYTHON, SDK_SCIO, SDK_GO
-from helper import find_examples, Example, _get_example, _get_name, _get_sdk, get_tag, _validate
+from helper import find_examples, Example, _get_example, _get_name, _get_sdk, get_tag, _validate, Tag
 
 
 @mock.patch('helper._get_example')
@@ -27,7 +27,7 @@ from helper import find_examples, Example, _get_example, _get_name, _get_sdk, ge
 @mock.patch('helper.os.walk')
 def test_find_examples_with_valid_tag(mock_os_walk, mock_get_tag, mock_validate, mock_get_example):
     example = Example("file", "pipeline_id", SDK_UNSPECIFIED, "root/file.extension", "code", "output",
-                      STATUS_UNSPECIFIED)
+                      STATUS_UNSPECIFIED, {'name': 'Name'})
     mock_os_walk.return_value = [("/root", (), ("file.java",))]
     mock_get_tag.return_value = {"name": "Name"}
     mock_validate.return_value = True
@@ -39,7 +39,7 @@ def test_find_examples_with_valid_tag(mock_os_walk, mock_get_tag, mock_validate,
     mock_os_walk.assert_called_once_with("")
     mock_get_tag.assert_called_once_with("/root/file.java")
     mock_validate.assert_called_once_with({"name": "Name"}, "")
-    mock_get_example.assert_called_once_with("/root/file.java", "file.java")
+    mock_get_example.assert_called_once_with("/root/file.java", "file.java", {'name': 'Name'})
 
 
 @mock.patch('helper._validate')
@@ -79,10 +79,11 @@ def test__get_example(mock_get_name, mock_get_sdk):
     mock_get_name.return_value = "filepath"
     mock_get_sdk.return_value = SDK_UNSPECIFIED
 
-    result = _get_example("/root/filepath.extension", "filepath.extension")
+    result = _get_example("/root/filepath.extension", "filepath.extension",
+                          {'name': 'Name', "description": "Description", "multifile": "False", "categories": [""]})
 
-    assert result == Example("filepath", "", SDK_UNSPECIFIED, "/root/filepath.extension", "data", "",
-                             STATUS_UNSPECIFIED)
+    assert result == Example("filepath", "", SDK_UNSPECIFIED, "/root/filepath.extension", "data", "", STATUS_UNSPECIFIED,
+                             Tag("Name", "Description", "False", [""]))
     mock_get_name.assert_called_once_with("filepath.extension")
     mock_get_sdk.assert_called_once_with("filepath.extension")
 

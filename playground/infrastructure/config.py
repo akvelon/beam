@@ -16,6 +16,8 @@
 import os
 
 from dataclasses import dataclass
+from typing import List
+
 from api.v1.api_pb2 import SDK_JAVA, SDK_GO, SDK_PYTHON
 
 
@@ -23,3 +25,11 @@ from api.v1.api_pb2 import SDK_JAVA, SDK_GO, SDK_PYTHON
 class Config:
     SERVER_ADDRESS = os.getenv("SERVER_ADDRESS", "localhost:8080")
     SUPPORTED_SDK = {'java': SDK_JAVA, 'go': SDK_GO, 'py': SDK_PYTHON}
+
+
+@dataclass(frozen=True)
+class TagFields:
+    NAME: str = "name"
+    DESCRIPTION: str = "description"
+    MULTIFILE: bool = "multifile"
+    CATEGORIES: List[str] = "categories"

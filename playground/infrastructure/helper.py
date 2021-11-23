@@ -19,12 +19,15 @@ import yaml
 
 from dataclasses import dataclass
 from typing import List
-from config import Config
+from config import Config, TagFields
 from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED, Sdk
+from collections import namedtuple
 
 BEAM_PLAYGROUND_TITLE = "Beam-playground:\n"
 BEAM_PLAYGROUND = "Beam-playground"
 CATEGORIES = "categories"
+
+Tag = namedtuple("Tag", [TagFields.NAME, TagFields.DESCRIPTION, TagFields.MULTIFILE, TagFields.CATEGORIES])
 
 
 @dataclass
@@ -39,6 +42,7 @@ class Example:
     code: str
     output: str
     status: STATUS_UNSPECIFIED
+    tag: Tag
 
 
 def find_examples(work_dir: str, categories_path: str) -> List[Example]:
@@ -75,7 +79,7 @@ def find_examples(work_dir: str, categories_path: str) -> List[Example]:
                         logging.error(filepath + "contains beam playground tag with incorrect format")
                         failed = True
                     else:
-                        examples.append(_get_example(filepath, filename))
+                        examples.append(_get_example(filepath, filename, tag))
     if failed:
         raise ValueError("some of the beam examples contain beam playground tag with incorrect format")
     return examples
@@ -136,11 +140,12 @@ def get_tag(filepath):
     return None
 
 
-def _get_example(filepath: str, filename: str) -> Example:
+def _get_example(filepath: str, filename: str, tag: dict) -> Example:
     """
     Return an Example by filepath and filename.
 
     Args:
+         tag:
          filepath: path of the example's file.
          filename: name of the example's file.
 
@@ -152,7 +157,7 @@ def _get_example(filepath: str, filename: str) -> Example:
     with open(filepath) as parsed_file:
         content = parsed_file.read()
 
-    return Example(name, "", sdk, filepath, content, "", STATUS_UNSPECIFIED)
+    return Example(name, "", sdk, filepath, content, "", STATUS_UNSPECIFIED, Tag(**tag))
 
 
 def _validate(tag: dict, categories_path: str) -> bool:
