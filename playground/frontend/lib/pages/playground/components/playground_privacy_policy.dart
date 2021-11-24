@@ -37,6 +37,7 @@ const kPrivacyPolicyFeedback = 'feedback';
 const kPrivacyPolicyTitle = 'Privacy Policy';
 
 const kDialogPadding = 40.0;
+const kModalWidth = 500.0;
 
 class PlaygroundPrivacyPolicy extends StatelessWidget {
   const PlaygroundPrivacyPolicy({Key? key}) : super(key: key);
@@ -51,7 +52,7 @@ class PlaygroundPrivacyPolicy extends StatelessWidget {
       contentPadding: const EdgeInsets.all(kDialogPadding),
       title: const Text(kPrivacyPolicyTitle),
       content: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 500),
+        constraints: const BoxConstraints(maxWidth: kModalWidth),
         child: RichText(
           text: TextSpan(children: [
             const TextSpan(text: kPrivacyPolicyTextStart),
