@@ -17,12 +17,17 @@ import os
 
 from dataclasses import dataclass
 from typing import List
-from api.v1.api_pb2 import SDK_JAVA, SDK_GO, SDK_PYTHON
+from api.v1.api_pb2 import STATUS_VALIDATION_ERROR, STATUS_ERROR, STATUS_PREPARATION_ERROR, STATUS_COMPILE_ERROR, \
+    STATUS_RUN_TIMEOUT, STATUS_RUN_ERROR, SDK_JAVA, SDK_GO, SDK_PYTHON
+
+from api.v1.api_pb2 import SDK_JAVA
 
 
 @dataclass(frozen=True)
 class Config:
     SERVER_ADDRESS = os.getenv("SERVER_ADDRESS", "localhost:8080")
+    ERROR_STATUSES = [STATUS_VALIDATION_ERROR, STATUS_ERROR, STATUS_PREPARATION_ERROR, STATUS_COMPILE_ERROR,
+                      STATUS_RUN_TIMEOUT, STATUS_RUN_ERROR]
     SUPPORTED_SDK = {'java': SDK_JAVA, 'go': SDK_GO, 'py': SDK_PYTHON}
 
 
