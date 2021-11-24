@@ -14,9 +14,18 @@
   }
 
   .case-study-breadcrumbs {
+    display: flex;
     font-size: 14px;
     color: #a0a4ab;
     font-weight: bold;
+    margin-bottom: 16px;
+    a.case-study-breadcrumbs-link {
+      text-decoration: none;
+      color: #a0a4ab;
+    }
+    .case-study-breadcrumbs-separator {
+      margin: 0 8px;
+    }
   }
 
   .case-study-content {
@@ -110,16 +119,22 @@
         margin-left: auto;
       }
       &:before {
-        top: 0;
-        content: open-quote;
+        content: ' ';
+        top: 16px;
+        background-image: url("/images/open-quote.svg");
+        height: 37px;
+        width: 46px;
         position: absolute;
         font-size: 96px;
         color: #E5E5E5;
       }
       &:after {
+        content: ' ';
+        background-image: url("/images/close-quote.svg");
+        height: 37px;
+        width: 46px;
         right: 12px;
-        bottom: -12px;
-        content: close-quote;
+        bottom: 16px;
         position: absolute;
         font-size: 96px;
         color: #E5E5E5;

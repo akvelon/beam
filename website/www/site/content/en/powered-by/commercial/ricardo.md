@@ -1,4 +1,5 @@
 ---
+title: "Ricardo"
 type: commercial
 categories:
   - Case studies
