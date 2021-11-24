@@ -26,7 +26,12 @@ import 'feedback_dropdown_icon_button.dart';
 
 const double kTextFieldWidth = 365.0;
 const double kTextFieldHeight = 68.0;
-const double kDividerHeight = 1.0;
+const String kFeedbackTitleText = 'Feedback';
+const String kCancelButtonTitle = 'Cancel';
+const String kSendFeedbackButtonTitle = 'Send feedback';
+const String kFeedbackContentText =
+    'Tell us what you are missing and you would like to see it\n'
+    'in our service';
 
 class FeedbackDropdownContent extends StatelessWidget {
   final Function close;
@@ -61,7 +66,7 @@ class FeedbackDropdownContent extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(bottom: kXlSpacing),
                       child: Text(
-                        'Feedback',
+                        kFeedbackTitleText,
                         style: getTitleFontStyle(
                           textStyle: const TextStyle(
                             fontSize: kFeedbackTitleFontSize,
@@ -80,8 +85,7 @@ class FeedbackDropdownContent extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  'Tell us what you are missing and you would like to see it\n'
-                  'in our service',
+                  kFeedbackContentText,
                   style: getTitleFontStyle(
                     textStyle: const TextStyle(
                       fontSize: kFeedbackContentFontSize,
@@ -141,7 +145,7 @@ class FeedbackDropdownContent extends StatelessWidget {
                   ),
                   child: TextButton(
                     onPressed: () => close(),
-                    child: const Text('Cancel'),
+                    child: const Text(kCancelButtonTitle),
                   ),
                 ),
                 Container(
@@ -157,7 +161,7 @@ class FeedbackDropdownContent extends StatelessWidget {
                       print(textController.text);
                       close();
                     },
-                    child: const Text('Send feedback'),
+                    child: const Text(kSendFeedbackButtonTitle),
                   ),
                 )
               ],
