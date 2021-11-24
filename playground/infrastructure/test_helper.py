@@ -19,49 +19,37 @@ import pytest
 from unittest.mock import mock_open
 from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED, SDK_JAVA, SDK_PYTHON, SDK_GO
 from helper import find_examples, Example, _get_example, _get_name, _get_sdk, get_tag, _validate, Tag, \
-    get_supported_categories
+    get_supported_categories, _check_file
 
 
-@mock.patch('helper._get_example')
-@mock.patch('helper._validate')
-@mock.patch('helper.get_tag')
+@mock.patch('helper._check_file')
 @mock.patch('helper.os.walk')
-def test_find_examples_with_valid_tag(mock_os_walk, mock_get_tag, mock_validate, mock_get_example):
-    example = Example("file", "pipeline_id", SDK_UNSPECIFIED, "root/file.extension", "code", "output",
-                      STATUS_UNSPECIFIED, {'name': 'Name'})
-
+def test_find_examples_with_valid_tag(mock_os_walk, mock_check_file):
     mock_os_walk.return_value = [("/root", (), ("file.java",))]
-    mock_get_tag.return_value = {"name": "Name"}
-    mock_validate.return_value = True
-    mock_get_example.return_value = example
+    mock_check_file.return_value = False
 
     result = find_examples("", [])
 
-    assert result == [example]
+    assert result == []
     mock_os_walk.assert_called_once_with("")
-    mock_get_tag.assert_called_once_with("/root/file.java")
-    mock_validate.assert_called_once_with({"name": "Name"}, [])
-    mock_get_example.assert_called_once_with("/root/file.java", "file.java", {'name': 'Name'})
+    mock_check_file.assert_called_once_with([], "file.java", "/root/file.java", [])
 
 
-@mock.patch('helper._validate')
-@mock.patch('helper.get_tag')
+@mock.patch('helper._check_file')
 @mock.patch('helper.os.walk')
-def test_find_examples_with_invalid_tag(mock_os_walk, mock_get_tag, mock_validate):
+def test_find_examples_with_invalid_tag(mock_os_walk, mock_check_file):
     mock_os_walk.return_value = [("/root", (), ("file.java",))]
-    mock_get_tag.return_value = {"name": "Name"}
-    mock_validate.return_value = False
+    mock_check_file.return_value = True
 
     with pytest.raises(ValueError,
                        match="Some of the beam examples contain beam playground tag with an incorrect format"):
         find_examples("", [])
 
     mock_os_walk.assert_called_once_with("")
-    mock_get_tag.assert_called_once_with("/root/file.java")
-    mock_validate.assert_called_once_with({"name": "Name"}, [])
+    mock_check_file.assert_called_once_with([], "file.java", "/root/file.java", [])
 
 
-@mock.patch('builtins.open', mock_open(read_data="...\n# Beam-playground:\n#     name: Name\n..."))
+@mock.patch('builtins.open', mock_open(read_data="...\n# Beam-playground:\n#     name: Name\n\nimport ..."))
 def test_get_tag_when_tag_is_exists():
     result = get_tag("")
 
@@ -73,6 +61,46 @@ def test_get_tag_when_tag_does_not_exist():
     result = get_tag("")
 
     assert result is None
+
+
+@mock.patch('helper._get_example')
+@mock.patch('helper._validate')
+@mock.patch('helper.get_tag')
+def test__check_file_with_correct_tag(mock_get_tag, mock_validate, mock_get_example):
+    tag = {"name": "Name"}
+    example = Example("filename", "", SDK_UNSPECIFIED, "/root/filename.java", "data", "", STATUS_UNSPECIFIED,
+                      Tag("Name", "Description", False, []))
+    examples = []
+
+    mock_get_tag.return_value = tag
+    mock_validate.return_value = True
+    mock_get_example.return_value = example
+
+    result = _check_file(examples, "filename.java", "/root/filename.java", [])
+
+    assert result is False
+    assert len(examples) == 1
+    assert examples[0] == example
+    mock_get_tag.assert_called_once_with("/root/filename.java")
+    mock_validate.assert_called_once_with(tag, [])
+    mock_get_example.assert_called_once_with("/root/filename.java", "filename.java", tag)
+
+
+@mock.patch('helper._validate')
+@mock.patch('helper.get_tag')
+def test__check_file_with_incorrect_tag(mock_get_tag, mock_validate):
+    tag = {"name": "Name"}
+    examples = []
+
+    mock_get_tag.return_value = tag
+    mock_validate.return_value = False
+
+    result = _check_file(examples, "filename.java", "/root/filename.java", [])
+
+    assert result is True
+    assert len(examples) == 0
+    mock_get_tag.assert_called_once_with("/root/filename.java")
+    mock_validate.assert_called_once_with(tag, [])
 
 
 @mock.patch('builtins.open', mock_open(read_data="categories:\n    - category"))

@@ -16,11 +16,8 @@
 import os
 
 from dataclasses import dataclass
-from typing import List
 from api.v1.api_pb2 import STATUS_VALIDATION_ERROR, STATUS_ERROR, STATUS_PREPARATION_ERROR, STATUS_COMPILE_ERROR, \
     STATUS_RUN_TIMEOUT, STATUS_RUN_ERROR, SDK_JAVA, SDK_GO, SDK_PYTHON
-
-from api.v1.api_pb2 import SDK_JAVA
 
 
 @dataclass(frozen=True)
@@ -35,5 +32,5 @@ class Config:
 class TagFields:
     NAME: str = "name"
     DESCRIPTION: str = "description"
-    MULTIFILE: bool = "multifile"
-    CATEGORIES: List[str] = "categories"
+    MULTIFILE: str = "multifile"
+    CATEGORIES: str = "categories"

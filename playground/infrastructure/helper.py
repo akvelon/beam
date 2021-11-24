@@ -66,21 +66,13 @@ def find_examples(work_dir: str, supported_categories: List[str]) -> List[Exampl
     Returns:
         List of Examples.
     """
-    failed = False
+    has_error = False
     examples = []
     for root, _, files in os.walk(work_dir):
         for filename in files:
             filepath = os.path.join(root, filename)
-            extension = filepath.split(os.extsep)[-1]
-            if extension in Config.SUPPORTED_SDK:
-                tag = get_tag(filepath)
-                if tag:
-                    if _validate(tag, supported_categories) is False:
-                        logging.error(filepath + "contains beam playground tag with incorrect format")
-                        failed = True
-                    else:
-                        examples.append(_get_example(filepath, filename, tag))
-    if failed:
+            has_error = _check_file(examples, filename, filepath, supported_categories)
+    if has_error:
         raise ValueError("Some of the beam examples contain beam playground tag with an incorrect format")
     return examples
 
@@ -140,6 +132,34 @@ def get_tag(filepath):
     return None
 
 
+def _check_file(examples, filename, filepath, supported_categories):
+    """
+    Check file by filepath for matching to beam example. If file is beam example, then add it to list of examples
+
+    Args:
+        examples: list of examples.
+        filename: name of the file.
+        filepath: path to the file.
+        supported_categories: list of supported categories.
+
+    Returns:
+        True if file has beam playground tag with incorrect format.
+        False if file has correct beam playground tag.
+        False if file doesn't contains beam playground tag.
+    """
+    has_error = False
+    extension = filepath.split(os.extsep)[-1]
+    if extension in Config.SUPPORTED_SDK:
+        tag = get_tag(filepath)
+        if tag:
+            if _validate(tag, supported_categories) is False:
+                logging.error(filepath + "contains beam playground tag with incorrect format")
+                has_error = True
+            else:
+                examples.append(_get_example(filepath, filename, tag))
+    return has_error
+
+
 def get_supported_categories(categories_path: str) -> List[str]:
     """
     Return list of supported categories from categories_path file
@@ -196,7 +216,7 @@ def _validate(tag: dict, supported_categories: List[str]) -> bool:
             valid = False
 
     multifile = tag.get(TagFields.MULTIFILE)
-    if (multifile is not None) & (str(multifile).lower() not in ["true", "false"]):
+    if (multifile is not None) and (str(multifile).lower() not in ["true", "false"]):
         logging.error("tag's field multifile is incorrect: " + tag.__str__())
         valid = False
 
