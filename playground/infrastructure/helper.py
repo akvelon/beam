@@ -71,7 +71,7 @@ def find_examples(work_dir: str, supported_categories: List[str]) -> List[Exampl
     for root, _, files in os.walk(work_dir):
         for filename in files:
             filepath = os.path.join(root, filename)
-            has_error = _check_file(examples, filename, filepath, supported_categories)
+            has_error = has_error or _check_file(examples, filename, filepath, supported_categories)
     if has_error:
         raise ValueError("Some of the beam examples contain beam playground tag with an incorrect format")
     return examples
