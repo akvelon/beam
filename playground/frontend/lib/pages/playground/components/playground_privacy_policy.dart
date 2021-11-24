@@ -50,36 +50,33 @@ class PlaygroundPrivacyPolicy extends StatelessWidget {
       ),
       contentPadding: const EdgeInsets.all(kDialogPadding),
       title: const Text(kPrivacyPolicyTitle),
-      content: Flexible(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
-          child: RichText(
-            text: TextSpan(children: [
-              const TextSpan(text: kPrivacyPolicyTextStart),
-              TextSpan(
-                text: kGooglePrivacyPolicyText,
-                style: const TextStyle(color: kLinkColor),
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () {
-                    AnalyticsService.get(context)
-                        .trackOpenLink(kGooglePrivacyPolicyLink);
-                    launch(kGooglePrivacyPolicyLink);
-                  },
-              ),
-              const TextSpan(text: kPrivacyPolicyTextEnd),
-              TextSpan(
-                text: kPrivacyPolicyFeedback,
-                style: const TextStyle(color: kLinkColor),
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () {
-                    AnalyticsService.get(context)
-                        .trackOpenLink(kReportIssueLink);
-                    launch(kReportIssueLink);
-                  },
-              ),
-              const TextSpan(text: '.'),
-            ]),
-          ),
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: RichText(
+          text: TextSpan(children: [
+            const TextSpan(text: kPrivacyPolicyTextStart),
+            TextSpan(
+              text: kGooglePrivacyPolicyText,
+              style: const TextStyle(color: kLinkColor),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  AnalyticsService.get(context)
+                      .trackOpenLink(kGooglePrivacyPolicyLink);
+                  launch(kGooglePrivacyPolicyLink);
+                },
+            ),
+            const TextSpan(text: kPrivacyPolicyTextEnd),
+            TextSpan(
+              text: kPrivacyPolicyFeedback,
+              style: const TextStyle(color: kLinkColor),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  AnalyticsService.get(context).trackOpenLink(kReportIssueLink);
+                  launch(kReportIssueLink);
+                },
+            ),
+            const TextSpan(text: '.'),
+          ]),
         ),
       ),
     );
