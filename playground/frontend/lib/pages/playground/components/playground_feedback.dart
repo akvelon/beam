@@ -38,18 +38,18 @@ class PlaygroundFeedback extends StatelessWidget {
         ),
         IconButton(
           padding: EdgeInsets.zero,
-          // ignore: avoid_print
           onPressed: () {
             AnalyticsService.get(context).trackClickEnjoyPlayground(true);
+            // ignore: avoid_print
             print('Feedback Up');
           },
           icon: SvgPicture.asset(kThumbUpIconAsset),
         ),
         IconButton(
           padding: EdgeInsets.zero,
-          // ignore: avoid_print
           onPressed: () {
             AnalyticsService.get(context).trackClickEnjoyPlayground(false);
+            // ignore: avoid_print
             print('Feedback down');
           },
           icon: SvgPicture.asset(kThumbDownIconAsset),
