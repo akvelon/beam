@@ -12,18 +12,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import asyncio
 import os
-from dataclasses import dataclass
-from api.v1.api_pb2 import STATUS_VALIDATION_ERROR, STATUS_ERROR, STATUS_PREPARATION_ERROR, STATUS_COMPILE_ERROR, \
-    STATUS_RUN_TIMEOUT, STATUS_RUN_ERROR
 
-from api.v1.api_pb2 import SDK_JAVA
+from cd_helper import CDHelper
+from ci_helper import CIHelper
+from helper import find_examples
+from logger import setup_logger
 
 
-@dataclass(frozen=True)
-class Config:
-    SERVER_ADDRESS = os.getenv("SERVER_ADDRESS", "localhost:8080")
-    ERROR_STATUSES = [STATUS_VALIDATION_ERROR, STATUS_ERROR, STATUS_PREPARATION_ERROR, STATUS_COMPILE_ERROR,
-                      STATUS_RUN_TIMEOUT, STATUS_RUN_ERROR]
-    SUPPORTED_SDK = {'java': SDK_JAVA}
+def ci_step():
+    """
+    CI step to verify all beam examples/tests/katas
+    """
+    setup_logger()
+    root_dir = os.getenv("BEAM_ROOT_DIR")
+    ci_helper = CIHelper()
+    examples = find_examples(root_dir)
+    asyncio.run(ci_helper.verify_examples(examples))
+
+
+def cd_step():
+    """
+    CD step to save all beam examples/tests/katas and their outputs on the Google Cloud
+    """
+    setup_logger()
+    root_dir = os.getenv("BEAM_ROOT_DIR")
+    cd_helper = CDHelper()
+    examples = find_examples(root_dir)
+    cd_helper.store_examples(examples)

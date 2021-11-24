@@ -40,7 +40,7 @@ class ExpansionPanelItem extends StatelessWidget {
               final exampleWithInfo =
                   await exampleState.loadExampleInfo(example);
               playgroundState.setExample(exampleWithInfo);
-              AnalyticsService.get(context).trackSelectExample(example);
+              AnalyticsService.get(context).trackSelectExample(exampleWithInfo);
             }
           },
           child: Container(
