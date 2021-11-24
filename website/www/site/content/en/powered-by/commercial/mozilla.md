@@ -19,4 +19,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<div>
+
+<header class="case-study-header">
+  <h2 itemprop="name headline">The Nitty-Gritty of Moving Data with Beam</h2>
+</header>
+
 Mozilla is the non-profit Firefox browser. This use case focuses on complexity that comes from moving data from one system to another safely, modeling data as it passes from one transform to another, handling errors, testing the system, and organizing the code to make the pipeline configurable for different source and destination systems in their open source codebase for ingesting telemetry data from Firefox clients.
+</div>

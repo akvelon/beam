@@ -19,4 +19,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<div>
+
+<header class="case-study-header">
+  <h2 itemprop="name headline">Cloud Dataflow</h2>
+</header>
+
 **[Cloud Dataflow](https://cloud.google.com/dataflow):** Google Cloud Dataflow is a fully managed service for executing Apache Beam pipelines within the Google Cloud Platform ecosystem.
+
+</div>
