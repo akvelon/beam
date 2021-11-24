@@ -11,19 +11,15 @@ limitations under the License. See accompanying LICENSE file.
 */}}
 
 {{ define "main" }}
-    <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-      <div class="post-content">
-        <div class="post-info">
-          <p>
-          {{ delimit .Params.categories ", " " & " }}
+    <article itemscope itemtype="http://schema.org/BlogPosting">
+      <div class="arrow-list header-top-margin" itemprop="articleBody">
+        <div class="case-study">
+          <p class="case-study-breadcrumbs">
+            {{ delimit .Params.categories ", " " › " }}
           </p>
-        </div>
-        <header class="post-header">
-          <h2 itemprop="name headline">{{ .Title }}</h1>
-        </header>
-
-        <div class="arrow-list header-top-margin" itemprop="articleBody">
-          {{ .Content }}
+          <div class="case-study-content">
+            {{ .Content }}
+          </div>
         </div>
       </div>
     </article>
