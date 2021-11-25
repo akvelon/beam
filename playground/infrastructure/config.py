@@ -26,6 +26,8 @@ class Config:
     ERROR_STATUSES = [STATUS_VALIDATION_ERROR, STATUS_ERROR, STATUS_PREPARATION_ERROR, STATUS_COMPILE_ERROR,
                       STATUS_RUN_TIMEOUT, STATUS_RUN_ERROR]
     SUPPORTED_SDK = {'java': SDK_JAVA, 'go': SDK_GO, 'py': SDK_PYTHON}
+    BEAM_PLAYGROUND_TITLE = "Beam-playground:\n"
+    BEAM_PLAYGROUND = "Beam-playground"
 
 
 @dataclass(frozen=True)

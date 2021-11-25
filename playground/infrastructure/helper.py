@@ -24,9 +24,6 @@ from config import Config, TagFields
 from api.v1.api_pb2 import SDK_UNSPECIFIED, STATUS_UNSPECIFIED, Sdk
 from collections import namedtuple
 
-BEAM_PLAYGROUND_TITLE = "Beam-playground:\n"
-BEAM_PLAYGROUND = "Beam-playground"
-
 Tag = namedtuple("Tag", [TagFields.NAME, TagFields.DESCRIPTION, TagFields.MULTIFILE, TagFields.CATEGORIES])
 
 
@@ -115,7 +112,7 @@ def get_tag(filepath):
     for line in lines:
         line = line.replace("//", "").replace("#", "")
         if add_to_yaml is False:
-            if line.lstrip() == BEAM_PLAYGROUND_TITLE:
+            if line.lstrip() == Config.BEAM_PLAYGROUND_TITLE:
                 add_to_yaml = True
                 yaml_string += line.lstrip()
         else:
@@ -128,7 +125,7 @@ def get_tag(filepath):
 
     if add_to_yaml:
         tag_object = yaml.load(yaml_string, Loader=yaml.SafeLoader)
-        return tag_object[BEAM_PLAYGROUND]
+        return tag_object[Config.BEAM_PLAYGROUND]
 
     return None
 
@@ -148,6 +145,9 @@ def _check_file(examples, filename, filepath, supported_categories):
         False if file has correct beam playground tag.
         False if file doesn't contains beam playground tag.
     """
+    if filepath.endswith("infrastructure/helper.py"):
+        return False
+
     has_error = False
     extension = filepath.split(os.extsep)[-1]
     if extension in Config.SUPPORTED_SDK:
