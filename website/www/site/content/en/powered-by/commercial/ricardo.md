@@ -21,7 +21,7 @@ limitations under the License.
 -->
 <div class="case-study-opinion">
     <div class="case-study-opinion-img">
-        <img src="/images/ricardo_logo.png"/>
+        <img src="/images/logos/powered-by/ricardo.png"/>
     </div>
     <blockquote class="case-study-quote-block">
       <p class="case-study-quote-text">
@@ -36,7 +36,7 @@ limitations under the License.
               Tobias Kaymak
             </div>
             <div class="case-study-quote-author-position">
-              Data Engineer
+              Senior Data Engineer @ Ricardo
             </div>
         </div>
       </div>
@@ -44,7 +44,7 @@ limitations under the License.
 </div>
 <div class="case-study-post">
 
-# Data streams facilitation with Apache Beam
+#  Apache Beam Amplified Ricardo’s Real-time and ML Data Processing for eCommerce Platform
 
 ## Background
 
@@ -94,7 +94,7 @@ datacenter as the initial environment.
           Tobias Kaymak
         </div>
         <div class="case-study-quote-author-position">
-          Data Engineer
+          Senior Data Engineer @ Ricardo
         </div>
     </div>
   </div>
@@ -118,7 +118,7 @@ datacenter to GKE.
           Tobias Kaymak
         </div>
         <div class="case-study-quote-author-position">
-          Data Engineer
+          Senior Data Engineer @ Ricardo
         </div>
     </div>
   </div>
@@ -167,7 +167,7 @@ data science and ML.
           Tobias Kaymak
         </div>
         <div class="case-study-quote-author-position">
-          Data Engineer
+          Senior Data Engineer @ Ricardo
         </div>
     </div>
   </div>
@@ -200,7 +200,7 @@ other teams at Ricardo to adopt it.
           Tobias Kaymak
         </div>
         <div class="case-study-quote-author-position">
-          Data Engineer
+          Senior Data Engineer @ Ricardo
         </div>
     </div>
   </div>
@@ -229,7 +229,7 @@ to value.
           Tobias Kaymak
         </div>
         <div class="case-study-quote-author-position">
-          Data Engineer
+          Senior Data Engineer @ Ricardo
         </div>
     </div>
   </div>
