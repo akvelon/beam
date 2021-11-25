@@ -71,7 +71,8 @@ def find_examples(work_dir: str, supported_categories: List[str]) -> List[Exampl
     for root, _, files in os.walk(work_dir):
         for filename in files:
             filepath = os.path.join(root, filename)
-            has_error = has_error or _check_file(examples, filename, filepath, supported_categories)
+            error_during_check_file = _check_file(examples, filename, filepath, supported_categories)
+            has_error = has_error or error_during_check_file
     if has_error:
         raise ValueError("Some of the beam examples contain beam playground tag with an incorrect format")
     return examples
@@ -112,11 +113,11 @@ def get_tag(filepath):
         lines = parsed_file.readlines()
 
     for line in lines:
-        line = line.replace("// ", "").replace("# ", "")
+        line = line.replace("//", "").replace("#", "")
         if add_to_yaml is False:
-            if line == BEAM_PLAYGROUND_TITLE:
+            if line.lstrip() == BEAM_PLAYGROUND_TITLE:
                 add_to_yaml = True
-                yaml_string += line
+                yaml_string += line.lstrip()
         else:
             yaml_with_new_string = yaml_string + line
             try:
@@ -213,17 +214,21 @@ def _validate(tag: dict, supported_categories: List[str]) -> bool:
     for field in fields(TagFields):
         if tag.get(field.default) is None:
             logging.error("tag doesn't contain " + field.default + " field: " + tag.__str__())
+            logging.error("Please, double-check that this field exists in the beam playground tag.")
+            logging.error("If you are sure that this field exists in the tag double-check the format of indenting.")
             valid = False
 
     multifile = tag.get(TagFields.MULTIFILE)
     if (multifile is not None) and (str(multifile).lower() not in ["true", "false"]):
         logging.error("tag's field multifile is incorrect: " + tag.__str__())
+        logging.error("multifile variable should be boolean format, but now it is : " + str(multifile))
         valid = False
 
     categories = tag.get(TagFields.CATEGORIES)
     if categories is not None:
         if type(categories) is not list:
             logging.error("tag's field categories is incorrect: " + tag.__str__())
+            logging.error("categories variable should be list format, but now it is : " + str(type(categories)))
             valid = False
         else:
             for category in categories:

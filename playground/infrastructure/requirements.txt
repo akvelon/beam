@@ -1,0 +1,6 @@
+grpcio-tools==1.41.0
+grpcio==1.41.1
+mock==4.0.3
+protobuf==3.19.1
+pytest==6.2.5
+PyYAML==6.0
