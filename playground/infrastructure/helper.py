@@ -213,29 +213,29 @@ def _validate(tag: dict, supported_categories: List[str]) -> bool:
     valid = True
     for field in fields(TagFields):
         if tag.get(field.default) is None:
-            logging.error("tag doesn't contain " + field.default + " field: " + tag.__str__())
-            logging.error("Please, double-check that this field exists in the beam playground tag.")
-            logging.error("If you are sure that this field exists in the tag double-check the format of indenting.")
+            logging.error("tag doesn't contain " + field.default + " field: " + tag.__str__() + "\n" +
+                          "Please, double-check that this field exists in the beam playground tag. " +
+                          "If you are sure that this field exists in the tag double-check the format of indenting.")
             valid = False
 
     multifile = tag.get(TagFields.MULTIFILE)
     if (multifile is not None) and (str(multifile).lower() not in ["true", "false"]):
-        logging.error("tag's field multifile is incorrect: " + tag.__str__())
-        logging.error("multifile variable should be boolean format, but now it is : " + str(multifile))
+        logging.error("tag's field multifile is incorrect: " + tag.__str__() + "\n" +
+                      "multifile variable should be boolean format, but tag contains: " + str(multifile))
         valid = False
 
     categories = tag.get(TagFields.CATEGORIES)
     if categories is not None:
         if type(categories) is not list:
-            logging.error("tag's field categories is incorrect: " + tag.__str__())
-            logging.error("categories variable should be list format, but now it is : " + str(type(categories)))
+            logging.error("tag's field categories is incorrect: " + tag.__str__() + "\n" +
+                          "categories variable should be list format, but tag contains: " + str(type(categories)))
             valid = False
         else:
             for category in categories:
                 if category not in supported_categories:
-                    logging.error("tag contains unsupported category: " + category)
-                    logging.error("If you are sure that " + category
-                                  + " category should be placed in Beam Playground, you can add it to the `playground/categories.yaml` file")
+                    logging.error("tag contains unsupported category: " + category + "\n" +
+                                  "If you are sure that " + category + " category should be placed in " +
+                                  "Beam Playground, you can add it to the `playground/categories.yaml` file")
                     valid = False
     return valid
 
