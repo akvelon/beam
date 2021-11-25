@@ -21,6 +21,7 @@ import 'package:playground/config/theme.dart';
 import 'package:playground/constants/font_weight.dart';
 import 'package:playground/constants/fonts.dart';
 import 'package:playground/constants/sizes.dart';
+import 'package:playground/modules/analytics/analytics_service.dart';
 
 import 'feedback_dropdown_icon_button.dart';
 
@@ -157,8 +158,9 @@ class FeedbackDropdownContent extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      // ignore: avoid_print
-                      print(textController.text);
+                      AnalyticsService.get(context).trackClickSendFeedback(
+                        textController.text,
+                      );
                       close();
                     },
                     child: const Text(kSendFeedbackButtonTitle),

@@ -98,4 +98,12 @@ class AnalyticsService {
       parameters: {'example': example?.path ?? ''},
     );
   }
+
+  void trackClickSendFeedback(String feedback) {
+    _analytics.sendEvent(
+      kCategory,
+      kClickSendFeedbackEvent,
+      parameters: {'feedback': feedback},
+    );
+  }
 }

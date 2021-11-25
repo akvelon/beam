@@ -35,8 +35,14 @@ class PlaygroundFeedback extends StatelessWidget {
           kFeedbackText,
           style: TextStyle(fontWeight: kBoldWeight),
         ),
-        FeedbackDropdownIconButton(iconAsset: kThumbUpIconAsset),
-        FeedbackDropdownIconButton(iconAsset: kThumbDownIconAsset),
+        FeedbackDropdownIconButton(
+          iconAsset: kThumbUpIconAsset,
+          isEnjoying: true,
+        ),
+        FeedbackDropdownIconButton(
+          iconAsset: kThumbDownIconAsset,
+          isEnjoying: false,
+        ),
       ],
     );
   }
