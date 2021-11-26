@@ -21,7 +21,7 @@ limitations under the License. See accompanying LICENSE file.
                 <path d="M1 9.5L5 5.5L1 1.5" stroke="#E6E6E6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-            <div>{{ .Params.title}}</div>
+            <div>{{ .Params.name | default .Params.title}}</div>
           </div>
           <div class="case-study-content">
             {{ .Content }}

@@ -1,5 +1,6 @@
 ---
-title: "Ricardo"
+title: "Apache Beam Amplified Ricardo’s Real-time and ML Data Processing for eCommerce Platform"
+name: "Ricardo"
 type: commercial
 categories:
   - Case studies
