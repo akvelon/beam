@@ -34,8 +34,6 @@ class CDHelper:
     """
 
     def __init__(self):
-        os.environ[
-            'GOOGLE_APPLICATION_CREDENTIALS'] = "/Users/dariamalkova/IdeaProjects/beam/playground/infrastructure/play-test-key.json"
         self._storage_client = storage.Client()
         self._bucket = self._storage_client.bucket(Config.BUCKET_NAME)
 
@@ -56,7 +54,7 @@ class CDHelper:
         Args:
             examples: beam examples that should be run
         """
-        get_statuses(examples)  # run examples code and wait until all are executed
+        await get_statuses(examples)  # run examples code and wait until all are executed
         client = GRPCClient()
         tasks = [client.get_run_output(example.pipeline_id) for example in examples]
         outputs = await asyncio.gather(*tasks)

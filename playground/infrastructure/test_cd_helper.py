@@ -71,10 +71,6 @@ def test__write_to_os(delete_temp_folder):
                        'SDK_JAVA/name/meta.info': 'temp/pipeline_id/SDK_JAVA/name/meta.info'}
     assert CDHelper()._write_to_os(example) == expected_result
 
-    example.tag.name = None
-    with pytest.raises(KeyError):
-        CDHelper()._write_to_os(example)  # "tag should contain 'name' field"
-
 
 def test__save_to_cloud_storage(mocker):
     """
