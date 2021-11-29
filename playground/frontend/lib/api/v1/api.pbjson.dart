@@ -176,7 +176,31 @@ const GetRunErrorResponse$json = const {
 };
 
 /// Descriptor for `GetRunErrorResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getRunErrorResponseDescriptor = $convert.base64Decode('ChNHZXRSdW5FcnJvclJlc3BvbnNlEhYKBm91dHB1dBgBIAEoCVIGb3V0cHV0');
+final $typed_data.Uint8List getRunErrorResponseDescriptor = $convert
+    .base64Decode(
+    'ChNHZXRSdW5FcnJvclJlc3BvbnNlEhYKBm91dHB1dBgBIAEoCVIGb3V0cHV0');
+@$core.Deprecated('Use getLogsRequestDescriptor instead')
+const GetLogsRequest$json = const {
+  '1': 'GetLogsRequest',
+  '2': const [
+    const {'1': 'pipeline_uuid', '3': 1, '4': 1, '5': 9, '10': 'pipelineUuid'},
+  ],
+};
+
+/// Descriptor for `GetLogsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getLogsRequestDescriptor = $convert.base64Decode(
+    'Cg5HZXRMb2dzUmVxdWVzdBIjCg1waXBlbGluZV91dWlkGAEgASgJUgxwaXBlbGluZVV1aWQ=');
+@$core.Deprecated('Use getLogsResponseDescriptor instead')
+const GetLogsResponse$json = const {
+  '1': 'GetLogsResponse',
+  '2': const [
+    const {'1': 'output', '3': 1, '4': 1, '5': 9, '10': 'output'},
+  ],
+};
+
+/// Descriptor for `GetLogsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getLogsResponseDescriptor = $convert.base64Decode(
+    'Cg9HZXRMb2dzUmVzcG9uc2USFgoGb3V0cHV0GAEgASgJUgZvdXRwdXQ=');
 @$core.Deprecated('Use cancelRequestDescriptor instead')
 const CancelRequest$json = const {
   '1': 'CancelRequest',
@@ -186,7 +210,8 @@ const CancelRequest$json = const {
 };
 
 /// Descriptor for `CancelRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cancelRequestDescriptor = $convert.base64Decode('Cg1DYW5jZWxSZXF1ZXN0EiMKDXBpcGVsaW5lX3V1aWQYASABKAlSDHBpcGVsaW5lVXVpZA==');
+final $typed_data.Uint8List cancelRequestDescriptor = $convert.base64Decode(
+    'Cg1DYW5jZWxSZXF1ZXN0EiMKDXBpcGVsaW5lX3V1aWQYASABKAlSDHBpcGVsaW5lVXVpZA==');
 @$core.Deprecated('Use cancelResponseDescriptor instead')
 const CancelResponse$json = const {
   '1': 'CancelResponse',

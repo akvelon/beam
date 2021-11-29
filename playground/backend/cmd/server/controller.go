@@ -79,6 +79,9 @@ func (controller *playgroundController) RunCode(ctx context.Context, info *pb.Ru
 	if err = utils.SetToCache(ctx, controller.cacheService, pipelineId, cache.RunOutputIndex, 0); err != nil {
 		return nil, errors.InternalError("Run code()", "Error during set value to cache: "+err.Error())
 	}
+	if err = utils.SetToCache(ctx, controller.cacheService, pipelineId, cache.LogsIndex, 0); err != nil {
+		return nil, errors.InternalError("Run code()", "Error during set value to cache: "+err.Error())
+	}
 	if err = controller.cacheService.SetExpTime(ctx, pipelineId, cacheExpirationTime); err != nil {
 		logger.Errorf("%s: RunCode(): cache.SetExpTime(): %s\n", pipelineId, err.Error())
 		code_processing.DeleteFolders(pipelineId, lc)
@@ -113,7 +116,7 @@ func (controller *playgroundController) GetRunOutput(ctx context.Context, info *
 		logger.Errorf("%s: GetRunOutput(): pipelineId has incorrect value and couldn't be parsed as uuid value: %s", info.PipelineUuid, err.Error())
 		return nil, errors.InvalidArgumentError("GetRunOutput", "pipelineId has incorrect value and couldn't be parsed as uuid value: "+info.PipelineUuid)
 	}
-	lastIndex, err := code_processing.GetRunOutputLastIndex(ctx, controller.cacheService, pipelineId, "GetRunOutput")
+	lastIndex, err := code_processing.GetLastIndex(ctx, controller.cacheService, pipelineId, cache.RunOutputIndex, "GetRunOutput")
 	if err != nil {
 		return nil, err
 	}
@@ -128,6 +131,32 @@ func (controller *playgroundController) GetRunOutput(ctx context.Context, info *
 	}
 
 	pipelineResult := pb.GetRunOutputResponse{Output: newRunOutput}
+
+	return &pipelineResult, nil
+}
+
+// GetLogs is returning logs of execution for specific pipeline by PipelineUuid
+func (controller *playgroundController) GetLogs(ctx context.Context, info *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
+	pipelineId, err := uuid.Parse(info.PipelineUuid)
+	if err != nil {
+		logger.Errorf("%s: GetLogs(): pipelineId has incorrect value and couldn't be parsed as uuid value: %s", info.PipelineUuid, err.Error())
+		return nil, errors.InvalidArgumentError("GetLogs", "pipelineId has incorrect value and couldn't be parsed as uuid value: "+info.PipelineUuid)
+	}
+	lastIndex, err := code_processing.GetLastIndex(ctx, controller.cacheService, pipelineId, cache.LogsIndex, "GetLogs")
+	if err != nil {
+		return nil, err
+	}
+	logs, err := code_processing.GetProcessingOutput(ctx, controller.cacheService, pipelineId, cache.Logs, "GetLogs")
+	if err != nil {
+		return nil, err
+	}
+	newLogs := ""
+	if len(logs) > lastIndex {
+		newLogs = logs[lastIndex:]
+		_ = utils.SetToCache(ctx, controller.cacheService, pipelineId, cache.LogsIndex, lastIndex+len(newLogs))
+	}
+
+	pipelineResult := pb.GetLogsResponse{Output: newLogs}
 
 	return &pipelineResult, nil
 }
