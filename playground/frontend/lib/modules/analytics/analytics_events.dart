@@ -16,7 +16,12 @@
  * limitations under the License.
  */
 
-const kCategory = 'playground';
+const kSdkCategory = 'SDK';
+const kExampleCategory = 'Example';
+const kCommonCategory = 'Common';
+const kLinkCategory = 'Link';
+const kFeedbackCategory = 'Feedback';
+const kRunCodeCategory = 'Run Code';
 
 const kSelectSdkEvent = 'select_new_sdk';
 const kSelectExampleEvent = 'select_new_example';
