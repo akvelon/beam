@@ -138,6 +138,7 @@ class _FeedbackDropdownIconButton extends State<FeedbackDropdownIconButton>
     setState(() {
       isOpen = false;
     });
+    feedbackTextController.clear();
   }
 
   void _open() {

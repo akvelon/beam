@@ -83,7 +83,7 @@ class AnalyticsService {
     _analytics.sendEvent(
       kCategory,
       kClickEnjoyPlaygroundEvent,
-      parameters: {'isEnjoying': isEnjoying.toString()},
+      label: isEnjoying.toString(),
     );
   }
 
@@ -103,7 +103,7 @@ class AnalyticsService {
     _analytics.sendEvent(
       kCategory,
       kClickSendFeedbackEvent,
-      parameters: {'feedback': feedback},
+      label: feedback,
     );
   }
 }

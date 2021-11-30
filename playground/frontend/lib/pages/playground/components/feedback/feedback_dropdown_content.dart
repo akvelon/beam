@@ -145,7 +145,10 @@ class FeedbackDropdownContent extends StatelessWidget {
                     ),
                   ),
                   child: TextButton(
-                    onPressed: () => close(),
+                    onPressed: () {
+                      close();
+                      textController.clear();
+                    },
                     child: const Text(kCancelButtonTitle),
                   ),
                 ),
@@ -162,6 +165,7 @@ class FeedbackDropdownContent extends StatelessWidget {
                         textController.text,
                       );
                       close();
+                      textController.clear();
                     },
                     child: const Text(kSendFeedbackButtonTitle),
                   ),
