@@ -20,6 +20,7 @@ import (
 	"beam.apache.org/playground/backend/internal/cache"
 	"beam.apache.org/playground/backend/internal/environment"
 	"beam.apache.org/playground/backend/internal/errors"
+	"beam.apache.org/playground/backend/internal/executors"
 	"beam.apache.org/playground/backend/internal/fs_tool"
 	"beam.apache.org/playground/backend/internal/logger"
 	"beam.apache.org/playground/backend/internal/setup_tools/builder"
@@ -68,7 +69,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	validateFunc := executor.Validate()
 	go validateFunc(successChannel, errorChannel)
 
-	if err := processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, nil, errorChannel, pb.Status_STATUS_VALIDATION_ERROR, pb.Status_STATUS_PREPARING); err != nil {
+	if err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, nil, errorChannel, pb.Status_STATUS_VALIDATION_ERROR, pb.Status_STATUS_PREPARING); err != nil {
 		return
 	}
 
@@ -77,22 +78,20 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	prepareFunc := executor.Prepare()
 	go prepareFunc(successChannel, errorChannel)
 
-	if err := processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, nil, errorChannel, pb.Status_STATUS_PREPARATION_ERROR, pb.Status_STATUS_COMPILING); err != nil {
+	if err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, nil, errorChannel, pb.Status_STATUS_PREPARATION_ERROR, pb.Status_STATUS_COMPILING); err != nil {
 		return
 	}
 
 	switch sdkEnv.ApacheBeamSdk {
 	case pb.Sdk_SDK_JAVA, pb.Sdk_SDK_GO:
 		// Compile
-	switch sdkEnv.ApacheBeamSdk {
-	case pb.Sdk_SDK_JAVA, pb.Sdk_SDK_GO:
 		logger.Infof("%s: Compile() ...\n", pipelineId)
 		compileCmd := executor.Compile(ctxWithTimeout)
 		var compileError bytes.Buffer
 		var compileOutput bytes.Buffer
 		runCmdWithOutput(compileCmd, &compileOutput, &compileError, successChannel, errorChannel)
 
-		if err := processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, &compileOutput, &compileError, errorChannel, pb.Status_STATUS_COMPILE_ERROR, pb.Status_STATUS_EXECUTING); err != nil {
+		if err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, &compileOutput, &compileError, errorChannel, pb.Status_STATUS_COMPILE_ERROR, pb.Status_STATUS_EXECUTING); err != nil {
 			return
 		}
 	case pb.Sdk_SDK_PYTHON:
@@ -101,11 +100,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 
 	// Run
 	if sdkEnv.ApacheBeamSdk == pb.Sdk_SDK_JAVA {
-		className, err := lc.ExecutableName(pipelineId, appEnv.WorkingDir())
-		if err != nil {
-			processSetupError(err, pipelineId, cacheService, ctxWithTimeout)
-		}
-		executor = executorBuilder.WithExecutableFileName(className).Build()
+		executor = setJavaExecutableFile(lc, pipelineId, cacheService, ctxWithTimeout, executorBuilder, appEnv.WorkingDir())
 	}
 	logger.Infof("%s: Run() ...\n", pipelineId)
 	runCmd := executor.Run(ctxWithTimeout)
@@ -113,7 +108,18 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	runOutput := streaming.RunOutputWriter{Ctx: ctxWithTimeout, CacheService: cacheService, PipelineId: pipelineId}
 	runCmdWithOutput(runCmd, &runOutput, &runError, successChannel, errorChannel)
 
-	processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, &runError, errorChannel, pb.Status_STATUS_RUN_ERROR, pb.Status_STATUS_FINISHED)
+	err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, &runError, errorChannel, pb.Status_STATUS_RUN_ERROR, pb.Status_STATUS_FINISHED)
+	if err != nil {
+		return
+	}
+}
+
+func setJavaExecutableFile(lc *fs_tool.LifeCycle, pipelineId uuid.UUID, cacheService cache.Cache, ctxWithTimeout context.Context, executorBuilder *executors.RunBuilder, dir string) executors.Executor {
+	className, err := lc.ExecutableName(pipelineId, dir)
+	if err != nil {
+		processSetupError(err, pipelineId, cacheService, ctxWithTimeout)
+	}
+	return executorBuilder.WithExecutableFileName(className).Build()
 }
 
 func processSetupError(err error, pipelineId uuid.UUID, cacheService cache.Cache, ctxWithTimeout context.Context) {
