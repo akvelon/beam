@@ -53,7 +53,7 @@ def test__get_gcs_object_name():
     assert CDHelper()._get_gcs_object_name(SDK_JAVA, "base_folder", "file", "output") == expected_result_with_extension
 
 
-def test__write_to_os(delete_temp_folder):
+def test__write_to_local_fs(delete_temp_folder):
     """
     Test writing code of an example, output and meta info to the filesystem (in temp folder)
     Args:
