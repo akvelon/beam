@@ -99,7 +99,7 @@ class CDHelper:
         file_names[meta_path] = str(example.tag._asdict())
         for file_name, file_content in file_names.items():
             local_file_path = os.path.join(Config.TEMP_FOLDER, example.pipeline_id, file_name)
-            with open(local_file_path, 'w') as file:
+            with open(local_file_path, "w") as file:
                 file.write(file_content)
             file_names[file_name] = local_file_path  # don't need content anymore, instead save the local path
         return file_names
