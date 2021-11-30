@@ -47,6 +47,11 @@ type PreparatorBuilder struct {
 	ExecutorBuilder
 }
 
+//TestRunBuilder facet of ExecutorBuilder
+type TestRunBuilder struct {
+	ExecutorBuilder
+}
+
 //NewExecutorBuilder constructor for Executor
 func NewExecutorBuilder() *ExecutorBuilder {
 	return &ExecutorBuilder{}
@@ -70,6 +75,11 @@ func (b *ExecutorBuilder) WithValidator() *ValidatorBuilder {
 // WithPreparator - Lives chains to type *ExecutorBuilder and returns a *PreparatorBuilder
 func (b *ExecutorBuilder) WithPreparator() *PreparatorBuilder {
 	return &PreparatorBuilder{*b}
+}
+
+// WithTestRunner - Lives chains to type *ExecutorBuilder and returns a *TestRunBuilder
+func (b *ExecutorBuilder) WithTestRunner() *TestRunBuilder {
+	return &TestRunBuilder{*b}
 }
 
 //WithCommand adds compile command to executor
@@ -140,6 +150,46 @@ func (b *RunBuilder) WithGraphOutput() *RunBuilder {
 func (b *RunBuilder) WithWorkingDir(dir string) *RunBuilder {
 	b.actions = append(b.actions, func(e *Executor) {
 		e.runArgs.workingDir = dir
+	})
+	return b
+}
+
+//WithCommand adds test command to executor
+func (b *TestRunBuilder) WithCommand(testCmd string) *TestRunBuilder {
+	b.actions = append(b.actions, func(e *Executor) {
+		e.testArgs.commandName = testCmd
+	})
+	return b
+}
+
+//WithArgs adds test args to executor
+func (b *TestRunBuilder) WithArgs(testArgs []string) *TestRunBuilder {
+	b.actions = append(b.actions, func(e *Executor) {
+		e.testArgs.commandArgs = testArgs
+	})
+	return b
+}
+
+//WithExecutableFileName adds file name to executor
+func (b *TestRunBuilder) WithExecutableFileName(name string) *TestRunBuilder {
+	b.actions = append(b.actions, func(e *Executor) {
+		e.testArgs.fileName = name
+	})
+	return b
+}
+
+//WithGraphOutput adds the need of graph output to executor
+func (b *TestRunBuilder) WithGraphOutput() *TestRunBuilder {
+	b.actions = append(b.actions, func(e *Executor) {
+		//todo
+	})
+	return b
+}
+
+//WithWorkingDir adds dir path to executor
+func (b *TestRunBuilder) WithWorkingDir(dir string) *TestRunBuilder {
+	b.actions = append(b.actions, func(e *Executor) {
+		e.testArgs.workingDir = dir
 	})
 	return b
 }

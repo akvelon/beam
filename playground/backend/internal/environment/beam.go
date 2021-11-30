@@ -27,8 +27,10 @@ import (
 type ExecutorConfig struct {
 	CompileCmd  string   `json:"compile_cmd"`
 	RunCmd      string   `json:"run_cmd"`
+	TestCmd     string   `json:"test_cmd"`
 	CompileArgs []string `json:"compile_args"`
 	RunArgs     []string `json:"run_args"`
+	TestArgs    []string `json:"test_args"`
 }
 
 // NewExecutorConfig creates and returns ExecutorConfig

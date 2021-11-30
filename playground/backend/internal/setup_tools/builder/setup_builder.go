@@ -49,6 +49,10 @@ func SetupExecutorBuilder(srcFilePath, baseFolderPath, execFilePath string, sdkE
 		WithRunner().
 		WithCommand(executorConfig.RunCmd).
 		WithArgs(executorConfig.RunArgs).
+		WithWorkingDir(baseFolderPath).
+		WithTestRunner().
+		WithCommand(executorConfig.TestCmd).
+		WithArgs(executorConfig.TestArgs).
 		WithWorkingDir(baseFolderPath)
 
 	switch sdk {

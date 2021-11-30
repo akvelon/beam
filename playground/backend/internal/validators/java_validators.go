@@ -28,6 +28,7 @@ const (
 )
 
 // GetJavaValidators return validators methods that should be applied to Java code
+// The last validator should check that the code is unit tests or not
 func GetJavaValidators(filePath string) *[]Validator {
 	validatorArgs := make([]interface{}, 2)
 	validatorArgs[0] = filePath
@@ -38,7 +39,7 @@ func GetJavaValidators(filePath string) *[]Validator {
 	}
 	unitTestValidator := Validator{
 		Validator: CheckIsUnitTests,
-		Args:      append(make([]interface{}, 1), filePath),
+		Args:      validatorArgs,
 	}
 	validators := []Validator{pathCheckerValidator, unitTestValidator}
 	return &validators

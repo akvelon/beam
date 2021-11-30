@@ -31,6 +31,7 @@ import (
 	"github.com/google/uuid"
 	"io"
 	"os/exec"
+	"reflect"
 	"time"
 )
 
@@ -54,7 +55,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	errorChannel := make(chan error, 1)
 	successChannel := make(chan bool, 1)
 	cancelChannel := make(chan bool, 1)
-	resultChannel := make(chan bool)
+	valResChannel := make(chan bool, 1)
 
 	go cancelCheck(ctxWithTimeout, pipelineId, cancelChannel, cacheService)
 
@@ -67,7 +68,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	// Validate
 	logger.Infof("%s: Validate() ...\n", pipelineId)
 	validateFunc := executor.Validate()
-	go validateFunc(successChannel, errorChannel, resultChannel)
+	go validateFunc(successChannel, errorChannel, valResChannel)
 
 	if err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, nil, errorChannel, pb.Status_STATUS_VALIDATION_ERROR, pb.Status_STATUS_PREPARING); err != nil {
 		return
@@ -76,7 +77,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	// Prepare
 	logger.Infof("%s: Prepare() ...\n", pipelineId)
 	prepareFunc := executor.Prepare()
-	go prepareFunc(successChannel, errorChannel, resultChannel)
+	go prepareFunc(successChannel, errorChannel)
 
 	if err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, nil, errorChannel, pb.Status_STATUS_PREPARATION_ERROR, pb.Status_STATUS_COMPILING); err != nil {
 		return
@@ -94,7 +95,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 		if err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, &compileOutput, &compileError, errorChannel, pb.Status_STATUS_COMPILE_ERROR, pb.Status_STATUS_EXECUTING); err != nil {
 			return
 		}
-	case pb.Sdk_SDK_PYTHON:
+	case pb.Sdk_SDK_PYTHON: // No compile step for Python
 		processSuccess(ctx, []byte(""), pipelineId, cacheService, pb.Status_STATUS_EXECUTING)
 	}
 
@@ -102,10 +103,10 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	if sdkEnv.ApacheBeamSdk == pb.Sdk_SDK_JAVA {
 		executor = setJavaExecutableFile(lc, pipelineId, cacheService, ctxWithTimeout, executorBuilder, appEnv.WorkingDir())
 	}
-	logger.Infof("%s: Run() ...\n", pipelineId)
-	runCmd := executor.Run(ctxWithTimeout)
+	runCmd := getRunOrTestCmd(valResChannel, executor, ctxWithTimeout)
 	var runError bytes.Buffer
 	runOutput := streaming.RunOutputWriter{Ctx: ctxWithTimeout, CacheService: cacheService, PipelineId: pipelineId}
+	logger.Infof("%s: Run() ...\n", pipelineId)
 	runCmdWithOutput(runCmd, &runOutput, &runError, successChannel, errorChannel)
 
 	err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, &runError, errorChannel, pb.Status_STATUS_RUN_ERROR, pb.Status_STATUS_FINISHED)
@@ -114,13 +115,29 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	}
 }
 
+// getRunOrTestCmd return cmd instance based on the code type: unit test or example code
+func getRunOrTestCmd(valResChannel chan bool, executor executors.Executor, ctxWithTimeout context.Context) *exec.Cmd {
+	isUnitTest := <-valResChannel
+	runType := executors.RunType
+	if isUnitTest {
+		runType = executors.TestType
+	}
+	cmdReflect := reflect.ValueOf(&executor).MethodByName(runType).Call([]reflect.Value{reflect.ValueOf(ctxWithTimeout)})
+	return cmdReflect[0].Interface().(*exec.Cmd)
+}
+
 // setJavaExecutableFile sets executable file name to runner (JAVA class name is known after compilation step)
 func setJavaExecutableFile(lc *fs_tool.LifeCycle, id uuid.UUID, service cache.Cache, ctx context.Context, executorBuilder *executors.ExecutorBuilder, dir string) executors.Executor {
 	className, err := lc.ExecutableName(id, dir)
 	if err != nil {
 		processSetupError(err, id, service, ctx)
 	}
-	return executorBuilder.WithRunner().WithExecutableFileName(className).Build()
+	return executorBuilder.
+		WithRunner().
+		WithExecutableFileName(className).
+		WithTestRunner().
+		WithExecutableFileName(className).
+		Build()
 }
 
 // processSetupError processes errors during the setting up an executor builder

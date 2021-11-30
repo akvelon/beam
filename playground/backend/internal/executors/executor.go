@@ -22,6 +22,11 @@ import (
 	"os/exec"
 )
 
+const (
+	RunType  = "Run"
+	TestType = "TestRun"
+)
+
 //CmdConfiguration for base cmd code execution
 type CmdConfiguration struct {
 	fileName    string
@@ -34,6 +39,7 @@ type CmdConfiguration struct {
 type Executor struct {
 	compileArgs CmdConfiguration
 	runArgs     CmdConfiguration
+	testArgs    CmdConfiguration
 	validators  []validators.Validator
 	preparators []preparators.Preparator
 }
@@ -41,22 +47,24 @@ type Executor struct {
 // Validate returns the function that applies all validators of executor
 func (ex *Executor) Validate() func(doneCh chan bool, errCh chan error, resCh chan bool) {
 	return func(doneCh chan bool, errCh chan error, resCh chan bool) {
+		res := false
 		for _, validator := range ex.validators {
-			res, err := validator.Validator(validator.Args...)
+			err := error(nil)
+			res, err = validator.Validator(validator.Args...)
 			if err != nil {
 				errCh <- err
 				doneCh <- false
 				return
 			}
-			resCh <- res
 		}
+		resCh <- res
 		doneCh <- true
 	}
 }
 
 // Prepare returns the function that applies all preparations of executor
-func (ex *Executor) Prepare() func(chan bool, chan error, chan bool) {
-	return func(doneCh chan bool, errCh chan error, valChan chan bool) {
+func (ex *Executor) Prepare() func(chan bool, chan error) {
+	return func(doneCh chan bool, errCh chan error) {
 		for _, preparator := range ex.preparators {
 			err := preparator.Prepare(preparator.Args...)
 			if err != nil {
@@ -84,5 +92,14 @@ func (ex *Executor) Run(ctx context.Context) *exec.Cmd {
 	args := append(ex.runArgs.commandArgs, ex.runArgs.fileName)
 	cmd := exec.CommandContext(ctx, ex.runArgs.commandName, args...)
 	cmd.Dir = ex.runArgs.workingDir
+	return cmd
+}
+
+// RunTest prepares the Cmd for execution of the unit test
+// Returns Cmd instance
+func (ex *Executor) RunTest(ctx context.Context) *exec.Cmd {
+	args := append(ex.testArgs.commandArgs, ex.testArgs.fileName)
+	cmd := exec.CommandContext(ctx, ex.testArgs.commandName, args...)
+	cmd.Dir = ex.testArgs.workingDir
 	return cmd
 }

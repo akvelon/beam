@@ -28,6 +28,7 @@ import (
 	"go.uber.org/goleak"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -553,6 +554,67 @@ func Test_setJavaExecutableFile(t *testing.T) {
 			got := setJavaExecutableFile(tt.args.lc, tt.args.id, tt.args.service, tt.args.ctx, tt.args.executorBuilder, tt.args.dir)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("setJavaExecutableFile() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getRunOrTestCmd(t *testing.T) {
+	valChannel := make(chan bool)
+	go func() {
+		valChannel <- false
+		valChannel <- true
+	}()
+
+	runEx := executors.NewExecutorBuilder().
+		WithRunner().
+		WithCommand("runCommand").
+		WithArgs([]string{"arg1"}).
+		Build()
+
+	testEx := executors.NewExecutorBuilder().
+		WithTestRunner().
+		WithCommand("testCommand").
+		WithArgs([]string{"arg1"}).
+		Build()
+
+	wantRunExec := exec.CommandContext(context.Background(), "runCommand", "arg1", "")
+	wantTestExec := exec.CommandContext(context.Background(), "testCommand", "arg1", "")
+
+	type args struct {
+		valResChannel  chan bool
+		executor       executors.Executor
+		ctxWithTimeout context.Context
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want *exec.Cmd
+	}{
+		{
+			name: "get run cmd",
+			args: args{
+				valResChannel:  valChannel,
+				executor:       runEx,
+				ctxWithTimeout: context.Background(),
+			},
+			want: wantRunExec,
+		},
+		{
+			name: "get test cmd",
+			args: args{
+				valResChannel:  valChannel,
+				executor:       testEx,
+				ctxWithTimeout: context.Background(),
+			},
+			want: wantTestExec,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getRunOrTestCmd(tt.args.valResChannel, tt.args.executor, tt.args.ctxWithTimeout); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getRunOrTestCmd() = %v, want %v", got, tt.want)
 			}
 		})
 	}

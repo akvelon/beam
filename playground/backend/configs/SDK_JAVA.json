@@ -1,6 +1,7 @@
 {
   "compile_cmd": "javac",
   "run_cmd": "java",
+  "test_cmd": "java",
   "compile_args": [
     "-d",
     "bin",
@@ -9,5 +10,10 @@
   "run_args": [
     "-cp",
     "bin:"
+  ],
+  "test_args": [
+    "-cp",
+    "bin:",
+    "JUnit"
   ]
 }
