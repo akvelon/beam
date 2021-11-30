@@ -40,7 +40,7 @@ def upload_blob():
     Fake method for mocking
     Returns: None
     """
-    return None
+    pass
 
 
 def test__get_gcs_object_name():
