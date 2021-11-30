@@ -52,7 +52,7 @@ func SetupBuilder(srcFilePath, baseFolderPath, execFilePath string, sdkEnv *envi
 		WithWorkingDir(baseFolderPath)
 
 	switch sdk {
-	case pb.Sdk_SDK_JAVA: // Executable name for java class will be  after compilation
+	case pb.Sdk_SDK_JAVA: // Executable name for java class will be known after compilation
 	case pb.Sdk_SDK_GO:
 		builder = builder.WithCommand(execFilePath)
 	case pb.Sdk_SDK_PYTHON:
