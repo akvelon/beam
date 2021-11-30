@@ -44,7 +44,7 @@ class ResetAction extends StatelessWidget {
         label: kResetButtonText,
         onPressed: () {
           reset();
-          AnalyticsService.get(context).trackResetExample();
+          AnalyticsService.get(context).trackReset();
         },
       ),
     );

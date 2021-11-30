@@ -37,65 +37,65 @@ class AnalyticsService {
 
   void trackSelectSdk(SDK oldSdk, SDK newSdk) {
     _analytics.sendEvent(
-      kCategory,
+      kSdkCategory,
       kSelectSdkEvent,
-      parameters: {'oldSdk': oldSdk.displayName, 'newSdk': newSdk.displayName},
+      label: '${oldSdk.displayName}_${newSdk.displayName}',
     );
   }
 
-  void trackSelectExample(ExampleModel oldExample) {
+  void trackSelectExample(ExampleModel newExample) {
     _analytics.sendEvent(
-      kCategory,
+      kExampleCategory,
       kSelectExampleEvent,
-      parameters: {'example': oldExample.path},
+      label: newExample.path,
     );
   }
 
   void trackClickNewExample() {
-    _analytics.sendEvent(kCategory, kClickNewExampleEvent);
+    _analytics.sendEvent(kExampleCategory, kClickNewExampleEvent);
   }
 
-  void trackResetExample() {
-    _analytics.sendEvent(kCategory, kClickResetEvent);
+  void trackReset() {
+    _analytics.sendEvent(kCommonCategory, kClickResetEvent);
   }
 
   void trackClickToggleTheme(bool isDark) {
     _analytics.sendEvent(
-      kCategory,
+      kCommonCategory,
       kClickToggleThemeEvent,
-      parameters: {'isDark': isDark.toString()},
+      label: isDark ? 'dark' : 'light',
     );
   }
 
   void trackOpenShortcutsModal() {
-    _analytics.sendEvent(kCategory, kOpenShortcutsModalEvent);
+    _analytics.sendEvent(kCommonCategory, kOpenShortcutsModalEvent);
   }
 
   void trackOpenLink(String link) {
     _analytics.sendEvent(
-      kCategory,
+      kLinkCategory,
       kOpenShortcutsModalEvent,
-      parameters: {'link': link},
+      label: link,
     );
   }
 
   void trackClickEnjoyPlayground(bool isEnjoying) {
     _analytics.sendEvent(
-      kCategory,
+      kFeedbackCategory,
       kClickEnjoyPlaygroundEvent,
       label: isEnjoying.toString(),
     );
   }
 
   void trackClickReportIssue() {
-    _analytics.sendEvent(kCategory, kClickReportIssueEvent);
+    _analytics.sendEvent(kFeedbackCategory, kClickReportIssueEvent);
   }
 
   void trackClickRunEvent(ExampleModel? example) {
     _analytics.sendEvent(
-      kCategory,
+      kRunCodeCategory,
       kClickRunEvent,
-      parameters: {'example': example?.path ?? ''},
+      label: example?.path ?? '',
     );
   }
 
