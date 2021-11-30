@@ -66,6 +66,13 @@
     max-width: 540px;
   }
 
+  .post-scheme {
+    margin-bottom: 16px;
+    img {
+      width: 100%;
+    }
+  }
+
   @media screen and (max-width: $mobile) {
     .case-study-content {
       flex-direction: column;
