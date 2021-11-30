@@ -20,6 +20,7 @@ import (
 	"beam.apache.org/playground/backend/internal/cache"
 	"beam.apache.org/playground/backend/internal/environment"
 	"beam.apache.org/playground/backend/internal/errors"
+	"beam.apache.org/playground/backend/internal/executors"
 	"beam.apache.org/playground/backend/internal/fs_tool"
 	"beam.apache.org/playground/backend/internal/logger"
 	"beam.apache.org/playground/backend/internal/setup_tools/builder"
@@ -99,11 +100,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 
 	// Run
 	if sdkEnv.ApacheBeamSdk == pb.Sdk_SDK_JAVA {
-		className, err := lc.ExecutableName(pipelineId, appEnv.WorkingDir())
-		if err != nil {
-			processSetupError(err, pipelineId, cacheService, ctxWithTimeout)
-		}
-		executor = executorBuilder.WithRunner().WithExecutableFileName(className).Build()
+		executor = setJavaExecutableFile(lc, pipelineId, cacheService, ctxWithTimeout, executorBuilder, appEnv.WorkingDir())
 	}
 	logger.Infof("%s: Run() ...\n", pipelineId)
 	runCmd := executor.Run(ctxWithTimeout)
@@ -115,6 +112,15 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	if err != nil {
 		return
 	}
+}
+
+// setJavaExecutableFile sets executable file name to runner (JAVA class name is known after compilation step)
+func setJavaExecutableFile(lc *fs_tool.LifeCycle, id uuid.UUID, service cache.Cache, ctx context.Context, executorBuilder *executors.ExecutorBuilder, dir string) executors.Executor {
+	className, err := lc.ExecutableName(id, dir)
+	if err != nil {
+		processSetupError(err, id, service, ctx)
+	}
+	return executorBuilder.WithRunner().WithExecutableFileName(className).Build()
 }
 
 // processSetupError processes errors during the setting up an executor builder
