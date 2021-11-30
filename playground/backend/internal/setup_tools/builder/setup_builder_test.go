@@ -93,13 +93,13 @@ func TestSetupExecutor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := SetupBuilder(tt.args.srcFilePath, tt.args.baseFolderPath, tt.args.execFilePath, tt.args.sdkEnv)
+			got, err := SetupExecutorBuilder(tt.args.srcFilePath, tt.args.baseFolderPath, tt.args.execFilePath, tt.args.sdkEnv)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("SetupBuilder() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SetupExecutorBuilder() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if err == nil && fmt.Sprint(got.Build()) != fmt.Sprint(tt.want.Build()) {
-				t.Errorf("SetupBuilder() got = %v, want %v", got.Build(), tt.want.Build())
+				t.Errorf("SetupExecutorBuilder() got = %v, want %v", got.Build(), tt.want.Build())
 			}
 		})
 	}
