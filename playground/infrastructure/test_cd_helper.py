@@ -32,6 +32,7 @@ def delete_temp_folder():
         shutil.rmtree(Config.TEMP_FOLDER)
 
 
+@pytest.fixture
 def upload_blob():
     """
     Fake method for mocking
@@ -44,7 +45,6 @@ def upload_blob():
 def test__get_cloud_file_name():
     """
     Test getting the path where file will be stored at the bucket
-    Returns:
 
     """
     expected_result = "SDK_JAVA/base_folder/file.java"
@@ -58,8 +58,6 @@ def test__write_to_os(delete_temp_folder):
     Test writing code of an example, output and meta info to the filesystem (in temp folder)
     Args:
         delete_temp_folder:
-
-    Returns:
 
     """
     object_meta = {'name': 'name', 'description': 'description', 'multifile': False,
@@ -78,14 +76,12 @@ def test__save_to_cloud_storage(mocker):
     Args:
         mocker:
 
-    Returns:
-
     """
-    mocker.patch(
+    upload_blob_mock = mocker.patch(
         'cd_helper.CDHelper._upload_blob',
         return_value=upload_blob
     )
-    mocker.patch(
+    write_to_os_mock = mocker.patch(
         'cd_helper.CDHelper._write_to_os',
         return_value={"": ""}
     )
@@ -93,3 +89,5 @@ def test__save_to_cloud_storage(mocker):
                       "output_of_example", STATUS_UNSPECIFIED, None)
 
     CDHelper()._save_to_cloud_storage([example])
+    write_to_os_mock.assert_called_with(example)
+    upload_blob_mock.assert_called_with(source_file="", destination_blob_name="")

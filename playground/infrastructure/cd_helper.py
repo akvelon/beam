@@ -33,10 +33,6 @@ class CDHelper:
     It is used to save beam examples/katas/tests and their output on the Google Cloud.
     """
 
-    def __init__(self):
-        self._storage_client = storage.Client()
-        self._bucket = self._storage_client.bucket(Config.BUCKET_NAME)
-
     def store_examples(self, examples: List[Example]):
         """
         Store beam examples and their output in the Google Cloud.
@@ -68,6 +64,8 @@ class CDHelper:
         Args:
             examples: precompiled examples
         """
+        self._storage_client = storage.Client()
+        self._bucket = self._storage_client.bucket(Config.BUCKET_NAME)
         for example in examples:
             file_names = self._write_to_os(example)
             for cloud_file_name, local_file_name in file_names.items():
