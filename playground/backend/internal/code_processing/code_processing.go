@@ -54,6 +54,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	errorChannel := make(chan error, 1)
 	successChannel := make(chan bool, 1)
 	cancelChannel := make(chan bool, 1)
+	resultChannel := make(chan bool)
 
 	go cancelCheck(ctxWithTimeout, pipelineId, cancelChannel, cacheService)
 
@@ -63,11 +64,10 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 		return
 	}
 	executor := executorBuilder.Build()
-
 	// Validate
 	logger.Infof("%s: Validate() ...\n", pipelineId)
 	validateFunc := executor.Validate()
-	go validateFunc(successChannel, errorChannel)
+	go validateFunc(successChannel, errorChannel, resultChannel)
 
 	if err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, nil, errorChannel, pb.Status_STATUS_VALIDATION_ERROR, pb.Status_STATUS_PREPARING); err != nil {
 		return
@@ -76,7 +76,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	// Prepare
 	logger.Infof("%s: Prepare() ...\n", pipelineId)
 	prepareFunc := executor.Prepare()
-	go prepareFunc(successChannel, errorChannel)
+	go prepareFunc(successChannel, errorChannel, resultChannel)
 
 	if err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, nil, errorChannel, pb.Status_STATUS_PREPARATION_ERROR, pb.Status_STATUS_COMPILING); err != nil {
 		return

@@ -16,6 +16,6 @@
 package validators
 
 type Validator struct {
-	Validator func(args ...interface{}) error
+	Validator func(args ...interface{}) (bool, error)
 	Args      []interface{}
 }

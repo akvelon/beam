@@ -39,23 +39,24 @@ type Executor struct {
 }
 
 // Validate returns the function that applies all validators of executor
-func (ex *Executor) Validate() func(chan bool, chan error) {
-	return func(doneCh chan bool, errCh chan error) {
+func (ex *Executor) Validate() func(doneCh chan bool, errCh chan error, resCh chan bool) {
+	return func(doneCh chan bool, errCh chan error, resCh chan bool) {
 		for _, validator := range ex.validators {
-			err := validator.Validator(validator.Args...)
+			res, err := validator.Validator(validator.Args...)
 			if err != nil {
 				errCh <- err
 				doneCh <- false
 				return
 			}
+			resCh <- res
 		}
 		doneCh <- true
 	}
 }
 
 // Prepare returns the function that applies all preparations of executor
-func (ex *Executor) Prepare() func(chan bool, chan error) {
-	return func(doneCh chan bool, errCh chan error) {
+func (ex *Executor) Prepare() func(chan bool, chan error, chan bool) {
+	return func(doneCh chan bool, errCh chan error, valChan chan bool) {
 		for _, preparator := range ex.preparators {
 			err := preparator.Prepare(preparator.Args...)
 			if err != nil {
