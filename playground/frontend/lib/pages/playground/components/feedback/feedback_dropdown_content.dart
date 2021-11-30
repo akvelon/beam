@@ -161,9 +161,11 @@ class FeedbackDropdownContent extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      AnalyticsService.get(context).trackClickSendFeedback(
-                        textController.text,
-                      );
+                      if (textController.text.isNotEmpty) {
+                        AnalyticsService.get(context).trackClickSendFeedback(
+                          textController.text,
+                        );
+                      }
                       close();
                       textController.clear();
                     },

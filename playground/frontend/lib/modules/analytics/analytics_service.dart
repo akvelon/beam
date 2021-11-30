@@ -101,7 +101,7 @@ class AnalyticsService {
 
   void trackClickSendFeedback(String feedback) {
     _analytics.sendEvent(
-      kCategory,
+      kFeedbackCategory,
       kClickSendFeedbackEvent,
       label: feedback,
     );
