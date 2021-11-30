@@ -23,8 +23,8 @@ import (
 	"fmt"
 )
 
-// SetupBuilder return executor with set args for validator, preparator, compiler and runner
-func SetupBuilder(srcFilePath, baseFolderPath, execFilePath string, sdkEnv *environment.BeamEnvs) (*executors.RunBuilder, error) {
+// SetupExecutorBuilder return executor with set args for validator, preparator, compiler and runner
+func SetupExecutorBuilder(srcFilePath, baseFolderPath, execFilePath string, sdkEnv *environment.BeamEnvs) (*executors.ExecutorBuilder, error) {
 	sdk := sdkEnv.ApacheBeamSdk
 
 	val, err := utils.GetValidators(sdk, srcFilePath)
@@ -60,5 +60,5 @@ func SetupBuilder(srcFilePath, baseFolderPath, execFilePath string, sdkEnv *envi
 	default:
 		return nil, fmt.Errorf("incorrect sdk: %s", sdkEnv.ApacheBeamSdk)
 	}
-	return builder, nil
+	return &builder.ExecutorBuilder, nil
 }

@@ -58,7 +58,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 
 	go cancelCheck(ctxWithTimeout, pipelineId, cancelChannel, cacheService)
 
-	executorBuilder, err := builder.SetupBuilder(lc.GetAbsoluteSourceFilePath(), lc.GetAbsoluteBaseFolderPath(), lc.GetAbsoluteExecutableFilePath(), sdkEnv)
+	executorBuilder, err := builder.SetupExecutorBuilder(lc.GetAbsoluteSourceFilePath(), lc.GetAbsoluteBaseFolderPath(), lc.GetAbsoluteExecutableFilePath(), sdkEnv)
 	if err != nil {
 		processSetupError(err, pipelineId, cacheService, ctxWithTimeout)
 		return
@@ -114,14 +114,16 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	}
 }
 
-func setJavaExecutableFile(lc *fs_tool.LifeCycle, pipelineId uuid.UUID, cacheService cache.Cache, ctxWithTimeout context.Context, executorBuilder *executors.RunBuilder, dir string) executors.Executor {
-	className, err := lc.ExecutableName(pipelineId, dir)
+// setJavaExecutableFile sets executable file name to runner (JAVA class name is known after compilation step)
+func setJavaExecutableFile(lc *fs_tool.LifeCycle, id uuid.UUID, service cache.Cache, ctx context.Context, executorBuilder *executors.ExecutorBuilder, dir string) executors.Executor {
+	className, err := lc.ExecutableName(id, dir)
 	if err != nil {
-		processSetupError(err, pipelineId, cacheService, ctxWithTimeout)
+		processSetupError(err, id, service, ctx)
 	}
-	return executorBuilder.WithExecutableFileName(className).Build()
+	return executorBuilder.WithRunner().WithExecutableFileName(className).Build()
 }
 
+// processSetupError processes errors during the setting up an executor builder
 func processSetupError(err error, pipelineId uuid.UUID, cacheService cache.Cache, ctxWithTimeout context.Context) {
 	logger.Errorf("%s: error during setup builder: %s\n", pipelineId, err.Error())
 	cacheService.SetValue(ctxWithTimeout, pipelineId, cache.Status, pb.Status_STATUS_ERROR)
