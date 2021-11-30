@@ -139,23 +139,26 @@ func (controller *playgroundController) GetRunOutput(ctx context.Context, info *
 
 // GetLogs is returning logs of execution for specific pipeline by PipelineUuid
 func (controller *playgroundController) GetLogs(ctx context.Context, info *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
+	errorTitle := utils.GetFuncName(controller.GetRunOutput)
 	pipelineId, err := uuid.Parse(info.PipelineUuid)
 	if err != nil {
-		logger.Errorf("%s: GetLogs(): pipelineId has incorrect value and couldn't be parsed as uuid value: %s", info.PipelineUuid, err.Error())
-		return nil, errors.InvalidArgumentError("GetLogs", "pipelineId has incorrect value and couldn't be parsed as uuid value: "+info.PipelineUuid)
+		logger.Errorf("%s: %s: pipelineId has incorrect value and couldn't be parsed as uuid value: %s", info.PipelineUuid, errorTitle, err.Error())
+		return nil, errors.InvalidArgumentError(errorTitle, "pipelineId has incorrect value and couldn't be parsed as uuid value: "+info.PipelineUuid)
 	}
-	lastIndex, err := code_processing.GetLastIndex(ctx, controller.cacheService, pipelineId, cache.LogsIndex, "GetLogs")
+	lastIndex, err := code_processing.GetLastIndex(ctx, controller.cacheService, pipelineId, cache.LogsIndex, errorTitle)
 	if err != nil {
 		return nil, err
 	}
-	logs, err := code_processing.GetProcessingOutput(ctx, controller.cacheService, pipelineId, cache.Logs, "GetLogs")
+	logs, err := code_processing.GetProcessingOutput(ctx, controller.cacheService, pipelineId, cache.Logs, errorTitle)
 	if err != nil {
 		return nil, err
 	}
 	newLogs := ""
 	if len(logs) > lastIndex {
 		newLogs = logs[lastIndex:]
-		_ = utils.SetToCache(ctx, controller.cacheService, pipelineId, cache.LogsIndex, lastIndex+len(newLogs))
+		if err := utils.SetToCache(ctx, controller.cacheService, pipelineId, cache.LogsIndex, lastIndex+len(newLogs)); err != nil {
+			return nil, errors.InternalError(errorTitle, "Error during set value to cache: "+err.Error())
+		}
 	}
 
 	pipelineResult := pb.GetLogsResponse{Output: newLogs}
