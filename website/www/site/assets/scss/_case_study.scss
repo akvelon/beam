@@ -2,7 +2,7 @@
 
 .case-study {
   margin-left: 80px;
-  width: calc(100% - 280px);
+  margin-right: 80px;
   font-family: "Source Sans Pro", Roboto, arial, sans-serif;
   display: flex;
   flex-direction: column;
@@ -11,6 +11,11 @@
     border-bottom: 2px solid rgba(255, 109, 5, 0.24);
     margin-bottom: 24px;
     padding-bottom: 26px;
+  }
+
+  .clear-nav {
+    display: block;
+    width: 270px;
   }
 
   .case-study-breadcrumbs {
@@ -31,6 +36,7 @@
   .case-study-content {
     display: flex;
     flex-direction: row;
+    justify-content: center;
   }
 
   h1 {
@@ -44,16 +50,20 @@
   .case-study-opinion {
     display: flex;
     flex-direction: column;
-    width: 300px;
+    width: 260px;
     margin-right: 32px;
 
     .case-study-opinion-img {
       margin-bottom: 24px;
+      img {
+        width: 100%;
+      }
     }
   }
 
   .case-study-post {
     flex: 1;
+    max-width: 540px;
   }
 
   @media screen and (max-width: $mobile) {
@@ -70,6 +80,11 @@
   @media screen and (max-width: $tablet){
     width: 100%;
     margin-left: 0;
+    margin-right: 0;
+
+    .clear-nav {
+      display: none;
+    }
   }
 
   .case-study-quote-block {
@@ -84,7 +99,7 @@
 
     .case-study-quote-author {
       display: flex;
-      .case-study-quote-author-img {
+      .case-study-quote-author-img img {
         height: 40px;
         width: 40px;
         border-radius: 50%;
