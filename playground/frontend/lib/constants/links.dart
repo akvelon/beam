@@ -23,4 +23,4 @@ const kBeamPlaygroundGithubLink =
 const kApacheBeamGithubLink = 'https://github.com/apache/beam';
 const kBeamWebsiteLink = 'https://beam.apache.org/';
 const kScioGithubLink = 'https://github.com/spotify/scio';
-const kAboutBeamLink = 'https://beam.apache.org/';
+const kAboutBeamLink = 'https://beam.apache.org/get-started/beam-overview';
