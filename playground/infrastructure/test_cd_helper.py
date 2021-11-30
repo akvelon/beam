@@ -57,7 +57,7 @@ def test__write_to_local_fs(delete_temp_folder):
     """
     Test writing code of an example, output and meta info to the filesystem (in temp folder)
     Args:
-        delete_temp_folder:
+        delete_temp_folder: python fixture to clean up temp folder after method execution
     """
     object_meta = {"name": "name", "description": "description", "multifile": False,
                    "categories": ["category-1", "category-2"]}
