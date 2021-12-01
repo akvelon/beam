@@ -61,7 +61,7 @@ func Test_replace(t *testing.T) {
 		},
 		{
 			name:     "original file with package",
-			args:     args{[]interface{}{lc.GetAbsoluteSourceFilePath(), packagePattern, emptyStringPattern}},
+			args:     args{[]interface{}{lc.GetAbsoluteSourceFilePath(), packagePattern, importStringPattern}},
 			wantCode: codeWithImportedPackage,
 			wantErr:  false,
 		},

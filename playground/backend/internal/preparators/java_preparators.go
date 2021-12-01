@@ -29,7 +29,7 @@ const (
 	classWithPublicModifierPattern    = "public class "
 	classWithoutPublicModifierPattern = "class "
 	packagePattern                    = `^(package) (([\w]+\.)+[\w]+);`
-	emptyStringPattern                = `import $2.*;`
+	importStringPattern               = `import $2.*;`
 	newLinePattern                    = "\n"
 	pathSeparatorPattern              = os.PathSeparator
 	tmpFileSuffix                     = "tmp"
@@ -43,7 +43,7 @@ func GetJavaPreparators(filePath string) *[]Preparator {
 	}
 	additionalPackage := Preparator{
 		Prepare: replace,
-		Args:    []interface{}{filePath, packagePattern, emptyStringPattern},
+		Args:    []interface{}{filePath, packagePattern, importStringPattern},
 	}
 	return &[]Preparator{publicClassModification, additionalPackage}
 }

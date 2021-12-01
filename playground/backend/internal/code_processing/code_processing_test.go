@@ -22,6 +22,7 @@ import (
 	"beam.apache.org/playground/backend/internal/environment"
 	"beam.apache.org/playground/backend/internal/executors"
 	"beam.apache.org/playground/backend/internal/fs_tool"
+	"beam.apache.org/playground/backend/internal/validators"
 	"context"
 	"fmt"
 	"github.com/google/uuid"
@@ -36,7 +37,7 @@ import (
 	"time"
 )
 
-const javaConfig = "{\n  \"compile_cmd\": \"javac\",\n  \"run_cmd\": \"java\",\n  \"compile_args\": [\"-d\", \"bin\", \"-classpath\"],\n  \"run_args\": [\"-cp\", \"bin:\"]\n}"
+const javaConfig = "{\n  \"compile_cmd\": \"javac\",\n  \"run_cmd\": \"java\",\n  \"test_cmd\": \"java\",\n  \"compile_args\": [\n    \"-d\",\n    \"bin\",\n    \"-classpath\"\n  ],\n  \"run_args\": [\n    \"-cp\",\n    \"bin:\"\n  ],\n  \"test_args\": [\n    \"-cp\",\n    \"bin:\",\n    \"JUnit\"\n  ]\n}"
 const fileName = "fakeFileName"
 
 var opt goleak.Option
@@ -537,7 +538,7 @@ func Test_setJavaExecutableFile(t *testing.T) {
 		want executors.Executor
 	}{
 		{
-			name: "set executable name to runner",
+			name: "set executable name to runner/test runner",
 			args: args{
 				lc:              lc,
 				id:              pipelineId,
@@ -546,7 +547,12 @@ func Test_setJavaExecutableFile(t *testing.T) {
 				executorBuilder: &executorBuilder,
 				dir:             "",
 			},
-			want: executors.NewExecutorBuilder().WithRunner().WithCommand("fake cmd").WithExecutableFileName(fileName).Build(),
+			want: executors.NewExecutorBuilder().
+				WithExecutableFileName(fileName).
+				WithRunner().
+				WithCommand("fake cmd").
+				WithTestRunner().
+				Build(),
 		},
 	}
 	for _, tt := range tests {
@@ -560,11 +566,11 @@ func Test_setJavaExecutableFile(t *testing.T) {
 }
 
 func Test_getRunOrTestCmd(t *testing.T) {
-	valChannel := make(chan bool)
-	go func() {
-		valChannel <- false
-		valChannel <- true
-	}()
+	unitTests := make(map[string]bool, 1)
+	unitTests[validators.UnitTestValidatorName] = true
+
+	notUnitTests := make(map[string]bool, 1)
+	notUnitTests[validators.UnitTestValidatorName] = false
 
 	runEx := executors.NewExecutorBuilder().
 		WithRunner().
@@ -582,8 +588,8 @@ func Test_getRunOrTestCmd(t *testing.T) {
 	wantTestExec := exec.CommandContext(context.Background(), "testCommand", "arg1", "")
 
 	type args struct {
-		valResChannel  chan bool
-		executor       executors.Executor
+		valResult      *map[string]bool
+		executor       *executors.Executor
 		ctxWithTimeout context.Context
 	}
 
@@ -595,8 +601,8 @@ func Test_getRunOrTestCmd(t *testing.T) {
 		{
 			name: "get run cmd",
 			args: args{
-				valResChannel:  valChannel,
-				executor:       runEx,
+				valResult:      &notUnitTests,
+				executor:       &runEx,
 				ctxWithTimeout: context.Background(),
 			},
 			want: wantRunExec,
@@ -604,8 +610,8 @@ func Test_getRunOrTestCmd(t *testing.T) {
 		{
 			name: "get test cmd",
 			args: args{
-				valResChannel:  valChannel,
-				executor:       testEx,
+				valResult:      &unitTests,
+				executor:       &testEx,
 				ctxWithTimeout: context.Background(),
 			},
 			want: wantTestExec,
@@ -613,7 +619,7 @@ func Test_getRunOrTestCmd(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getRunOrTestCmd(tt.args.valResChannel, tt.args.executor, tt.args.ctxWithTimeout); !reflect.DeepEqual(got, tt.want) {
+			if got := getRunOrTestCmd(tt.args.valResult, tt.args.executor, tt.args.ctxWithTimeout); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getRunOrTestCmd() = %v, want %v", got, tt.want)
 			}
 		})

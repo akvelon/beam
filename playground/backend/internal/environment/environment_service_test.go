@@ -54,9 +54,9 @@ func setup() error {
 
 	executorConfig = NewExecutorConfig(
 		"javac", "java", "java",
-		[]string{"-d", "bin", "-classpath", defaultBeamJarsPath},
-		[]string{"-cp", "bin:" + defaultBeamJarsPath},
-		[]string{"-cp", "bin:" + defaultBeamJarsPath, "JUnit"},
+		[]string{"-d", "bin", "-classpath", DefaultBeamJarsPath},
+		[]string{"-cp", "bin:" + DefaultBeamJarsPath},
+		[]string{"-cp", "bin:" + DefaultBeamJarsPath, "JUnit"},
 	)
 	return nil
 }

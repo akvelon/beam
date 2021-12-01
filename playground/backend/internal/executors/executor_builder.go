@@ -47,14 +47,33 @@ type PreparatorBuilder struct {
 	ExecutorBuilder
 }
 
-//TestRunBuilder facet of ExecutorBuilder
-type TestRunBuilder struct {
+//UnitTestExecutorBuilder facet of ExecutorBuilder
+type UnitTestExecutorBuilder struct {
 	ExecutorBuilder
 }
 
 //NewExecutorBuilder constructor for Executor
 func NewExecutorBuilder() *ExecutorBuilder {
 	return &ExecutorBuilder{}
+}
+
+//WithExecutableFileName adds file name to executor
+func (b *ExecutorBuilder) WithExecutableFileName(name string) *ExecutorBuilder {
+	b.actions = append(b.actions, func(e *Executor) {
+		e.runArgs.fileName = name
+		e.testArgs.fileName = name
+	})
+	return b
+}
+
+//WithWorkingDir adds dir path to executor
+func (b *ExecutorBuilder) WithWorkingDir(dir string) *ExecutorBuilder {
+	b.actions = append(b.actions, func(e *Executor) {
+		e.compileArgs.workingDir = dir
+		e.runArgs.workingDir = dir
+		e.testArgs.workingDir = dir
+	})
+	return b
 }
 
 // WithCompiler - Lives chains to type *ExecutorBuilder and returns a *CompileBuilder
@@ -77,9 +96,9 @@ func (b *ExecutorBuilder) WithPreparator() *PreparatorBuilder {
 	return &PreparatorBuilder{*b}
 }
 
-// WithTestRunner - Lives chains to type *ExecutorBuilder and returns a *TestRunBuilder
-func (b *ExecutorBuilder) WithTestRunner() *TestRunBuilder {
-	return &TestRunBuilder{*b}
+// WithTestRunner - Lives chains to type *ExecutorBuilder and returns a *UnitTestExecutorBuilder
+func (b *ExecutorBuilder) WithTestRunner() *UnitTestExecutorBuilder {
+	return &UnitTestExecutorBuilder{*b}
 }
 
 //WithCommand adds compile command to executor
@@ -106,14 +125,6 @@ func (b *CompileBuilder) WithFileName(fileName string) *CompileBuilder {
 	return b
 }
 
-//WithWorkingDir adds dir path to executor
-func (b *CompileBuilder) WithWorkingDir(dir string) *CompileBuilder {
-	b.actions = append(b.actions, func(e *Executor) {
-		e.compileArgs.workingDir = dir
-	})
-	return b
-}
-
 //WithCommand adds run command to executor
 func (b *RunBuilder) WithCommand(runCmd string) *RunBuilder {
 	b.actions = append(b.actions, func(e *Executor) {
@@ -130,14 +141,6 @@ func (b *RunBuilder) WithArgs(runArgs []string) *RunBuilder {
 	return b
 }
 
-//WithExecutableFileName adds file name to executor
-func (b *RunBuilder) WithExecutableFileName(name string) *RunBuilder {
-	b.actions = append(b.actions, func(e *Executor) {
-		e.runArgs.fileName = name
-	})
-	return b
-}
-
 //WithGraphOutput adds the need of graph output to executor
 func (b *RunBuilder) WithGraphOutput() *RunBuilder {
 	b.actions = append(b.actions, func(e *Executor) {
@@ -146,16 +149,8 @@ func (b *RunBuilder) WithGraphOutput() *RunBuilder {
 	return b
 }
 
-//WithWorkingDir adds dir path to executor
-func (b *RunBuilder) WithWorkingDir(dir string) *RunBuilder {
-	b.actions = append(b.actions, func(e *Executor) {
-		e.runArgs.workingDir = dir
-	})
-	return b
-}
-
 //WithCommand adds test command to executor
-func (b *TestRunBuilder) WithCommand(testCmd string) *TestRunBuilder {
+func (b *UnitTestExecutorBuilder) WithCommand(testCmd string) *UnitTestExecutorBuilder {
 	b.actions = append(b.actions, func(e *Executor) {
 		e.testArgs.commandName = testCmd
 	})
@@ -163,33 +158,17 @@ func (b *TestRunBuilder) WithCommand(testCmd string) *TestRunBuilder {
 }
 
 //WithArgs adds test args to executor
-func (b *TestRunBuilder) WithArgs(testArgs []string) *TestRunBuilder {
+func (b *UnitTestExecutorBuilder) WithArgs(testArgs []string) *UnitTestExecutorBuilder {
 	b.actions = append(b.actions, func(e *Executor) {
 		e.testArgs.commandArgs = testArgs
 	})
 	return b
 }
 
-//WithExecutableFileName adds file name to executor
-func (b *TestRunBuilder) WithExecutableFileName(name string) *TestRunBuilder {
-	b.actions = append(b.actions, func(e *Executor) {
-		e.testArgs.fileName = name
-	})
-	return b
-}
-
 //WithGraphOutput adds the need of graph output to executor
-func (b *TestRunBuilder) WithGraphOutput() *TestRunBuilder {
+func (b *UnitTestExecutorBuilder) WithGraphOutput() *UnitTestExecutorBuilder {
 	b.actions = append(b.actions, func(e *Executor) {
 		//todo
-	})
-	return b
-}
-
-//WithWorkingDir adds dir path to executor
-func (b *TestRunBuilder) WithWorkingDir(dir string) *TestRunBuilder {
-	b.actions = append(b.actions, func(e *Executor) {
-		e.testArgs.workingDir = dir
 	})
 	return b
 }

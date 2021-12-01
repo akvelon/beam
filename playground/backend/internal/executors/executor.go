@@ -23,9 +23,11 @@ import (
 	"sync"
 )
 
+type ExecutionType string
+
 const (
-	RunType  = "Run"
-	TestType = "TestRun"
+	Run  ExecutionType = "Run"
+	Test ExecutionType = "RunTest"
 )
 
 //CmdConfiguration for base cmd code execution
@@ -46,19 +48,20 @@ type Executor struct {
 }
 
 // Validate returns the function that applies all validators of executor
-func (ex *Executor) Validate() func(chan bool, chan error) {
-	return func(doneCh chan bool, errCh chan error) {
+func (ex *Executor) Validate() func(chan bool, chan error, *map[string]bool) {
+	return func(doneCh chan bool, errCh chan error, valRes *map[string]bool) {
 		validationErrors := make(chan error, len(ex.validators))
 		var wg sync.WaitGroup
 		for _, validator := range ex.validators {
 			wg.Add(1)
-			go func(validationErrors chan error, validator validators.Validator) {
+			go func(validationErrors chan error, valRes *map[string]bool, validator validators.Validator) {
 				defer wg.Done()
-				err := validator.Validator(validator.Args...)
+				res, err := validator.Validator(validator.Args...)
 				if err != nil {
 					validationErrors <- err
 				}
-			}(validationErrors, validator)
+				(*valRes)[validator.Name] = res
+			}(validationErrors, valRes, validator)
 		}
 		wg.Wait()
 		select {

@@ -25,6 +25,7 @@ import (
 	"beam.apache.org/playground/backend/internal/logger"
 	"beam.apache.org/playground/backend/internal/setup_tools/builder"
 	"beam.apache.org/playground/backend/internal/streaming"
+	"beam.apache.org/playground/backend/internal/validators"
 	"bytes"
 	"context"
 	"fmt"
@@ -55,7 +56,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	errorChannel := make(chan error, 1)
 	successChannel := make(chan bool, 1)
 	cancelChannel := make(chan bool, 1)
-	valResChannel := make(chan bool, 1)
+	validationResults := make(map[string]bool)
 
 	go cancelCheck(ctxWithTimeout, pipelineId, cancelChannel, cacheService)
 
@@ -68,7 +69,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	// Validate
 	logger.Infof("%s: Validate() ...\n", pipelineId)
 	validateFunc := executor.Validate()
-	go validateFunc(successChannel, errorChannel, valResChannel)
+	go validateFunc(successChannel, errorChannel, &validationResults)
 
 	if err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, nil, nil, errorChannel, pb.Status_STATUS_VALIDATION_ERROR, pb.Status_STATUS_PREPARING); err != nil {
 		return
@@ -95,6 +96,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 		if err = processStep(ctxWithTimeout, pipelineId, cacheService, cancelChannel, successChannel, &compileOutput, &compileError, errorChannel, pb.Status_STATUS_COMPILE_ERROR, pb.Status_STATUS_EXECUTING); err != nil {
 			return
 		}
+		processSuccess(ctx, []byte(""), pipelineId, cacheService, pb.Status_STATUS_EXECUTING)
 	case pb.Sdk_SDK_PYTHON: // No compile step for Python
 		processSuccess(ctx, []byte(""), pipelineId, cacheService, pb.Status_STATUS_EXECUTING)
 	}
@@ -103,7 +105,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	if sdkEnv.ApacheBeamSdk == pb.Sdk_SDK_JAVA {
 		executor = setJavaExecutableFile(lc, pipelineId, cacheService, ctxWithTimeout, executorBuilder, appEnv.WorkingDir())
 	}
-	runCmd := getRunOrTestCmd(valResChannel, executor, ctxWithTimeout)
+	runCmd := getRunOrTestCmd(&validationResults, &executor, ctxWithTimeout)
 	var runError bytes.Buffer
 	runOutput := streaming.RunOutputWriter{Ctx: ctxWithTimeout, CacheService: cacheService, PipelineId: pipelineId}
 	logger.Infof("%s: Run() ...\n", pipelineId)
@@ -116,13 +118,13 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 }
 
 // getRunOrTestCmd return cmd instance based on the code type: unit test or example code
-func getRunOrTestCmd(valResChannel chan bool, executor executors.Executor, ctxWithTimeout context.Context) *exec.Cmd {
-	isUnitTest := <-valResChannel
-	runType := executors.RunType
+func getRunOrTestCmd(valRes *map[string]bool, executor *executors.Executor, ctxWithTimeout context.Context) *exec.Cmd {
+	isUnitTest := (*valRes)[validators.UnitTestValidatorName]
+	runType := executors.Run
 	if isUnitTest {
-		runType = executors.TestType
+		runType = executors.Test
 	}
-	cmdReflect := reflect.ValueOf(&executor).MethodByName(runType).Call([]reflect.Value{reflect.ValueOf(ctxWithTimeout)})
+	cmdReflect := reflect.ValueOf(executor).MethodByName(string(runType)).Call([]reflect.Value{reflect.ValueOf(ctxWithTimeout)})
 	return cmdReflect[0].Interface().(*exec.Cmd)
 }
 
@@ -133,9 +135,6 @@ func setJavaExecutableFile(lc *fs_tool.LifeCycle, id uuid.UUID, service cache.Ca
 		processSetupError(err, id, service, ctx)
 	}
 	return executorBuilder.
-		WithRunner().
-		WithExecutableFileName(className).
-		WithTestRunner().
 		WithExecutableFileName(className).
 		Build()
 }

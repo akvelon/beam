@@ -36,10 +36,12 @@ func GetJavaValidators(filePath string) *[]Validator {
 	pathCheckerValidator := Validator{
 		Validator: fs_tool.CheckPathIsValid,
 		Args:      validatorArgs,
+		Name:      "Valid path",
 	}
 	unitTestValidator := Validator{
 		Validator: CheckIsUnitTests,
 		Args:      validatorArgs,
+		Name:      UnitTestValidatorName,
 	}
 	validators := []Validator{pathCheckerValidator, unitTestValidator}
 	return &validators
