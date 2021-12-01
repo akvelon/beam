@@ -20,6 +20,7 @@ import (
 	"beam.apache.org/playground/backend/internal/validators"
 	"context"
 	"os/exec"
+	"sync"
 )
 
 const (
@@ -45,20 +46,28 @@ type Executor struct {
 }
 
 // Validate returns the function that applies all validators of executor
-func (ex *Executor) Validate() func(doneCh chan bool, errCh chan error, resCh chan bool) {
-	return func(doneCh chan bool, errCh chan error, resCh chan bool) {
-		res := false
+func (ex *Executor) Validate() func(chan bool, chan error) {
+	return func(doneCh chan bool, errCh chan error) {
+		validationErrors := make(chan error, len(ex.validators))
+		var wg sync.WaitGroup
 		for _, validator := range ex.validators {
-			err := error(nil)
-			res, err = validator.Validator(validator.Args...)
-			if err != nil {
-				errCh <- err
-				doneCh <- false
-				return
-			}
+			wg.Add(1)
+			go func(validationErrors chan error, validator validators.Validator) {
+				defer wg.Done()
+				err := validator.Validator(validator.Args...)
+				if err != nil {
+					validationErrors <- err
+				}
+			}(validationErrors, validator)
 		}
-		resCh <- res
-		doneCh <- true
+		wg.Wait()
+		select {
+		case err := <-validationErrors:
+			errCh <- err
+			doneCh <- false
+		default:
+			doneCh <- true
+		}
 	}
 }
 
