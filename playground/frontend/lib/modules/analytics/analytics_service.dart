@@ -83,7 +83,7 @@ class AnalyticsService {
     _analytics.sendEvent(
       kFeedbackCategory,
       kClickEnjoyPlaygroundEvent,
-      label: isEnjoying.toString(),
+      label: 'isEnjoying = ' + isEnjoying.toString(),
     );
   }
 
