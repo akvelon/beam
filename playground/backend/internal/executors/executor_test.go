@@ -27,12 +27,14 @@ import (
 	"testing"
 )
 
+const defaultBeamJarsPath = "pathToJars"
+
 var (
 	executorConfig = environment.NewExecutorConfig(
 		"javac", "java", "java",
-		[]string{"-d", "bin", "-classpath", environment.DefaultBeamJarsPath},
-		[]string{"-cp", "bin:" + environment.DefaultBeamJarsPath},
-		[]string{"-cp", "bin:" + environment.DefaultBeamJarsPath, "JUnit"},
+		[]string{"-d", "bin", "-classpath", defaultBeamJarsPath},
+		[]string{"-cp", "bin:" + defaultBeamJarsPath},
+		[]string{"-cp", "bin:" + defaultBeamJarsPath, "JUnit"},
 	)
 	env = environment.NewEnvironment(environment.NetworkEnvs{}, *environment.NewBeamEnvs(pb.Sdk_SDK_JAVA, executorConfig, ""), environment.ApplicationEnvs{})
 )
@@ -200,19 +202,19 @@ func TestBaseExecutorBuilder(t *testing.T) {
 					fileName:    "filePath",
 					workingDir:  "./",
 					commandName: "javac",
-					commandArgs: []string{"-d", "bin", "-classpath", environment.DefaultBeamJarsPath},
+					commandArgs: []string{"-d", "bin", "-classpath", defaultBeamJarsPath},
 				},
 				runArgs: CmdConfiguration{
 					fileName:    "HelloWorld",
 					workingDir:  "./",
 					commandName: "java",
-					commandArgs: []string{"-cp", "bin:" + environment.DefaultBeamJarsPath},
+					commandArgs: []string{"-cp", "bin:" + defaultBeamJarsPath},
 				},
 				testArgs: CmdConfiguration{
 					fileName:    "HelloWorld",
 					workingDir:  "./",
 					commandName: "java",
-					commandArgs: []string{"-cp", "bin:" + environment.DefaultBeamJarsPath, "JUnit"},
+					commandArgs: []string{"-cp", "bin:" + defaultBeamJarsPath, "JUnit"},
 				},
 				validators:  *validatorsFuncs,
 				preparators: *preparatorsFuncs,

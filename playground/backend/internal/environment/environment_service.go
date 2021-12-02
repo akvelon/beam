@@ -19,6 +19,7 @@ import (
 	pb "beam.apache.org/playground/backend/internal/api/v1"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -43,7 +44,7 @@ const (
 	defaultIp                     = "localhost"
 	defaultPort                   = 8080
 	defaultSdk                    = pb.Sdk_SDK_JAVA
-	DefaultBeamJarsPath           = "/opt/apache/beam/jars/*"
+	defaultBeamJarsPath           = "/opt/apache/beam/jars/*"
 	defaultCacheType              = "local"
 	defaultCacheAddress           = "localhost:6379"
 	defaultCacheKeyExpirationTime = time.Minute * 15
@@ -172,9 +173,9 @@ func createExecutorConfig(apacheBeamSdk pb.Sdk, configPath string) (*ExecutorCon
 	}
 	switch apacheBeamSdk {
 	case pb.Sdk_SDK_JAVA:
-		executorConfig.CompileArgs = append(executorConfig.CompileArgs, getEnv(beamPathKey, DefaultBeamJarsPath))
-		executorConfig.RunArgs[1] += getEnv(beamPathKey, DefaultBeamJarsPath)
-		executorConfig.TestArgs[1] += getEnv(beamPathKey, DefaultBeamJarsPath)
+		executorConfig.CompileArgs = append(executorConfig.CompileArgs, getEnv(beamPathKey, defaultBeamJarsPath))
+		executorConfig.RunArgs[1] = fmt.Sprintf("%s%s", executorConfig.RunArgs[1], getEnv(beamPathKey, defaultBeamJarsPath))
+		executorConfig.TestArgs[1] = fmt.Sprintf("%s%s", executorConfig.TestArgs[1], getEnv(beamPathKey, defaultBeamJarsPath))
 	case pb.Sdk_SDK_GO:
 		// Go sdk doesn't need any additional arguments from the config file
 	case pb.Sdk_SDK_PYTHON:

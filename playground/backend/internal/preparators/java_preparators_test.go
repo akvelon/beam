@@ -60,6 +60,7 @@ func Test_replace(t *testing.T) {
 			wantErr:  false,
 		},
 		{
+			// Test that file where package is used changes to import all dependencies from this package
 			name:     "original file with package",
 			args:     args{[]interface{}{lc.GetAbsoluteSourceFilePath(), packagePattern, importStringPattern}},
 			wantCode: codeWithImportedPackage,

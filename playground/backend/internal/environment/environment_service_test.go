@@ -27,6 +27,7 @@ import (
 
 const (
 	javaConfig = "{\n  \"compile_cmd\": \"javac\",\n  \"run_cmd\": \"java\",\n  \"test_cmd\": \"java\",\n  \"compile_args\": [\n    \"-d\",\n    \"bin\",\n    \"-classpath\"\n  ],\n  \"run_args\": [\n    \"-cp\",\n    \"bin:\"\n  ],\n  \"test_args\": [\n    \"-cp\",\n    \"bin:\",\n    \"JUnit\"\n  ]\n}"
+	jarsPath   = "/opt/apache/beam/jars/*"
 )
 
 var executorConfig *ExecutorConfig
@@ -54,15 +55,15 @@ func setup() error {
 
 	executorConfig = NewExecutorConfig(
 		"javac", "java", "java",
-		[]string{"-d", "bin", "-classpath", DefaultBeamJarsPath},
-		[]string{"-cp", "bin:" + DefaultBeamJarsPath},
-		[]string{"-cp", "bin:" + DefaultBeamJarsPath, "JUnit"},
+		[]string{"-d", "bin", "-classpath", jarsPath},
+		[]string{"-cp", "bin:" + jarsPath},
+		[]string{"-cp", "bin:" + jarsPath, "JUnit"},
 	)
 	return nil
 }
 
 func teardown() {
-	err := os.RemoveAll(configFolderName)
+	err := os.Remove(configFolderName)
 	if err != nil {
 		panic(fmt.Errorf("error during test setup: %s", err.Error()))
 	}

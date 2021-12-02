@@ -599,6 +599,7 @@ func Test_getRunOrTestCmd(t *testing.T) {
 		want *exec.Cmd
 	}{
 		{
+			//Get cmd objects with set run executor
 			name: "get run cmd",
 			args: args{
 				valResult:      &notUnitTests,
@@ -608,6 +609,7 @@ func Test_getRunOrTestCmd(t *testing.T) {
 			want: wantRunExec,
 		},
 		{
+			//Get cmd objects with set test executor
 			name: "get test cmd",
 			args: args{
 				valResult:      &unitTests,
