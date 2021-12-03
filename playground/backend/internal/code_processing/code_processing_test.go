@@ -625,8 +625,8 @@ func Test_getRunOrTestCmd(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getRunOrTestCmd(tt.args.valResult, tt.args.executor, tt.args.ctxWithTimeout); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getRunOrTestCmd() = %v, want %v", got, tt.want)
+			if got := getExecuteCmd(tt.args.valResult, tt.args.executor, tt.args.ctxWithTimeout); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getExecuteCmd() = %v, want %v", got, tt.want)
 			}
 		})
 	}

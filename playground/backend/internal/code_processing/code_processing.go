@@ -103,7 +103,7 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	if sdkEnv.ApacheBeamSdk == pb.Sdk_SDK_JAVA {
 		executor = setJavaExecutableFile(lc, pipelineId, cacheService, ctxWithTimeout, executorBuilder, appEnv.WorkingDir())
 	}
-	runCmd := getRunOrTestCmd(validationResults, &executor, ctxWithTimeout)
+	runCmd := getExecuteCmd(validationResults, &executor, ctxWithTimeout)
 	var runError bytes.Buffer
 	runOutput := streaming.RunOutputWriter{Ctx: ctxWithTimeout, CacheService: cacheService, PipelineId: pipelineId}
 	logger.Infof("%s: Run() ...\n", pipelineId)
@@ -115,8 +115,8 @@ func Process(ctx context.Context, cacheService cache.Cache, lc *fs_tool.LifeCycl
 	}
 }
 
-// getRunOrTestCmd return cmd instance based on the code type: unit test or example code
-func getRunOrTestCmd(valRes map[string]bool, executor *executors.Executor, ctxWithTimeout context.Context) *exec.Cmd {
+// getExecuteCmd return cmd instance based on the code type: unit test or example code
+func getExecuteCmd(valRes map[string]bool, executor *executors.Executor, ctxWithTimeout context.Context) *exec.Cmd {
 	isUnitTest := valRes[validators.UnitTestValidatorName]
 	runType := executors.Run
 	if isUnitTest {
