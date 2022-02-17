@@ -24,7 +24,7 @@ provider "google" {
   #  impersonate_service_account = module.setup.terraform_service_account_email
 }
 
-// TODO: required by artifact registry; remove when generally available
+// TODO: required by artifact registry and memorystore; remove when generally available
 provider "google-beta" {
   region = var.region
   // TODO may need to run module.setup first independent of this solution and add the terraform service account as a variable

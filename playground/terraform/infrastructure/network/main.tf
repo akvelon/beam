@@ -17,10 +17,15 @@
 # under the License.
 #
 
-output "vpc_name" {
-  value = google_compute_network.playground_vpc.name
+resource "google_compute_network" "playground" {
+  project                 = var.project_id
+  name                    = var.network_name
 }
 
-output "vpc_id" {
-  value = google_compute_network.playground_vpc.id
+resource "google_compute_subnetwork" "playground" {
+  ip_cidr_range = var.subnetwork_cidr_range
+  name          = var.subnetwork_name
+  network       = google_compute_network.playground.name
+  region = var.region
+  private_ip_google_access = true
 }

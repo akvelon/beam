@@ -24,13 +24,11 @@ module "setup" {
   service_account_id = var.service_account_id
 }
 
-module "vpc" {
+module "network" {
   depends_on     = [module.setup]
-  source         = "./vpc"
+  source         = "./network"
   project_id     = var.project_id
-  create_subnets = var.create_subnets
-  mtu            = var.mtu
-  vpc_name       = var.vpc_name
+  region = var.region
 }
 
 module "buckets" {
@@ -65,15 +63,19 @@ module "memorystore" {
   redis_replica_count         = var.redis_replica_count
   redis_memory_size_gb        = var.redis_memory_size_gb
   read_replicas_mode          = var.read_replicas_mode
+  network    = module.network.network
+  subnetwork = module.network.subnetwork
 }
 
 module "gke" {
   depends_on            = [module.setup, module.artifact_registry, module.memorystore]
   source                = "./gke"
   project_id            = var.project_id
-  gke_machine_type      = var.gke_machine_type
-  gke_node_count        = var.gke_node_count
-  gke_name              = var.gke_name
-  gke_location          = var.gke_location
+  machine_type      = var.gke_machine_type
+  node_count        = var.gke_node_count
+  name              = var.gke_name
+  location          = var.gke_location
   service_account_email = module.setup.service_account_email
+  network    = module.network.network
+  subnetwork = module.network.subnetwork
 }

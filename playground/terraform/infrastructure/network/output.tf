@@ -17,24 +17,10 @@
 # under the License.
 #
 
-variable "project_id" {
-  description = "The GCP Project ID where Playground Applications will be created"
+output "network" {
+  value = google_compute_network.playground.name
 }
 
-variable "vpc_name" {
-  description = "Name of VPC to be created"
-  default     = "playground-vpc"
+output "subnetwork" {
+  value = google_compute_subnetwork.playground.name
 }
-
-variable "create_subnets" {
-  description = "Auto Create Subnets Inside VPC"
-  default     = true
-}
-
-variable "mtu" {
-  description = "MTU Inside VPC"
-  default     = 1460
-}
-
-
-

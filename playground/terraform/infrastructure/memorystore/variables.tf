@@ -67,3 +67,11 @@ variable "read_replicas_mode" {
   description = "Read replica mode. Can only be specified when trying to create the instance."
   default = "READ_REPLICAS_ENABLED"
 }
+
+variable "network" {
+  description = "GCP network within which resources are provisioned"
+}
+
+variable "subnetwork" {
+  description = "GCP subnetwork within which resources are provisioned"
+}
