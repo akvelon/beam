@@ -17,13 +17,6 @@
 # under the License.
 #
 
-provider "google" {
-  region = "us-central"
-  // TODO may need to run module.setup first independent of this solution and add the terraform service account as a variable
-  // This allows us to use a service account to provision resources without downloading or storing service account keys
-  #  impersonate_service_account = module.setup.terraform_service_account_email
-}
-
 module "setup" {
   source             = "./setup"
   project_id         = var.project_id
