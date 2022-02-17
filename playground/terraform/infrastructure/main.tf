@@ -24,10 +24,6 @@ provider "google" {
   #  impersonate_service_account = module.setup.terraform_service_account_email
 }
 
-provider "google-beta" {
-  region = "us-central"
-}
-
 module "setup" {
   source             = "./setup"
   project_id         = var.project_id
