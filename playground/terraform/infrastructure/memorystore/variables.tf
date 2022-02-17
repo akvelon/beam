@@ -47,13 +47,13 @@ variable "redis_tier" {
 }
 
 variable "redis_replica_count" {
-  type = number
+  type        = number
   description = "Redis's replica count"
   default     = 1
 }
 
 variable "redis_memory_size_gb" {
-  type = number
+  type        = number
   description = "Size of Redis memory"
   default     = 5
 }
@@ -65,7 +65,7 @@ variable "display_name" {
 
 variable "read_replicas_mode" {
   description = "Read replica mode. Can only be specified when trying to create the instance."
-  default = "READ_REPLICAS_ENABLED"
+  default     = "READ_REPLICAS_ENABLED"
 }
 
 variable "network" {

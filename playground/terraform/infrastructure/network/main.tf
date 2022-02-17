@@ -18,14 +18,16 @@
 #
 
 resource "google_compute_network" "playground" {
-  project                 = var.project_id
-  name                    = var.network_name
+  project = var.project_id
+  name    = var.network_name
+  auto_create_subnetworks = false
 }
 
 resource "google_compute_subnetwork" "playground" {
-  ip_cidr_range = var.subnetwork_cidr_range
-  name          = var.subnetwork_name
-  network       = google_compute_network.playground.name
-  region = var.region
+  ip_cidr_range            = var.subnetwork_cidr_range
+  name                     = var.subnetwork_name
+  network                  = google_compute_network.playground.id
+  region                   = var.region
+  project                  = var.project_id
   private_ip_google_access = true
 }

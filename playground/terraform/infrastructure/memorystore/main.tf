@@ -20,7 +20,7 @@
 
 data "terraform_remote_state" "remote_state_vpc" {
   backend = "gcs"
-  config  = {
+  config = {
     bucket = var.terraform_state_bucket_name
   }
 }
@@ -30,7 +30,7 @@ data "terraform_remote_state" "remote_state_vpc" {
 # In this cache Playground instances stores pipeline's statuses, outputs and pipeline's graph
 resource "google_redis_instance" "cache" {
   // TODO: remove when replica_count, etc is generally available
-  provider = google-beta
+  provider       = google-beta
   project        = var.project_id
   region         = var.redis_region
   name           = var.redis_name
@@ -38,7 +38,7 @@ resource "google_redis_instance" "cache" {
   memory_size_gb = var.redis_memory_size_gb
   replica_count  = var.redis_replica_count
 
-  redis_version = var.redis_version
-  display_name  = var.display_name
+  redis_version      = var.redis_version
+  display_name       = var.display_name
   read_replicas_mode = var.read_replicas_mode
 }

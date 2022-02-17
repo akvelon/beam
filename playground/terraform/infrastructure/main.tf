@@ -25,10 +25,10 @@ module "setup" {
 }
 
 module "network" {
-  depends_on     = [module.setup]
-  source         = "./network"
-  project_id     = var.project_id
-  region = var.region
+  depends_on = [module.setup]
+  source     = "./network"
+  project_id = var.project_id
+  region     = var.region
 }
 
 module "buckets" {
@@ -63,19 +63,19 @@ module "memorystore" {
   redis_replica_count         = var.redis_replica_count
   redis_memory_size_gb        = var.redis_memory_size_gb
   read_replicas_mode          = var.read_replicas_mode
-  network    = module.network.network
-  subnetwork = module.network.subnetwork
+  network                     = module.network.network
+  subnetwork                  = module.network.subnetwork
 }
 
 module "gke" {
   depends_on            = [module.setup, module.artifact_registry, module.memorystore]
   source                = "./gke"
   project_id            = var.project_id
-  machine_type      = var.gke_machine_type
-  node_count        = var.gke_node_count
-  name              = var.gke_name
-  location          = var.gke_location
+  machine_type          = var.gke_machine_type
+  node_count            = var.gke_node_count
+  name                  = var.gke_name
+  location              = var.gke_location
   service_account_email = module.setup.service_account_email
-  network    = module.network.network
-  subnetwork = module.network.subnetwork
+  network               = module.network.network
+  subnetwork            = module.network.subnetwork
 }
