@@ -17,30 +17,14 @@
 # under the License.
 #
 
-variable "project_id" {
-  description = "The GCP Project ID where Playground Applications will be created"
+resource "google_project_service" "required_services" {
+  for_each = toset([
+    "artifactregistry",
+    "compute",
+    "container",
+    "redis",
+  ])
+  service            = "${each.key}.googleapis.com"
+  disable_on_destroy = false
 }
 
-variable "gke_machine_type" {
-  description = "Node pool machine types"
-  default     = "e2-standard-4"
-}
-
-variable "gke_node_count" {
-  description = "Node pool size"
-  default     = 1
-}
-
-variable "service_account_email" {
-  description = "Service account email"
-}
-
-variable "gke_name" {
-  description = "Name of GKE cluster"
-  default     = "playground-examples"
-}
-
-variable "gke_location" {
-  description = "Location of GKE cluster"
-  default     = "us-central1-a"
-}

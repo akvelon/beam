@@ -39,5 +39,5 @@ resource "google_redis_instance" "cache" {
 
   redis_version = var.redis_version
   display_name  = var.display_name
-
+  read_replicas_mode = var.read_replicas_mode
 }
