@@ -353,16 +353,16 @@ func (controller *playgroundController) GetDefaultPrecompiledObject(ctx context.
 
 // SaveSnippet returns the generated ID
 func (controller *playgroundController) SaveSnippet(ctx context.Context, info *pb.SaveSnippetRequest) (*pb.SaveSnippetResponse, error) {
-	errorTitle := "Error during saving code"
+	errorTitle := "Error during saving a snippet"
 	switch info.Sdk {
 	case pb.Sdk_SDK_UNSPECIFIED:
-		logger.Errorf("SaveCode(): unimplemented sdk: %s\n", info.Sdk)
+		logger.Errorf("SaveSnippet(): unimplemented sdk: %s\n", info.Sdk)
 		return nil, errors.InvalidArgumentError(errorTitle, "Sdk is not implemented yet: %s", info.Sdk.String())
 	}
 
 	nowDate := time.Now()
 	snippet := entity.Snippet{
-		IDInfo: entity.IDInfo{
+		IDInfo: &entity.IDInfo{
 			Salt:     controller.env.ApplicationEnvs.PlaygroundSalt(),
 			IdLength: controller.env.ApplicationEnvs.IdLength(),
 		},
@@ -377,29 +377,29 @@ func (controller *playgroundController) SaveSnippet(ctx context.Context, info *p
 		},
 	}
 
-	for _, code := range info.Files {
-		if code.Content == "" {
+	for _, file := range info.Files {
+		if file.Content == "" {
 			logger.Error("SaveCode(): entity is empty")
 			return nil, errors.InvalidArgumentError(errorTitle, "Snippet must have some code")
 		}
 
 		maxSnippetSize := controller.env.ApplicationEnvs.MaxSnippetSize()
-		if len(code.Content) > maxSnippetSize {
-			logger.Errorf("SaveCode(): entity is too large. Max entity size: %d", maxSnippetSize)
-			return nil, errors.InvalidArgumentError(errorTitle, "Snippet size is more than %d", maxSnippetSize)
+		if len(file.Content) > maxSnippetSize {
+			logger.Errorf("SaveCode(): entity is too large. Max entity size: %d symbols", maxSnippetSize)
+			return nil, errors.InvalidArgumentError(errorTitle, "Snippet size is more than %d symbols", maxSnippetSize)
 		}
 
 		var isMain bool
 		if len(info.Files) == 1 {
 			isMain = true
 		} else {
-			isMain = utils.IsCodeMain(code.Content, info.Sdk)
+			isMain = utils.IsCodeMain(file.Content, info.Sdk)
 		}
 
 		snippet.Codes = append(snippet.Codes, &entity.CodeEntity{
-			Name:     utils.GetCodeName(code.Name, info.Sdk),
-			Code:     code.Content,
-			CntxLine: 1, // it is necessary for examples from playground
+			Name:     utils.GetCodeName(file.Name, info.Sdk),
+			Code:     file.Content,
+			CntxLine: 1,
 			IsMain:   isMain,
 		})
 	}
@@ -410,7 +410,7 @@ func (controller *playgroundController) SaveSnippet(ctx context.Context, info *p
 		return nil, errors.InternalError(errorTitle, "Failed to generate ID")
 	}
 
-	if err := controller.db.PutSnippet(ctx, id, &snippet); err != nil {
+	if err = controller.db.PutSnippet(ctx, id, &snippet); err != nil {
 		logger.Errorf("SaveCode(): PutSnippet(): error during entity saving: %s", err.Error())
 		return nil, errors.InternalError(errorTitle, "Failed to save a code entity")
 	}
@@ -419,12 +419,12 @@ func (controller *playgroundController) SaveSnippet(ctx context.Context, info *p
 	return &response, nil
 }
 
-// GetSnippet returns the code entity
+// GetSnippet returns the snippet entity
 func (controller *playgroundController) GetSnippet(ctx context.Context, info *pb.GetSnippetRequest) (*pb.GetSnippetResponse, error) {
-	errorTitle := "Error during getting code"
+	errorTitle := "Error during getting a snippet"
 	snippet, err := controller.db.GetSnippet(ctx, info.GetId())
 	if err != nil {
-		logger.Errorf("GetCode(): GetSnippet(): error during getting snippet: %s", err.Error())
+		logger.Errorf("GetSnippet(): error during getting the snippet: %s", err.Error())
 		return nil, errors.InternalError(errorTitle, "Failed to retrieve the snippet")
 	}
 

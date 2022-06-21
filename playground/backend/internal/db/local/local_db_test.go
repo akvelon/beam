@@ -257,7 +257,7 @@ func TestLocalDB_GetCodes(t *testing.T) {
 			name: "GetCodes() in the usual case",
 			prepare: func() {
 				_ = localDb.PutSnippet(ctx, "MOCK_ID", &entity.Snippet{
-					IDInfo: entity.IDInfo{
+					IDInfo: &entity.IDInfo{
 						Salt:     "MOCK_SALT",
 						IdLength: 11,
 					},

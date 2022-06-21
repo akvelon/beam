@@ -41,10 +41,10 @@ func New(ctx context.Context, db db.Database, appEnv *environment.ApplicationEnv
 	}
 }
 
-func (dv *DBSchema) InitiateData() (string, error) {
+func (ds *DBSchema) InitiateData() (string, error) {
 	var versions []string
-	for _, ver := range dv.versions {
-		if err := ver.InitiateData(dv.args); err != nil {
+	for _, ver := range ds.versions {
+		if err := ver.InitiateData(ds.args); err != nil {
 			logger.Errorf("DBSchema: InitiateData() error during the data initialization, err: %s", err.Error())
 			return "", err
 		}
@@ -56,6 +56,5 @@ func (dv *DBSchema) InitiateData() (string, error) {
 
 type Version interface {
 	GetVersion() string
-	GetDescription() string
 	InitiateData(args *DBArgs) error
 }

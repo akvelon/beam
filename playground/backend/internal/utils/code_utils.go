@@ -85,17 +85,17 @@ func getCorrectNameOrDefault(actualExt, correctExt, defaultFileName, name string
 	}
 }
 
-// IsCodeMain returns true if the code has main function, otherwise false.
-func IsCodeMain(code string, sdk pb.Sdk) bool {
+// IsCodeMain returns true if the code content has a main function, otherwise false.
+func IsCodeMain(content string, sdk pb.Sdk) bool {
 	switch sdk {
 	case pb.Sdk_SDK_JAVA:
-		return strings.Contains(code, javaMainMethod)
+		return strings.Contains(content, javaMainMethod)
 	case pb.Sdk_SDK_GO:
-		return strings.Contains(code, goMainMethod)
+		return strings.Contains(content, goMainMethod)
 	case pb.Sdk_SDK_PYTHON:
-		return strings.Contains(code, pythonMainMethod)
+		return strings.Contains(content, pythonMainMethod)
 	case pb.Sdk_SDK_SCIO:
-		return strings.Contains(code, scioMainMethod)
+		return strings.Contains(content, scioMainMethod)
 	}
 	return false
 }

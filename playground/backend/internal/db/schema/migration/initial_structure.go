@@ -19,8 +19,7 @@ import (
 	pb "beam.apache.org/playground/backend/internal/api/v1"
 	"beam.apache.org/playground/backend/internal/db/entity"
 	"beam.apache.org/playground/backend/internal/db/schema"
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
+	"beam.apache.org/playground/backend/internal/utils"
 )
 
 const (
@@ -39,7 +38,7 @@ func (is *InitialStructure) InitiateData(args *schema.DBArgs) error {
 		Salt:     args.AppEnv.PlaygroundSalt(),
 	}
 	snip := &entity.Snippet{
-		IDInfo: idInfo,
+		IDInfo: &idInfo,
 		Snippet: &entity.SnippetEntity{
 			OwnerId:  dummyStr,
 			PipeOpts: dummyStr,
@@ -67,8 +66,8 @@ func (is *InitialStructure) InitiateData(args *schema.DBArgs) error {
 
 	//init sdks
 	var sdkEntities []*entity.SDKEntity
-	sdkConfig, err := readSDKConfiguration(args.AppEnv.SdkConfigPath())
-	if err != nil {
+	sdkConfig := new(SdkConfig)
+	if err = utils.ReadYamlFile(args.AppEnv.SdkConfigPath(), sdkConfig); err != nil {
 		return err
 	}
 	for _, sdk := range pb.Sdk_name {
@@ -101,18 +100,6 @@ type SdkProperties struct {
 	DefaultExample string `yaml:"default-example"`
 }
 
-func readSDKConfiguration(filename string) (*SdkConfig, error) {
-	buf, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	result := new(SdkConfig)
-	if err = yaml.Unmarshal(buf, result); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
 func getDefaultExample(config *SdkConfig, sdk string) string {
 	switch sdk {
 	case pb.Sdk_SDK_JAVA.String():
@@ -130,8 +117,4 @@ func getDefaultExample(config *SdkConfig, sdk string) string {
 
 func (is *InitialStructure) GetVersion() string {
 	return versionV1
-}
-
-func (is *InitialStructure) GetDescription() string {
-	return descriptionV1
 }

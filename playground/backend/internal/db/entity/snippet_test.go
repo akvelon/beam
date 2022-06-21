@@ -39,7 +39,7 @@ func TestSnippet_ID(t *testing.T) {
 					Code:   "MOCK_CODE",
 					IsMain: false,
 				}},
-				IDInfo: IDInfo{
+				IDInfo: &IDInfo{
 					IdLength: 11,
 					Salt:     "MOCK_SALT",
 				},
@@ -89,7 +89,7 @@ func TestCode_ID(t *testing.T) {
 					Sdk:      utils.GetNameKey("pg_sdks", "SDK_GO", "Playground", nil),
 					PipeOpts: "MOCK_OPTIONS",
 				},
-				IDInfo: IDInfo{
+				IDInfo: &IDInfo{
 					Salt:     "MOCK_SALT",
 					IdLength: 11,
 				},

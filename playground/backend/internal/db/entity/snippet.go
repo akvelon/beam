@@ -34,7 +34,11 @@ const (
 
 // OriginValue value maps for Origin.
 var (
-	OriginValue = map[string]int32{"PG_USER": 0, "PG_EXAMPLES": 1, "TOUR_OF_BEAM": 2}
+	OriginValue = map[string]int32{
+		"PG_USER":      0,
+		"PG_EXAMPLES":  1,
+		"TOUR_OF_BEAM": 2,
+	}
 )
 
 func (s Origin) Value() int32 {
@@ -43,7 +47,7 @@ func (s Origin) Value() int32 {
 
 type CodeEntity struct {
 	Name     string `datastore:"name"`
-	Code     string `datastore:"code"`
+	Code     string `datastore:"code,noindex"`
 	CntxLine int32  `datastore:"cntxLine"`
 	IsMain   bool   `datastore:"isMain"`
 }
@@ -60,7 +64,7 @@ type SnippetEntity struct {
 }
 
 type Snippet struct {
-	IDInfo
+	*IDInfo
 	Snippet *SnippetEntity
 	Codes   []*CodeEntity
 }

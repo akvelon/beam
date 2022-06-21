@@ -77,7 +77,7 @@ func TestDatastore_PutSnippet(t *testing.T) {
 		{
 			name: "PutSnippet() in the usual case",
 			args: args{ctx: ctx, id: "MOCK_ID", snip: &entity.Snippet{
-				IDInfo: entity.IDInfo{
+				IDInfo: &entity.IDInfo{
 					Salt:     "MOCK_SALT",
 					IdLength: 11,
 				},
@@ -130,7 +130,7 @@ func TestDatastore_GetSnippet(t *testing.T) {
 			name: "GetSnippet() in the usual case",
 			prepare: func() {
 				_ = datastoreDb.PutSnippet(ctx, "MOCK_ID", &entity.Snippet{
-					IDInfo: entity.IDInfo{
+					IDInfo: &entity.IDInfo{
 						Salt:     "MOCK_SALT",
 						IdLength: 11,
 					},
@@ -281,7 +281,7 @@ func TestDatastore_GetCodes(t *testing.T) {
 			name: "GetCodes() in the usual case",
 			prepare: func() {
 				_ = datastoreDb.PutSnippet(ctx, "MOCK_ID", &entity.Snippet{
-					IDInfo: entity.IDInfo{
+					IDInfo: &entity.IDInfo{
 						Salt:     "MOCK_SALT",
 						IdLength: 11,
 					},
