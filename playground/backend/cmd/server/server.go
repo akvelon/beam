@@ -48,17 +48,17 @@ func runServer() error {
 
 	grpcServer := grpc.NewServer()
 
-	cacheService, err := setupCache(ctx, envService.ApplicationEnvs)
-	if err != nil {
-		return err
-	}
-
 	databaseClient, err := setupDB(ctx, envService.ApplicationEnvs)
 	if err != nil {
 		return err
 	}
 
 	if err = setupDBStructure(ctx, databaseClient, &envService.ApplicationEnvs); err != nil {
+		return err
+	}
+
+	cacheService, err := setupCache(ctx, envService.ApplicationEnvs)
+	if err != nil {
 		return err
 	}
 
