@@ -31,7 +31,7 @@ const (
 	SnippetKind = "pg_snippets"
 	SchemaKind  = "pg_schema_versions"
 	SdkKind     = "pg_sdks"
-	CodeKind    = "pg_codes"
+	FileKind    = "pg_files"
 )
 
 type Datastore struct {
@@ -61,17 +61,17 @@ func (d *Datastore) PutSnippet(ctx context.Context, id string, snip *entity.Snip
 	}
 
 	var keys []*datastore.Key
-	for _, code := range snip.Codes {
-		codeId, err := code.ID(snip)
+	for _, file := range snip.Files {
+		fileId, err := file.ID(snip)
 		if err != nil {
-			logger.Errorf("Datastore: PutSnippet(): error during the code K generation, err: %s\n", err.Error())
+			logger.Errorf("Datastore: PutSnippet(): error during the file K generation, err: %s\n", err.Error())
 			return err
 		}
-		keys = append(keys, utils.GetNameKey(CodeKind, codeId, Namespace, key))
+		keys = append(keys, utils.GetNameKey(FileKind, fileId, Namespace, key))
 	}
 
-	if _, err := d.client.PutMulti(ctx, keys, snip.Codes); err != nil {
-		logger.Errorf("Datastore: PutSnippet(): error during the code entity saving, err: %s\n", err.Error())
+	if _, err := d.client.PutMulti(ctx, keys, snip.Files); err != nil {
+		logger.Errorf("Datastore: PutSnippet(): error during the file entity saving, err: %s\n", err.Error())
 		return err
 	}
 
@@ -126,24 +126,24 @@ func (d *Datastore) PutSDKs(ctx context.Context, sdks []*entity.SDKEntity) error
 	return nil
 }
 
-//GetCodes returns the code entities by parent identifier
-func (d *Datastore) GetCodes(ctx context.Context, parentId string) ([]*entity.CodeEntity, error) {
+//GetFiles returns the file entities by parent identifier
+func (d *Datastore) GetFiles(ctx context.Context, parentId string) ([]*entity.FileEntity, error) {
 	snipId := utils.GetNameKey(SnippetKind, parentId, Namespace, nil)
-	query := datastore.NewQuery(CodeKind).Ancestor(snipId).Namespace(Namespace)
+	query := datastore.NewQuery(FileKind).Ancestor(snipId).Namespace(Namespace)
 	it := d.client.Run(ctx, query)
-	var codes []*entity.CodeEntity
+	var files []*entity.FileEntity
 	for {
-		var code entity.CodeEntity
-		_, err := it.Next(&code)
+		var file entity.FileEntity
+		_, err := it.Next(&file)
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
-			logger.Errorf("Datastore: GetCodes(): error during code getting, err: %s\n", err.Error())
+			logger.Errorf("Datastore: GetFiles(): error during file getting, err: %s\n", err.Error())
 		}
-		codes = append(codes, &code)
+		files = append(files, &file)
 	}
-	return codes, nil
+	return files, nil
 }
 
 //GetSDK returns the sdk entity by an identifier

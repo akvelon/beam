@@ -20,7 +20,7 @@ import (
 	"testing"
 )
 
-func TestGetCodeName(t *testing.T) {
+func TestGetFileName(t *testing.T) {
 	type args struct {
 		name string
 		sdk  pb.Sdk
@@ -31,7 +31,7 @@ func TestGetCodeName(t *testing.T) {
 		expectedResult string
 	}{
 		{
-			name: "Get code name when name is empty and sdk is JAVA",
+			name: "Get file name when name is empty and sdk is JAVA",
 			args: args{
 				name: "",
 				sdk:  pb.Sdk_SDK_JAVA,
@@ -39,7 +39,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: defaultJavaFileName,
 		},
 		{
-			name: "Get code name when name is empty and sdk is GO",
+			name: "Get file name when name is empty and sdk is GO",
 			args: args{
 				name: "",
 				sdk:  pb.Sdk_SDK_GO,
@@ -47,7 +47,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: defaultGoFileName,
 		},
 		{
-			name: "Get code name when name is empty and sdk is PYTHON",
+			name: "Get file name when name is empty and sdk is PYTHON",
 			args: args{
 				name: "",
 				sdk:  pb.Sdk_SDK_PYTHON,
@@ -55,7 +55,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: defaultPythonFileName,
 		},
 		{
-			name: "Get code name when name is empty and sdk is SCIO",
+			name: "Get file name when name is empty and sdk is SCIO",
 			args: args{
 				name: "",
 				sdk:  pb.Sdk_SDK_SCIO,
@@ -63,7 +63,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: defaultScioFileName,
 		},
 		{
-			name: "Get code name when name is a random string and sdk is JAVA",
+			name: "Get file name when name is a random string and sdk is JAVA",
 			args: args{
 				name: "MOCK_NAME",
 				sdk:  pb.Sdk_SDK_JAVA,
@@ -71,7 +71,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: defaultJavaFileName,
 		},
 		{
-			name: "Get code name when name has wrong extension and sdk is JAVA",
+			name: "Get file name when name has wrong extension and sdk is JAVA",
 			args: args{
 				name: "MOCK_NAME.py",
 				sdk:  pb.Sdk_SDK_JAVA,
@@ -79,7 +79,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: "MOCK_NAME.java",
 		},
 		{
-			name: "Get code name when name is a random string and sdk is GO",
+			name: "Get file name when name is a random string and sdk is GO",
 			args: args{
 				name: "MOCK_NAME",
 				sdk:  pb.Sdk_SDK_GO,
@@ -87,7 +87,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: defaultGoFileName,
 		},
 		{
-			name: "Get code name when name has wrong extension and sdk is GO",
+			name: "Get file name when name has wrong extension and sdk is GO",
 			args: args{
 				name: "MOCK_NAME.py",
 				sdk:  pb.Sdk_SDK_GO,
@@ -95,7 +95,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: "MOCK_NAME.go",
 		},
 		{
-			name: "Get code name when name is a random string and sdk is PYTHON",
+			name: "Get file name when name is a random string and sdk is PYTHON",
 			args: args{
 				name: "MOCK_NAME",
 				sdk:  pb.Sdk_SDK_PYTHON,
@@ -103,7 +103,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: defaultPythonFileName,
 		},
 		{
-			name: "Get code name when name has wrong extension and sdk is PYTHON",
+			name: "Get file name when name has wrong extension and sdk is PYTHON",
 			args: args{
 				name: "MOCK_NAME.java",
 				sdk:  pb.Sdk_SDK_PYTHON,
@@ -111,7 +111,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: "MOCK_NAME.py",
 		},
 		{
-			name: "Get code name when name is a random string and sdk is SCIO",
+			name: "Get file name when name is a random string and sdk is SCIO",
 			args: args{
 				name: "MOCK_NAME",
 				sdk:  pb.Sdk_SDK_SCIO,
@@ -119,7 +119,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: defaultScioFileName,
 		},
 		{
-			name: "Get code name when name has wrong extension and sdk is SCIO",
+			name: "Get file name when name has wrong extension and sdk is SCIO",
 			args: args{
 				name: "MOCK_NAME.java",
 				sdk:  pb.Sdk_SDK_SCIO,
@@ -127,7 +127,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: "MOCK_NAME.scala",
 		},
 		{
-			name: "Get code name when name is correct and sdk is JAVA",
+			name: "Get file name when name is correct and sdk is JAVA",
 			args: args{
 				name: "MOCK_NAME.java",
 				sdk:  pb.Sdk_SDK_JAVA,
@@ -135,7 +135,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: "MOCK_NAME.java",
 		},
 		{
-			name: "Get code name when name is correct and sdk is GO",
+			name: "Get file name when name is correct and sdk is GO",
 			args: args{
 				name: "MOCK_NAME.go",
 				sdk:  pb.Sdk_SDK_GO,
@@ -143,7 +143,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: "MOCK_NAME.go",
 		},
 		{
-			name: "Get code name when name is correct and sdk is PYTHON",
+			name: "Get file name when name is correct and sdk is PYTHON",
 			args: args{
 				name: "MOCK_NAME.py",
 				sdk:  pb.Sdk_SDK_PYTHON,
@@ -151,7 +151,7 @@ func TestGetCodeName(t *testing.T) {
 			expectedResult: "MOCK_NAME.py",
 		},
 		{
-			name: "Get code name when name is correct and sdk is SCIO",
+			name: "Get file name when name is correct and sdk is SCIO",
 			args: args{
 				name: "MOCK_NAME.scala",
 				sdk:  pb.Sdk_SDK_SCIO,
@@ -161,18 +161,18 @@ func TestGetCodeName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actualResult := GetCodeName(tt.args.name, tt.args.sdk)
+			actualResult := GetFileName(tt.args.name, tt.args.sdk)
 			if actualResult != tt.expectedResult {
-				t.Errorf("GetCodeName() actual result is not equal to the expected result")
+				t.Errorf("GetFileName() actual result is not equal to the expected result")
 			}
 		})
 	}
 }
 
-func TestIsCodeMain(t *testing.T) {
+func TestIsFileMain(t *testing.T) {
 	type args struct {
-		code string
-		sdk  pb.Sdk
+		content string
+		sdk     pb.Sdk
 	}
 	tests := []struct {
 		name           string
@@ -180,75 +180,75 @@ func TestIsCodeMain(t *testing.T) {
 		expectedResult bool
 	}{
 		{
-			name: "Is code main when code doesn't have main method and sdk is JAVA",
+			name: "Is file main when code doesn't have main method and sdk is JAVA",
 			args: args{
-				code: "MOCK_CODE",
-				sdk:  pb.Sdk_SDK_JAVA,
+				content: "MOCK_CONTENT",
+				sdk:     pb.Sdk_SDK_JAVA,
 			},
 			expectedResult: false,
 		},
 		{
-			name: "Is code main when code doesn't have main method and sdk is GO",
+			name: "Is file main when code doesn't have main method and sdk is GO",
 			args: args{
-				code: "MOCK_CODE",
-				sdk:  pb.Sdk_SDK_GO,
+				content: "MOCK_CONTENT",
+				sdk:     pb.Sdk_SDK_GO,
 			},
 			expectedResult: false,
 		},
 		{
-			name: "Is code main when code doesn't have main method and sdk is PYTHON",
+			name: "Is file main when code doesn't have main method and sdk is PYTHON",
 			args: args{
-				code: "MOCK_CODE",
-				sdk:  pb.Sdk_SDK_PYTHON,
+				content: "MOCK_CONTENT",
+				sdk:     pb.Sdk_SDK_PYTHON,
 			},
 			expectedResult: false,
 		},
 		{
-			name: "Is code main when code doesn't have main method and sdk is SCIO",
+			name: "Is file main when content doesn't have main method and sdk is SCIO",
 			args: args{
-				code: "MOCK_CODE",
-				sdk:  pb.Sdk_SDK_SCIO,
+				content: "MOCK_CONTENT",
+				sdk:     pb.Sdk_SDK_SCIO,
 			},
 			expectedResult: false,
 		},
 		{
-			name: "Is code main when code has main method and sdk is JAVA",
+			name: "Is file main when content has main method and sdk is JAVA",
 			args: args{
-				code: "MOCK_CODEpublic static void main(String[] args)MOCK_CODE",
-				sdk:  pb.Sdk_SDK_JAVA,
+				content: "MOCK_CONTENTpublic static void main(String[] args)MOCK_CONTENT",
+				sdk:     pb.Sdk_SDK_JAVA,
 			},
 			expectedResult: true,
 		},
 		{
-			name: "Is code main when code has main method and sdk is GO",
+			name: "Is file main when content has main method and sdk is GO",
 			args: args{
-				code: "MOCK_CODEfunc main()MOCK_CODE",
-				sdk:  pb.Sdk_SDK_GO,
+				content: "MOCK_CONTENTfunc main()MOCK_CONTENT",
+				sdk:     pb.Sdk_SDK_GO,
 			},
 			expectedResult: true,
 		},
 		{
-			name: "Is code main when code has main method and sdk is PYTHON",
+			name: "Is file main when content has main method and sdk is PYTHON",
 			args: args{
-				code: "MOCK_CODEif __name__ == '__main__'MOCK_CODE",
-				sdk:  pb.Sdk_SDK_PYTHON,
+				content: "MOCK_CONTENTif __name__ == '__main__'MOCK_CONTENT",
+				sdk:     pb.Sdk_SDK_PYTHON,
 			},
 			expectedResult: true,
 		},
 		{
-			name: "Is code main when code has main method and sdk is SCIO",
+			name: "Is file main when content has main method and sdk is SCIO",
 			args: args{
-				code: "MOCK_CODEdef main(cmdlineArgs: Array[String])MOCK_CODE",
-				sdk:  pb.Sdk_SDK_SCIO,
+				content: "MOCK_CONTENTdef main(cmdlineArgs: Array[String])MOCK_CONTENT",
+				sdk:     pb.Sdk_SDK_SCIO,
 			},
 			expectedResult: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actualResult := IsCodeMain(tt.args.code, tt.args.sdk)
+			actualResult := IsFileMain(tt.args.content, tt.args.sdk)
 			if actualResult != tt.expectedResult {
-				t.Errorf("IsCodeMain() actual result is not equal to the expected result")
+				t.Errorf("IsFileMain() actual result is not equal to the expected result")
 			}
 		})
 	}

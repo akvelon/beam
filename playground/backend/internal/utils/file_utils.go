@@ -37,10 +37,10 @@ const (
 	scioExt               = ".scala"
 )
 
-// GetCodeName returns the valid code name.
-func GetCodeName(name string, sdk pb.Sdk) string {
+// GetFileName returns the valid file name.
+func GetFileName(name string, sdk pb.Sdk) string {
 	if name == "" {
-		logger.Warn("The name of code file is empty. Will be used default value")
+		logger.Warn("The name of the file is empty. Will be used default value")
 		switch sdk {
 		case pb.Sdk_SDK_JAVA:
 			return defaultJavaFileName
@@ -52,11 +52,11 @@ func GetCodeName(name string, sdk pb.Sdk) string {
 			return defaultScioFileName
 		}
 	}
-	return getCorrectCodeName(name, sdk)
+	return getCorrectFileName(name, sdk)
 }
 
-// getCorrectCodeName returns the correct code name.
-func getCorrectCodeName(name string, sdk pb.Sdk) string {
+// getCorrectFileName returns the correct file name.
+func getCorrectFileName(name string, sdk pb.Sdk) string {
 	ext := filepath.Ext(name)
 	switch sdk {
 	case pb.Sdk_SDK_JAVA:
@@ -71,22 +71,22 @@ func getCorrectCodeName(name string, sdk pb.Sdk) string {
 	return name
 }
 
-// getCorrectCodeName returns the correct code name or default name.
+// getCorrectNameOrDefault returns the correct file name or default name.
 func getCorrectNameOrDefault(actualExt, correctExt, defaultFileName, name string) string {
 	if actualExt == "" {
-		logger.Error("The name of code does not have extension. Will be used default value")
+		logger.Error("The name of the file does not have extension. Will be used default value")
 		return defaultFileName
 	}
 	if actualExt != correctExt {
-		logger.Error("The name of code has wrong extension. Will be used correct extension according to sdk")
+		logger.Error("The name of the file has wrong extension. Will be used correct extension according to sdk")
 		return name[0:len(name)-len(actualExt)] + correctExt
 	} else {
 		return name
 	}
 }
 
-// IsCodeMain returns true if the code content has a main function, otherwise false.
-func IsCodeMain(content string, sdk pb.Sdk) bool {
+// IsFileMain returns true if the file content has a main function, otherwise false.
+func IsFileMain(content string, sdk pb.Sdk) bool {
 	switch sdk {
 	case pb.Sdk_SDK_JAVA:
 		return strings.Contains(content, javaMainMethod)

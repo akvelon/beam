@@ -45,9 +45,9 @@ func (s Origin) Value() int32 {
 	return int32(s)
 }
 
-type CodeEntity struct {
+type FileEntity struct {
 	Name     string `datastore:"name"`
-	Code     string `datastore:"code,noindex"`
+	Content  string `datastore:"content,noindex"`
 	CntxLine int32  `datastore:"cntxLine"`
 	IsMain   bool   `datastore:"isMain"`
 }
@@ -66,20 +66,20 @@ type SnippetEntity struct {
 type Snippet struct {
 	*IDInfo
 	Snippet *SnippetEntity
-	Codes   []*CodeEntity
+	Files   []*FileEntity
 }
 
 // ID generates id according to content of the entity
 func (s *Snippet) ID() (string, error) {
-	var codes []string
-	for _, v := range s.Codes {
-		codes = append(codes, strings.TrimSpace(v.Code)+strings.TrimSpace(v.Name))
+	var files []string
+	for _, v := range s.Files {
+		files = append(files, strings.TrimSpace(v.Content)+strings.TrimSpace(v.Name))
 	}
-	sort.Strings(codes)
+	sort.Strings(files)
 	var content string
-	for i, v := range codes {
+	for i, v := range files {
 		content += v
-		if i == len(codes)-1 {
+		if i == len(files)-1 {
 			content += fmt.Sprintf("%v%s", s.Snippet.Sdk, strings.TrimSpace(s.Snippet.PipeOpts))
 		}
 	}
@@ -90,9 +90,9 @@ func (s *Snippet) ID() (string, error) {
 	return id, nil
 }
 
-// ID generates id according to content of a code and its name
-func (c *CodeEntity) ID(snip *Snippet) (string, error) {
-	content := fmt.Sprintf("%s%s", strings.TrimSpace(c.Code), strings.TrimSpace(c.Name))
+// ID generates id according to content of a file and its name
+func (c *FileEntity) ID(snip *Snippet) (string, error) {
+	content := fmt.Sprintf("%s%s", strings.TrimSpace(c.Content), strings.TrimSpace(c.Name))
 	id, err := utils.ID(snip.Salt, content, snip.IdLength)
 	if err != nil {
 		return "", err

@@ -379,13 +379,13 @@ func (controller *playgroundController) SaveSnippet(ctx context.Context, info *p
 
 	for _, file := range info.Files {
 		if file.Content == "" {
-			logger.Error("SaveCode(): entity is empty")
-			return nil, errors.InvalidArgumentError(errorTitle, "Snippet must have some code")
+			logger.Error("SaveSnippet(): entity is empty")
+			return nil, errors.InvalidArgumentError(errorTitle, "Snippet must have some content")
 		}
 
 		maxSnippetSize := controller.env.ApplicationEnvs.MaxSnippetSize()
 		if len(file.Content) > maxSnippetSize {
-			logger.Errorf("SaveCode(): entity is too large. Max entity size: %d symbols", maxSnippetSize)
+			logger.Errorf("SaveSnippet(): entity is too large. Max entity size: %d symbols", maxSnippetSize)
 			return nil, errors.InvalidArgumentError(errorTitle, "Snippet size is more than %d symbols", maxSnippetSize)
 		}
 
@@ -393,12 +393,12 @@ func (controller *playgroundController) SaveSnippet(ctx context.Context, info *p
 		if len(info.Files) == 1 {
 			isMain = true
 		} else {
-			isMain = utils.IsCodeMain(file.Content, info.Sdk)
+			isMain = utils.IsFileMain(file.Content, info.Sdk)
 		}
 
-		snippet.Codes = append(snippet.Codes, &entity.CodeEntity{
-			Name:     utils.GetCodeName(file.Name, info.Sdk),
-			Code:     file.Content,
+		snippet.Files = append(snippet.Files, &entity.FileEntity{
+			Name:     utils.GetFileName(file.Name, info.Sdk),
+			Content:  file.Content,
 			CntxLine: 1,
 			IsMain:   isMain,
 		})
@@ -406,13 +406,13 @@ func (controller *playgroundController) SaveSnippet(ctx context.Context, info *p
 
 	id, err := snippet.ID()
 	if err != nil {
-		logger.Errorf("SaveCode(): ID(): error during ID generation: %s", err.Error())
+		logger.Errorf("SaveSnippet(): ID(): error during ID generation: %s", err.Error())
 		return nil, errors.InternalError(errorTitle, "Failed to generate ID")
 	}
 
 	if err = controller.db.PutSnippet(ctx, id, &snippet); err != nil {
-		logger.Errorf("SaveCode(): PutSnippet(): error during entity saving: %s", err.Error())
-		return nil, errors.InternalError(errorTitle, "Failed to save a code entity")
+		logger.Errorf("SaveSnippet(): PutSnippet(): error during entity saving: %s", err.Error())
+		return nil, errors.InternalError(errorTitle, "Failed to save a snippet entity")
 	}
 
 	response := pb.SaveSnippetResponse{Id: id}
@@ -432,16 +432,16 @@ func (controller *playgroundController) GetSnippet(ctx context.Context, info *pb
 		Sdk:             pb.Sdk(pb.Sdk_value[snippet.Sdk.Name]),
 		PipelineOptions: snippet.PipeOpts,
 	}
-	codes, err := controller.db.GetCodes(ctx, info.GetId())
+	files, err := controller.db.GetFiles(ctx, info.GetId())
 	if err != nil {
-		logger.Errorf("GetCode(): GetCodes(): error during getting codes: %s", err.Error())
-		return nil, errors.InternalError(errorTitle, "Failed to retrieve the codes")
+		logger.Errorf("GetSnippet(): GetFiles(): error during getting files: %s", err.Error())
+		return nil, errors.InternalError(errorTitle, "Failed to retrieve files")
 	}
-	for _, code := range codes {
+	for _, file := range files {
 		response.Files = append(response.Files, &pb.SnippetFile{
-			Name:    code.Name,
-			Content: code.Code,
-			IsMain:  code.IsMain,
+			Name:    file.Name,
+			Content: file.Content,
+			IsMain:  file.IsMain,
 		})
 	}
 	return &response, nil

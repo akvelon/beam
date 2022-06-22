@@ -59,9 +59,9 @@ func TestLocalDB_PutSnippet(t *testing.T) {
 						Origin:   entity.PG_USER,
 						OwnerId:  "",
 					},
-					Codes: []*entity.CodeEntity{{
-						Code:   "MOCK_CODE",
-						IsMain: false,
+					Files: []*entity.FileEntity{{
+						Content: "MOCK_CONTENT",
+						IsMain:  false,
 					}},
 				},
 			},
@@ -113,9 +113,9 @@ func TestLocalDB_GetSnippet(t *testing.T) {
 						Origin:   entity.PG_USER,
 						OwnerId:  "",
 					},
-					Codes: []*entity.CodeEntity{{
-						Code:   "MOCK_CODE",
-						IsMain: false,
+					Files: []*entity.FileEntity{{
+						Content: "MOCK_CONTENT",
+						IsMain:  false,
 					}},
 				})
 			},
@@ -137,7 +137,7 @@ func TestLocalDB_GetSnippet(t *testing.T) {
 
 			if err == nil {
 				if snip.Sdk.Name != "SDK_GO" ||
-					//snip.Codes[0].Code != "MOCK_CODE" ||
+					//snip.Files[0].Content != "MOCK_CONTENT" ||
 					snip.PipeOpts != "MOCK_OPTIONS" ||
 					snip.Origin != entity.PG_USER ||
 					snip.OwnerId != "" {
@@ -248,13 +248,13 @@ func TestLocalDB_GetCodes(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "GetCodes() with parentId that is no in the database",
+			name:    "GetFiles() with parentId that is no in the database",
 			prepare: func() {},
 			args:    args{ctx: ctx, parentId: "MOCK_ID"},
 			wantErr: true,
 		},
 		{
-			name: "GetCodes() in the usual case",
+			name: "GetFiles() in the usual case",
 			prepare: func() {
 				_ = localDb.PutSnippet(ctx, "MOCK_ID", &entity.Snippet{
 					IDInfo: &entity.IDInfo{
@@ -267,9 +267,9 @@ func TestLocalDB_GetCodes(t *testing.T) {
 						Origin:   entity.PG_USER,
 						OwnerId:  "",
 					},
-					Codes: []*entity.CodeEntity{{
-						Code:   "MOCK_CODE",
-						IsMain: false,
+					Files: []*entity.FileEntity{{
+						Content: "MOCK_CONTENT",
+						IsMain:  false,
 					}},
 				})
 			},
@@ -281,16 +281,16 @@ func TestLocalDB_GetCodes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.prepare()
-			codes, err := localDb.GetCodes(tt.args.ctx, tt.args.parentId)
+			codes, err := localDb.GetFiles(tt.args.ctx, tt.args.parentId)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetCodes() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetFiles() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if err == nil {
 				if len(codes) != 1 ||
-					codes[0].Code != "MOCK_CODE" ||
+					codes[0].Content != "MOCK_CONTENT" ||
 					codes[0].IsMain != false {
-					t.Error("GetCodes() unexpected result")
+					t.Error("GetFiles() unexpected result")
 				}
 			}
 		})

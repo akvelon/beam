@@ -41,7 +41,7 @@ func (l *LocalDB) PutSnippet(_ context.Context, id string, snip *entity.Snippet)
 	return nil
 }
 
-// GetSnippet returns the code entity
+// GetSnippet returns the snippet entity
 func (l *LocalDB) GetSnippet(_ context.Context, id string) (*entity.SnippetEntity, error) {
 	l.RLock()
 	value, found := l.items[id]
@@ -72,8 +72,8 @@ func (l *LocalDB) PutSDKs(_ context.Context, sdks []*entity.SDKEntity) error {
 	return nil
 }
 
-//GetCodes returns the code entities by parent identifier
-func (l *LocalDB) GetCodes(_ context.Context, parentId string) ([]*entity.CodeEntity, error) {
+//GetFiles returns the file entities by parent identifier
+func (l *LocalDB) GetFiles(_ context.Context, parentId string) ([]*entity.FileEntity, error) {
 	l.RLock()
 	value, found := l.items[parentId]
 	if !found {
@@ -82,7 +82,7 @@ func (l *LocalDB) GetCodes(_ context.Context, parentId string) ([]*entity.CodeEn
 	}
 	l.RUnlock()
 	snippet, _ := value.(*entity.Snippet)
-	return snippet.Codes, nil
+	return snippet.Files, nil
 }
 
 //GetSDK returns the sdk entity by an identifier

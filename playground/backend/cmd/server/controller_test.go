@@ -746,7 +746,7 @@ func TestPlaygroundController_SaveSnippet(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				info: &pb.SaveSnippetRequest{
-					Files: []*pb.SnippetFile{{Name: "MOCK_NAME", Content: "MOCK_CODE"}},
+					Files: []*pb.SnippetFile{{Name: "MOCK_NAME", Content: "MOCK_CONTENT"}},
 					Sdk:   pb.Sdk_SDK_UNSPECIFIED,
 				},
 			},
@@ -772,12 +772,12 @@ func TestPlaygroundController_SaveSnippet(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				info: &pb.SaveSnippetRequest{
-					Files: []*pb.SnippetFile{{Name: "MOCK_NAME", Content: "MOCK_CODE"}},
+					Files: []*pb.SnippetFile{{Name: "MOCK_NAME", Content: "MOCK_CONTENT"}},
 					Sdk:   pb.Sdk_SDK_GO,
 				},
 			},
 			wantErr: false,
-			wantId:  "obxGH-aLdgj",
+			wantId:  "G8wItE9lRcs",
 		},
 		// Test case with calling SaveSnippet method with too large entity.
 		// As a result, want to receive an error.
@@ -838,7 +838,7 @@ func TestPlaygroundController_GetSnippet(t *testing.T) {
 			wantErr: true,
 		},
 		// Test case with calling GetSnippet method with a correct ID.
-		// As a result, want to receive a code entity.
+		// As a result, want to receive a snippet entity.
 		{
 			name: "GetSnippet with correct ID",
 			args: args{
@@ -855,9 +855,9 @@ func TestPlaygroundController_GetSnippet(t *testing.T) {
 							Created:  nowDate,
 							Origin:   entity.PG_USER,
 						},
-						Codes: []*entity.CodeEntity{{
-							Code:   "MOCK_CODE",
-							IsMain: false,
+						Files: []*entity.FileEntity{{
+							Content: "MOCK_CONTENT",
+							IsMain:  false,
 						}},
 					},
 				)
@@ -874,7 +874,7 @@ func TestPlaygroundController_GetSnippet(t *testing.T) {
 				t.Errorf("PlaygroundController_GetSnippet() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if err == nil {
-				if got.Files[0].Content != "MOCK_CODE" || got.Sdk != 1 || got.PipelineOptions != "MOCK_OPTIONS" {
+				if got.Files[0].Content != "MOCK_CONTENT" || got.Sdk != 1 || got.PipelineOptions != "MOCK_OPTIONS" {
 					t.Errorf("PlaygroundController_GetSnippet() unexpected response")
 				}
 			}

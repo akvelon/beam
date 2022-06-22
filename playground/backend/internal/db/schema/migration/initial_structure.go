@@ -24,7 +24,7 @@ import (
 
 const (
 	versionV1     = "0.0.1"
-	descriptionV1 = "Data initialization: code snippet, schema versions, SDK"
+	descriptionV1 = "Data initialization: file snippet, schema versions, SDK"
 )
 
 type InitialStructure struct {
@@ -43,10 +43,10 @@ func (is *InitialStructure) InitiateData(args *schema.DBArgs) error {
 			OwnerId:  dummyStr,
 			PipeOpts: dummyStr,
 		},
-		Codes: []*entity.CodeEntity{
+		Files: []*entity.FileEntity{
 			{
-				Name: dummyStr,
-				Code: dummyStr,
+				Name:    dummyStr,
+				Content: dummyStr,
 			},
 		},
 	}

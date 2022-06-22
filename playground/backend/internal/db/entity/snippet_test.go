@@ -34,17 +34,17 @@ func TestSnippet_ID(t *testing.T) {
 					Sdk:      utils.GetNameKey("pg_sdks", "SDK_GO", "Playground", nil),
 					PipeOpts: "MOCK_OPTIONS",
 				},
-				Codes: []*CodeEntity{{
-					Name:   "MOCK_NAME",
-					Code:   "MOCK_CODE",
-					IsMain: false,
+				Files: []*FileEntity{{
+					Name:    "MOCK_NAME",
+					Content: "MOCK_CONTENT",
+					IsMain:  false,
 				}},
 				IDInfo: &IDInfo{
 					IdLength: 11,
 					Salt:     "MOCK_SALT",
 				},
 			},
-			want:    "nN5n1noWt2J",
+			want:    "HLCGZQmHrRy",
 			wantErr: false,
 		},
 	}
@@ -68,22 +68,22 @@ func TestSnippet_ID(t *testing.T) {
 	}
 }
 
-func TestCode_ID(t *testing.T) {
-	code := &CodeEntity{
-		Name:   "MOCK_NAME",
-		Code:   "MOCK_CODE",
-		IsMain: false,
+func TestFile_ID(t *testing.T) {
+	file := &FileEntity{
+		Name:    "MOCK_NAME",
+		Content: "MOCK_CONTENT",
+		IsMain:  false,
 	}
 
 	tests := []struct {
 		name    string
 		snip    *Snippet
-		code    *CodeEntity
+		file    *FileEntity
 		want    string
 		wantErr bool
 	}{
 		{
-			name: "CodeEntity ID() in the usual case",
+			name: "FileEntity ID() in the usual case",
 			snip: &Snippet{
 				Snippet: &SnippetEntity{
 					Sdk:      utils.GetNameKey("pg_sdks", "SDK_GO", "Playground", nil),
@@ -93,17 +93,17 @@ func TestCode_ID(t *testing.T) {
 					Salt:     "MOCK_SALT",
 					IdLength: 11,
 				},
-				Codes: []*CodeEntity{code},
+				Files: []*FileEntity{file},
 			},
-			code:    code,
-			want:    "XSnhl0HoUOd",
+			file:    file,
+			want:    "OpdzDJYiSbj",
 			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			id, err := tt.code.ID(tt.snip)
+			id, err := tt.file.ID(tt.snip)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ID() error = %v, wantErr %v", err, tt.wantErr)
 			}

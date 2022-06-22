@@ -87,9 +87,9 @@ func TestDatastore_PutSnippet(t *testing.T) {
 					Origin:   entity.PG_USER,
 					OwnerId:  "",
 				},
-				Codes: []*entity.CodeEntity{{
-					Code:   "MOCK_CODE",
-					IsMain: false,
+				Files: []*entity.FileEntity{{
+					Content: "MOCK_CONTENT",
+					IsMain:  false,
 				}},
 			}},
 			wantErr: false,
@@ -141,9 +141,9 @@ func TestDatastore_GetSnippet(t *testing.T) {
 						Origin:   entity.PG_USER,
 						OwnerId:  "",
 					},
-					Codes: []*entity.CodeEntity{{
-						Code:   "MOCK_CODE",
-						IsMain: false,
+					Files: []*entity.FileEntity{{
+						Content: "MOCK_CONTENT",
+						IsMain:  false,
 					}},
 				})
 			},
@@ -260,7 +260,7 @@ func TestDatastore_PutSchemaVersion(t *testing.T) {
 	cleanData(t, SchemaKind, "MOCK_ID")
 }
 
-func TestDatastore_GetCodes(t *testing.T) {
+func TestDatastore_GetFiles(t *testing.T) {
 	type args struct {
 		ctx      context.Context
 		parentId string
@@ -272,13 +272,13 @@ func TestDatastore_GetCodes(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "GetCodes() with parentId that is no in the database",
+			name:    "GetFiles() with parentId that is no in the database",
 			prepare: func() {},
 			args:    args{ctx: ctx, parentId: "MOCK_ID"},
 			wantErr: false,
 		},
 		{
-			name: "GetCodes() in the usual case",
+			name: "GetFiles() in the usual case",
 			prepare: func() {
 				_ = datastoreDb.PutSnippet(ctx, "MOCK_ID", &entity.Snippet{
 					IDInfo: &entity.IDInfo{
@@ -291,9 +291,9 @@ func TestDatastore_GetCodes(t *testing.T) {
 						Origin:   entity.PG_USER,
 						OwnerId:  "",
 					},
-					Codes: []*entity.CodeEntity{{
-						Code:   "MOCK_CODE",
-						IsMain: false,
+					Files: []*entity.FileEntity{{
+						Content: "MOCK_CONTENT",
+						IsMain:  false,
 					}},
 				})
 			},
@@ -305,20 +305,20 @@ func TestDatastore_GetCodes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.prepare()
-			codes, err := datastoreDb.GetCodes(tt.args.ctx, tt.args.parentId)
+			files, err := datastoreDb.GetFiles(tt.args.ctx, tt.args.parentId)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetCodes() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetFiles() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if len(codes) != 1 ||
-				codes[0].Code != "MOCK_CODE" ||
-				codes[0].IsMain != false {
-				t.Error("GetCodes() unexpected result")
+			if len(files) != 1 ||
+				files[0].Content != "MOCK_CONTENT" ||
+				files[0].IsMain != false {
+				t.Error("GetFiles() unexpected result")
 			}
 		})
 	}
 
-	cleanData(t, CodeKind, "ig43m5rUQo_l")
+	cleanData(t, FileKind, "ig43m5rUQo_l")
 	cleanData(t, SnippetKind, "MOCK_ID")
 }
 
