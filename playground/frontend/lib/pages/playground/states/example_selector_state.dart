@@ -21,17 +21,29 @@ import 'package:playground_components/playground_components.dart';
 
 class ExampleSelectorState with ChangeNotifier {
   final PlaygroundController _playgroundController;
-  String _filterText;
+  ExampleType _selectedFilterType;
+  String _searchText;
   List<CategoryWithExamples> categories;
+  List<String> tags = [];
   List<String> selectedTags = [];
 
   ExampleSelectorState(
     this._playgroundController,
     this.categories, [
-    this._filterText = '',
-  ]);
+    this._selectedFilterType = ExampleType.all,
+    this._searchText = '',
+  ]) {
+    tags = _getTags(categories);
+  }
 
-  String get filterText => _filterText;
+  ExampleType get selectedFilterType => _selectedFilterType;
+
+  String get searchText => _searchText;
+
+  void setSelectedFilterType(ExampleType type) {
+    _selectedFilterType = type;
+    notifyListeners();
+  }
 
   addSelectedTag(String tag) {
     selectedTags.add(tag);
@@ -43,8 +55,20 @@ class ExampleSelectorState with ChangeNotifier {
     notifyListeners();
   }
 
-  void setFilterText(String text) {
-    _filterText = text;
+  List<String> _getTags(List<CategoryWithExamples> categories) {
+    Set<String> tags = {};
+    for (var category in categories) {
+      for (var example in category.examples) {
+        for (var tag in example.tags) {
+          tags.add(tag);
+        }
+      }
+    }
+    return tags.toList();
+  }
+
+  void setSearchText(String text) {
+    _searchText = text;
     notifyListeners();
   }
 
@@ -53,35 +77,30 @@ class ExampleSelectorState with ChangeNotifier {
     notifyListeners();
   }
 
-  void sortCategories() {
+  void filterCategoriesWithExamples() {
     final categories = _playgroundController.exampleCache.getCategories(
       _playgroundController.sdk,
     );
-
-    final sortedCategories = categories
+    final filteredCategories = categories
         .map((category) => CategoryWithExamples(
             title: category.title,
-            examples: _sortCategoryExamples(category.examples)))
+            examples: _filterExamples(category.examples)))
         .where((category) => category.examples.isNotEmpty)
         .toList();
-    setCategories(sortedCategories);
+    setCategories(filteredCategories);
   }
 
-  List<ExampleBase> _sortCategoryExamples(List<ExampleBase> examples) {
-    if (selectedTags.isEmpty && filterText.isEmpty) {
+  List<ExampleBase> _filterExamples(List<ExampleBase> examples) {
+    final byType = filterExamplesByType(examples, selectedFilterType);
+    final byTags = filterExamplesByTags(byType);
+    final byName = filterExamplesByName(byTags);
+    return byName;
+  }
+
+  List<ExampleBase> filterExamplesByTags(List<ExampleBase> examples) {
+    if (selectedTags.isEmpty) {
       return examples;
     }
-    if (selectedTags.isNotEmpty && filterText.isEmpty) {
-      return sortExamplesByTags(examples);
-    }
-    if (selectedTags.isEmpty && filterText.isNotEmpty) {
-      return sortExamplesByName(examples);
-    }
-    final sorted = sortExamplesByTags(examples);
-    return sortExamplesByName(sorted);
-  }
-
-  List<ExampleBase> sortExamplesByTags(List<ExampleBase> examples) {
     List<ExampleBase> sorted = [];
     for (var example in examples) {
       if (example.tags.toSet().containsAll(selectedTags)) {
@@ -91,17 +110,23 @@ class ExampleSelectorState with ChangeNotifier {
     return sorted;
   }
 
-  List<ExampleBase> sortExamplesByType(
+  List<ExampleBase> filterExamplesByType(
     List<ExampleBase> examples,
     ExampleType type,
   ) {
+    if (type == ExampleType.all) {
+      return examples;
+    }
     return examples.where((element) => element.type == type).toList();
   }
 
-  List<ExampleBase> sortExamplesByName(List<ExampleBase> examples) {
+  List<ExampleBase> filterExamplesByName(List<ExampleBase> examples) {
+    if (searchText.isEmpty) {
+      return examples;
+    }
     return examples
         .where((example) =>
-            example.name.toLowerCase().contains(filterText.toLowerCase()))
+            example.name.toLowerCase().contains(searchText.toLowerCase()))
         .toList();
   }
 }

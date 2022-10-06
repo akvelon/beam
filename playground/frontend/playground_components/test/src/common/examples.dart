@@ -23,7 +23,7 @@ import 'package:playground_components/src/models/sdk.dart';
 const exampleMock1 = Example(
   sdk: Sdk.python,
   source: 'ex1',
-  name: 'Example',
+  name: 'Example X1',
   tags: [],
   type: ExampleType.example,
   description: 'description',

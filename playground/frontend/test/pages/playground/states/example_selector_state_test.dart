@@ -49,9 +49,26 @@ void main() {
   });
 
   test(
+    'ExampleSelector state selectedFilterType should be ExampleType.all by default',
+    () {
+      expect(state.selectedFilterType, ExampleType.all);
+    },
+  );
+
+  test(
     'ExampleSelector state filterText should be empty string by default',
     () {
-      expect(state.filterText, '');
+      expect(state.searchText, '');
+    },
+  );
+
+  test(
+    'ExampleSelector state should notify all listeners about filter type change',
+    () {
+      state.addListener(() {
+        expect(state.selectedFilterType, ExampleType.example);
+      });
+      state.setSelectedFilterType(ExampleType.example);
     },
   );
 
@@ -59,9 +76,9 @@ void main() {
     'ExampleSelector state should notify all listeners about filterText change',
     () {
       state.addListener(() {
-        expect(state.filterText, 'test');
+        expect(state.searchText, 'test');
       });
-      state.setFilterText('test');
+      state.setSearchText('test');
     },
   );
 
@@ -84,7 +101,24 @@ void main() {
       expect(state.categories, []);
       expect(exampleCache.categoryListsBySdk, exampleCache.categoryListsBySdk);
     });
-    state.sortCategories();
+    state.filterCategoriesWithExamples();
+  });
+
+  test(
+      'ExampleSelector state sortExamplesByType should:'
+      '- update categories,'
+      '- notify all listeners,'
+      'but should NOT:'
+      '- affect Example state categories', () {
+    final state = ExampleSelectorState(
+      playgroundController,
+      categoriesMock,
+    );
+    state.addListener(() {
+      expect(state.categories, examplesSortedByTypeMock);
+      expect(exampleCache.categoryListsBySdk, exampleCache.categoryListsBySdk);
+    });
+    state.filterExamplesByType(unsortedExamples, ExampleType.kata);
   });
 
   test(
@@ -99,7 +133,7 @@ void main() {
     );
     state.addSelectedTag('Kata');
     expect(
-      state.sortExamplesByTags(unsortedExamples),
+      state.filterExamplesByTags(unsortedExamples),
       examplesSortedByTagsMock,
     );
   });
@@ -116,9 +150,9 @@ void main() {
       playgroundController,
       categoriesMock,
     );
-    state.setFilterText('X1');
+    state.setSearchText('Example X1');
     expect(
-      state.sortExamplesByName(unsortedExamples),
+      state.filterExamplesByName(unsortedExamples),
       examplesSortedByNameMock,
     );
   });
