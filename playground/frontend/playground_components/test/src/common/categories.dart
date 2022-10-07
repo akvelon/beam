@@ -24,7 +24,10 @@ import 'examples.dart';
 
 final categoriesMock = [
   CategoryWithExamples(title: 'Sorted', examples: [exampleMock1]),
-  CategoryWithExamples(title: 'Unsorted', examples: [exampleMock2]),
+  CategoryWithExamples(
+    title: 'Unsorted',
+    examples: [exampleMock1, exampleMock2, exampleMock2, exampleMock2],
+  ),
 ];
 
 final sortedCategories = [

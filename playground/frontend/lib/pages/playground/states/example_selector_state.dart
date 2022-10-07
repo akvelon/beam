@@ -33,7 +33,7 @@ class ExampleSelectorState with ChangeNotifier {
     this._selectedFilterType = ExampleType.all,
     this._searchText = '',
   ]) {
-    tags = _getTags(categories);
+    tags = _getTagsSortedByPopularity(categories);
   }
 
   ExampleType get selectedFilterType => _selectedFilterType;
@@ -55,16 +55,24 @@ class ExampleSelectorState with ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> _getTags(List<CategoryWithExamples> categories) {
-    Set<String> tags = {};
+  List<String> _getTagsSortedByPopularity(
+    List<CategoryWithExamples> categories,
+  ) {
+    Map<String, int> tagsPopularity = {};
     for (var category in categories) {
       for (var example in category.examples) {
         for (var tag in example.tags) {
-          tags.add(tag);
+          if (tagsPopularity[tag] != null) {
+            tagsPopularity[tag] = tagsPopularity[tag]! + 1;
+          } else {
+            tagsPopularity[tag] = 1;
+          }
         }
       }
     }
-    return tags.toList();
+    final tagEntries = tagsPopularity.entries.toList()
+      ..sort((entry1, entry2) => entry2.value.compareTo(entry1.value));
+    return tagEntries.map((entry) => entry.key).toList();
   }
 
   void setSearchText(String text) {

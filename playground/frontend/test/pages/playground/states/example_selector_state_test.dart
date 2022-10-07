@@ -121,6 +121,7 @@ void main() {
     state.filterExamplesByType(unsortedExamples, ExampleType.kata);
   });
 
+  // TODO(nausharipov): replace all 'sort' with 'filter' if ok
   test(
       'ExampleSelector state sortExamplesByTags should:'
       '- return examples which contain all selected tags'
@@ -131,7 +132,7 @@ void main() {
       playgroundController,
       categoriesMock,
     );
-    state.addSelectedTag('Kata');
+    state.addSelectedTag('tag2');
     expect(
       state.filterExamplesByTags(unsortedExamples),
       examplesSortedByTagsMock,
@@ -155,5 +156,14 @@ void main() {
       state.filterExamplesByName(unsortedExamples),
       examplesSortedByNameMock,
     );
+  });
+
+  test('ExampleSelectorState sorts tags by popularity', () {
+    final state = ExampleSelectorState(
+      playgroundController,
+      categoriesMock,
+    );
+    const popularTag = 'tag2';
+    expect(state.tags.first == popularTag, true);
   });
 }
