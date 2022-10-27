@@ -65,7 +65,7 @@ variable "service_account" {
 
 variable "bucket_examples_name" {
   description = "Name of Bucket to Store Playground Examples"
-  default     = "playground-precompiled-objects"
+  default     = "playground-precompiled-objects-sndbx-plgrnd-001"
 }
 
 variable "bucket_examples_location" {
