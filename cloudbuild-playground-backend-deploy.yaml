@@ -27,9 +27,10 @@ steps:
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     entrypoint: './gradlew'
     args:
-      - ':playground:backend:containers:java:dockerTagPush -Pdocker-repository-root="$_ARTIFACT_REGISTRY_REPOSITORY_ID" -Pdocker-tag="$DOCKERTAG"'
+      - ':playground:backend:containers:java:dockerTagPush -Pdocker-repository-root="$_ARTIFACT_REGISTRY_REPOSITORY_ID" -Pdocker-tag="$_DOCKERTAG"'
 
 substitutions:
+  _DOCKER_TAG: ${GITHUB_SHA}
   _ARTIFACT_REGISTRY_REPOSITORY_ID: playground-repository
 
 images:
