@@ -21,6 +21,7 @@
 
 variable "project_id" {
   description = "The GCP Project ID where Playground Applications will be created"
+  default = "sandbox-playground-001"
 }
 
 variable "environment" {
@@ -29,6 +30,7 @@ variable "environment" {
 
 variable "region" {
   description = "Infrastructure Region"
+  default = "us-central1"
 }
 
 # Infrastructure variables
@@ -323,4 +325,6 @@ variable "state_prefix" {
   description = "terraform state prefix on GCP"
   default     = ""
 }
-variable "location" {}
+variable "location" {
+  default = "us-central1"
+}
