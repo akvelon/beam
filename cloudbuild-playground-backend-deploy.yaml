@@ -25,9 +25,9 @@ steps:
 
   # This step builds worker container and runs precommit gradle task
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
-    entrypoint: './gradlew -Dorg.gradle.console=rich'
+    entrypoint: './gradlew'
     args:
-      - ':playground:backend:precommit'
+      - ':playground:backend:precommit -d'
       - 'echo $_DOCKER_TAG'
 
 substitutions:
