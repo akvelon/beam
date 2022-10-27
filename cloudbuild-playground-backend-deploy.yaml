@@ -15,25 +15,25 @@
 
 steps:
   # This step builds the base image for Beam Playground worker
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '--tag=us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
-      - '-f'
-      - 'dockerfiles/Dockerfile-base-image-worker'
-      - '.'
+#  - name: 'gcr.io/cloud-builders/docker'
+#    args:
+#      - 'build'
+#      - '--tag=us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
+#      - '-f'
+#      - 'dockerfiles/Dockerfile-base-image-worker'
+#      - '.'
 
   # This step builds worker container and runs precommit gradle task
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     entrypoint: './gradlew'
     args:
-      - ':/gradlew playground:backend:containers:java:dockerTagPush -Pdocker-repository-root="$_ARTIFACT_REGISTRY_REPOSITORY_ID -Pdocker-tag="$_DOCKERTAG""'
+      - ':playground:backend:containers:java:dockerTagPush -Pdocker-repository-root="$_ARTIFACT_REGISTRY_REPOSITORY_ID -Pdocker-tag="$_DOCKERTAG""'
 
 substitutions:
   _DOCKER_TAG: ${GITHUB_SHA}
   _ARTIFACT_REGISTRY_REPOSITORY_ID: playground-repository
 
-images:
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
+#images:
+#  - 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
 
 timeout: 2800s
