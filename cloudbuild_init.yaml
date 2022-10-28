@@ -32,18 +32,23 @@ steps:
     entrypoint: "/bin/bash"
     args: ['-c', './gradlew playground:terraform:InitInfrastructure -Pproject_environment="beta"']
 
-#  - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
-#    entrypoint: "gcloud"
-#    args:
-#      - 'config set project "sandbox-playground-001"'
-#      - 'container clusters get-credentials  --region="us-central1"'
+  - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
+    entrypoint: "gcloud"
+    args:
+      [
+        'container',
+        'clusters ',
+        'get-credentials playground-backend',
+         '--region="us-central1"'
+      ]
 
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     entrypoint: "gcloud"
     args:
       [
-        'projects',
-        'list'
+        'app',
+        'deploy',
+        'playground/index.yaml'
 #      - 'config set project sandbox-playground-001'
 #      - 'app deploy playground/index.yaml'
       ]
