@@ -38,7 +38,8 @@ steps:
       [
         'container',
         'clusters',
-        'get-credentials playground-backend',
+        'get-credentials',
+        'playground-backend',
          '--region="us-central1"'
       ]
 
