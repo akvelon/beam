@@ -22,7 +22,7 @@ ARG GO_VERSION=1.19.2
 ENV PATH="${PATH}:/usr/local/go/bin"
 
 RUN apt-get update >/dev/null
-RUN apt-get -y install build-essential
+RUN apt-get -y install build-essential unzip
 
 # Install Docker
 # See: https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script
@@ -39,7 +39,8 @@ RUN go version
 
 #Install Terraform
 RUN curl -OL https://releases.hashicorp.com/terraform/1.3.3/terraform_1.3.3_linux_amd64.zip
-RUN tar -C /usr/local -xvf terraform_1.3.3_linux_amd64.zip
+RUN unzip terraform_1.3.3_linux_amd64.zip
+RUN mv terraform /usr/local/bin
 
 #Install GoLint
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.50.1
