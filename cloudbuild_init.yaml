@@ -50,7 +50,7 @@ steps:
   # This step builds worker container and runs precommit gradle task
   - name: '$_REGION-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     entrypoint: "/bin/bash"
-    args: [ '-c', './gradlew playground:terraform:gkebackend -Pproject_environment="env" -Pdocker-tag="ruslan"' ]
+    args: [ '-c', './gradlew playground:terraform:gkebackend -Pproject_environment="beta" -Pdocker-tag="ruslan"' ]
 
 substitutions:
   _REGION: us-central1
