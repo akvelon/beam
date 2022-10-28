@@ -38,7 +38,8 @@ steps:
 
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
-      ['app', 'deploy', 'playground/index.yaml', '--project="sandbox-playground-001"']
+      - 'config set project sandbox-playground-001'
+      - 'app deploy playground/index.yaml'
 
   # This step builds worker container and runs precommit gradle task
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
