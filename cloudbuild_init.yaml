@@ -34,7 +34,7 @@ steps:
 
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
-      ['container', 'clusters', 'get-credentials', '--region "us-central1" "playground-backend"', '--project "sandbox-playground-001"']
+      ['container', 'clusters', 'get-credentials "playground-backend"', '--region="us-central1"', '--project="sandbox-playground-001"']
 
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
