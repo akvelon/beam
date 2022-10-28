@@ -16,7 +16,7 @@
 # limitations under the License.
 ###############################################################################
 
-FROM gcr.io/cloud-builders/gcloud
+FROM gcr.io/google.com/cloudsdktool/google-cloud-cli
 
 ARG GO_VERSION=1.19.2
 ENV PATH="${PATH}:/usr/local/go/bin"

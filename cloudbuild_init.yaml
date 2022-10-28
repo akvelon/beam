@@ -32,13 +32,15 @@ steps:
     entrypoint: "/bin/bash"
     args: ['-c', './gradlew playground:terraform:InitInfrastructure -Pproject_environment="beta"']
 
-#  - name: 'gcr.io/cloud-builders/gcloud'
+#  - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
+#    entrypoint: "gcloud"
 #    args:
-#      ['container', 'clusters', 'get-credentials "playground-backend"', '--region="us-central1"', '--project="sandbox-playground-001"']
+#      - 'config set project "sandbox-playground-001"'
+#      - 'container clusters get-credentials  --region="us-central1"'
 
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:debian_component_based'
+  - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     args:
-      - 'gcloud config set project sandbox-playground-001'
+      - 'gcloud config set project "sandbox-playground-001"'
       - 'gcloud app deploy playground/index.yaml'
 
   # This step builds worker container and runs precommit gradle task
