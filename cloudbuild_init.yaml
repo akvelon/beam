@@ -37,7 +37,7 @@ steps:
     args:
       [
         'container',
-        'clusters ',
+        'clusters',
         'get-credentials playground-backend',
          '--region="us-central1"'
       ]
