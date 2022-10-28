@@ -27,8 +27,19 @@ steps:
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     entrypoint: './gradlew'
     args:
-      - ':playground:backend:precommit -d'
-      - 'echo $_DOCKER_TAG'
+      - 'playground:terraform:InitInfrastructure -Pproject_environment="beta" -d'
+
+  - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
+    args: ['gcloud', 'container', 'clusters', 'get-credentials', '--region "us-central1"', '"playground-backend"', '--project "sandbox-playground-001"']
+
+  - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
+    args: [ 'gcloud', 'app', 'deploy', 'playground/index.yaml', '--project="sandbox-playground-001"' ]
+
+  # This step builds worker container and runs precommit gradle task
+  - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
+    entrypoint: './gradlew'
+    args:
+      - 'playground:terraform:gkebackend -Pproject_environment="env" -Pdocker-tag="ruslan" -d'
 
 substitutions:
   _DOCKER_TAG: ${GITHUB_SHA}
@@ -37,4 +48,4 @@ substitutions:
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
 
-timeout: 2800s
+timeout: 4000s
