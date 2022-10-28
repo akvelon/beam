@@ -31,7 +31,7 @@ steps:
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     entrypoint: './gradlew'
     args:
-      - 'playground:terraform:InitInfrastructure -Pproject_environment="beta" -d'
+      - 'playground:terraform:InitInfrastructure -Pproject_environment="beta"'
 
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     args: ['gcloud', 'container', 'clusters', 'get-credentials', '--region "us-central1"', '"playground-backend"', '--project "sandbox-playground-001"']
@@ -43,7 +43,7 @@ steps:
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     entrypoint: './gradlew'
     args:
-      - 'playground:terraform:gkebackend -Pproject_environment="env" -Pdocker-tag="ruslan" -d'
+      - 'playground:terraform:gkebackend -Pproject_environment="env" -Pdocker-tag="ruslan"'
 
 substitutions:
   _DOCKER_TAG: ${GITHUB_SHA}
