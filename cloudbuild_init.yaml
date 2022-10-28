@@ -39,9 +39,10 @@ steps:
 #      - 'container clusters get-credentials  --region="us-central1"'
 
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
+    entrypoint: "gcloud"
     args:
-      - 'gcloud config set project "sandbox-playground-001"'
-      - 'gcloud app deploy playground/index.yaml'
+      - 'config set project "sandbox-playground-001"'
+      - 'app deploy playground/index.yaml'
 
   # This step builds worker container and runs precommit gradle task
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
