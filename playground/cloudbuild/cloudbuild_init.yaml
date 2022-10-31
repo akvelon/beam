@@ -19,13 +19,13 @@ steps:
       - 'build'
       - '--tag=$_REGION-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
       - '-f'
-      - 'dockerfiles/Dockerfile-base-image-worker'
+      - '../dockerfile/Dockerfile-base-image-worker'
       - '.'
 
   # This step builds worker container and runs precommit gradle task
   - name: '$_REGION-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     entrypoint: "/bin/bash"
-    args: ['-c', './gradlew playground:terraform:InitInfrastructure -Pproject_environment="beta"']
+    args: ['-c', './././gradlew playground:terraform:InitInfrastructure -Pproject_environment="beta"']
 
   - name: '$_REGION-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     entrypoint: "gcloud"
@@ -50,7 +50,7 @@ steps:
   # This step builds worker container and runs precommit gradle task
   - name: '$_REGION-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
     entrypoint: "/bin/bash"
-    args: [ '-c', './gradlew playground:terraform:gkebackend -Pproject_environment="beta" -Pdocker-tag="ruslan"' ]
+    args: [ '-c', './././gradlew ..:terraform:gkebackend -Pproject_environment="beta" -Pdocker-tag="ruslan"' ]
 
 substitutions:
   _REGION: us-central1
