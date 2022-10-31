@@ -9,6 +9,8 @@
 
 3. Set up Cloud Build service account (IAM)
 
+4. Create Cloud Build Trigger
+
 
 ### Before you begin
 
@@ -23,7 +25,7 @@
 - If you are initially connecting your repository to Cloud Build, make sure you have admin-level permissions on your repository. To learn more about GitHub repository permissions, see [Repository permission levels for an organization](https://docs.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization#permission-levels-for-repositories-owned-by-an-organization)
 
 
-## Enable Cloud Build and connect a GitHub Repository:
+## (1-2) Enable Cloud Build and connect a GitHub Repository:
 
 To connect your GitHub repository to your Cloud Build:
 
@@ -83,7 +85,7 @@ To connect your GitHub repository to your Cloud Build:
 
 You have now connected one or more GitHub repositories to your Cloud project. You are directed to the Triggers page in Google Cloud console.
 
-## Set up Cloud Build service account (IAM)
+## 3. Set up Cloud Build service account (IAM)
 
 > Cloud Build executes builds on your behalf using a unique service account.
 > The Cloud Build service account is automatically established and given the Cloud Build Service Account role for the project when the Cloud Build API is enabled on a Google Cloud project.
@@ -127,3 +129,48 @@ You have now connected one or more GitHub repositories to your Cloud project. Yo
         Storage Admin
 
 7. Click Save.
+
+
+## 4. Create Cloud Build Trigger ##
+
+1. Open the Navigation Menu on the left side of your Google Cloud Platform Console.
+
+2. Select Cloud Build, if it did not appear there, choose View All Products and search for Cloud Build there.
+
+3. Open the Triggers page.
+
+4. Select your project from the project selector drop-down menu at the top of the page.
+
+5. Enter the following trigger settings:
+
+- **Name**: Enter a name for your trigger.
+
+- **Region**: Select the region for your trigger (Same as your future Playground Infrastructure).
+
+
+- **Event**: Select the repository event to invoke your trigger.
+
+        - Manual invocation (To test cloud build first)
+
+- **Source**: Select the repository and the corresponding branch or tag to watch for events.
+
+       - Repository: Select your connected GitHub repository.
+
+       - Branch or Tag: Choose your actual branch with files.
+
+       Note: When your build executes, Cloud Build copies the contents of your repository to /workspace, the default working directory for Cloud Build
+
+- **Configuration**: Select the build config file located in your remote repository or create an inline build config file to use for your build.
+
+        - Select the Cloud Build configuration file (yaml or json) type of configuration to use for your build.
+
+- **Location**: Specify the location for your configuration.
+
+        - Repository: Provide the location of your build config file.
+
+- **Service account**: Leave blank (If you do not select a service account, the default Cloud Build service account is used).
+
+6. Click Create to save your build trigger.
+
+
+ 
