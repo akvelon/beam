@@ -19,7 +19,7 @@ steps:
       - 'build'
       - '--tag=$_REGION-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPOSITORY_ID/backend-builder:worker'
       - '-f'
-      - '../dockerfile/Dockerfile-base-image-worker'
+      - 'playground/dockerfile/Dockerfile-base-image-worker'
       - '.'
 
   # This step builds worker container and runs precommit gradle task
