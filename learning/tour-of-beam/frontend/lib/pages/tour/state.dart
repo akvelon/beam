@@ -67,12 +67,12 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
 
   String? get currentUnitId => currentUnitController?.unitId;
   UnitContentModel? get currentUnitContent => _currentUnitContent;
-  bool get currentUnitHasSolution =>
+  bool get doesCurrentUnitHaveSolution =>
       currentUnitContent?.solutionSnippetId != null;
   bool showSolution = false;
 
   void toggleShowSolution() {
-    if (currentUnitHasSolution) {
+    if (doesCurrentUnitHaveSolution) {
       showSolution = !showSolution;
 
       final snippetId = showSolution

@@ -16,18 +16,23 @@
  * limitations under the License.
  */
 
+import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'unit_content.g.dart';
 
 @JsonSerializable(createToJson: false)
-class UnitContentModel {
+class UnitContentModel extends Equatable {
   final String id;
   final String title;
   final String description;
   final String? taskSnippetId;
   final String? solutionSnippetId;
-  final List<String>? hints;
+  @JsonKey(defaultValue: [])
+  final List<String> hints;
+
+  @JsonKey(ignore: true)
+  bool get isChallenge => hints.isNotEmpty;
 
   const UnitContentModel({
     required this.id,
@@ -37,6 +42,9 @@ class UnitContentModel {
     required this.solutionSnippetId,
     required this.hints,
   });
+
+  @override
+  List<Object> get props => [id];
 
   factory UnitContentModel.fromJson(Map<String, dynamic> json) =>
       _$UnitContentModelFromJson(json);

@@ -84,7 +84,8 @@ class _Content extends StatelessWidget {
 
     if (content == null) {
       return Container();
-    } else if (content.hints != null) {
+    }
+    if (content.isChallenge) {
       return _ChallengeContent(
         tourNotifier: tourNotifier,
         unitContent: content,
@@ -183,14 +184,14 @@ class _ChallengeButtons extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (hints != null)
+        if (unitContent.isChallenge)
           Padding(
             padding: _buttonPadding,
             child: HintsWidget(
               hints: hints,
             ),
           ),
-        if (tourNotifier.currentUnitHasSolution)
+        if (tourNotifier.doesCurrentUnitHaveSolution)
           Padding(
             padding: _buttonPadding,
             child: SolutionButton(tourNotifier: tourNotifier),
