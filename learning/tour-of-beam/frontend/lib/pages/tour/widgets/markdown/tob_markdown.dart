@@ -19,6 +19,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:playground_components/playground_components.dart';
+import '../../../../extensions/string.dart';
 
 import 'code_builder.dart';
 
@@ -36,7 +37,7 @@ class TobMarkdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Markdown(
-      data: data,
+      data: data.replaceTabsWithSpaces(),
       builders: {
         'code': MarkdownCodeBuilder(),
       },
