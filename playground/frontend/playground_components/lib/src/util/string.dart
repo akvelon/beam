@@ -20,4 +20,9 @@ extension StringExtension on String {
   List<String> splitNotEmpty(Pattern pattern) {
     return split(pattern).where((s) => s.isNotEmpty).toList(growable: false);
   }
+
+  String replaceTabsWithSpaces() {
+    const spaceCount = 4;
+    return replaceAll('\t', ' ' * spaceCount);
+  }
 }
