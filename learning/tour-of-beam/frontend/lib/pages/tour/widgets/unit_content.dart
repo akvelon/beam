@@ -74,8 +74,8 @@ class _Content extends StatelessWidget {
   final UnitContentModel? unitContent;
 
   const _Content({
-    required this.unitContent,
     required this.tourNotifier,
+    required this.unitContent,
   });
 
   @override
@@ -168,8 +168,8 @@ class _ChallengeButtons extends StatelessWidget {
   final UnitContentModel unitContent;
 
   const _ChallengeButtons({
-    required this.unitContent,
     required this.tourNotifier,
+    required this.unitContent,
   });
 
   static const _buttonPadding = EdgeInsets.only(
