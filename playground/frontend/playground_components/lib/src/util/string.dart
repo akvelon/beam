@@ -21,8 +21,7 @@ extension StringExtension on String {
     return split(pattern).where((s) => s.isNotEmpty).toList(growable: false);
   }
 
-  String replaceTabsWithSpaces() {
-    const spaceCount = 4;
+  String tabsToSpaces(int spaceCount) {
     return replaceAll('\t', ' ' * spaceCount);
   }
 }
