@@ -37,6 +37,7 @@ class UnitContentWidget extends StatelessWidget {
     final themeData = Theme.of(context);
 
     return Container(
+      // TODO(nausharipov): look for a better way to constrain the height
       height: MediaQuery.of(context).size.height -
           BeamSizes.appBarHeight -
           TobSizes.footerHeight,

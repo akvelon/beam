@@ -69,14 +69,14 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
   UnitContentModel? get currentUnitContent => _currentUnitContent;
   bool get doesCurrentUnitHaveSolution =>
       currentUnitContent?.solutionSnippetId != null;
-  bool _showSolution = false;
-  bool get showSolution => _showSolution;
+  bool _isShowingSolution = false;
+  bool get isShowingSolution => _isShowingSolution;
 
-  void toggleShowSolution() {
+  void toggleShowingSolution() {
     if (doesCurrentUnitHaveSolution) {
-      _showSolution = !_showSolution;
+      _isShowingSolution = !_isShowingSolution;
 
-      final snippetId = _showSolution
+      final snippetId = _isShowingSolution
           ? _currentUnitContent?.solutionSnippetId
           : _currentUnitContent?.taskSnippetId;
       if (snippetId != null) {
@@ -137,6 +137,7 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
     }
     final taskSnippetId = content.taskSnippetId;
     await _setPlaygroundSnippet(taskSnippetId);
+    _isShowingSolution = false;
   }
 
   Future<void> _setPlaygroundSnippet(String? snippetId) async {

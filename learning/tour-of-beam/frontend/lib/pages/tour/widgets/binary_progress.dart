@@ -17,34 +17,40 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:playground_components/playground_components.dart';
 
-class TobProgressIndicator extends StatelessWidget {
-  final double progress;
+import '../../../assets/assets.gen.dart';
 
-  const TobProgressIndicator({
-    required this.progress,
+class BinaryProgressIndicator extends StatelessWidget {
+  final bool isCompleted;
+  final bool isSelected;
+
+  const BinaryProgressIndicator({
+    required this.isCompleted,
+    required this.isSelected,
   });
-
-  static const _diameter = 8.5;
-  static const _thickness = 3.8;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(
-        left: BeamSizes.size7,
-        right: BeamSizes.size10,
+    final ext = Theme.of(context).extension<BeamThemeExtension>()!;
+    final Color color;
+    if (isCompleted) {
+      color = BeamColors.green;
+    } else if (isSelected) {
+      color = ext.selectedProgressColor;
+    } else {
+      color = ext.unselectedProgressColor;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: BeamSizes.size4,
+        right: BeamSizes.size8,
       ),
-      height: _diameter,
-      width: _diameter,
-      child: CircularProgressIndicator(
-        strokeWidth: _thickness,
-        color: BeamColors.green,
-        backgroundColor: Theme.of(context)
-            .extension<BeamThemeExtension>()!
-            .unselectedProgressColor,
-        value: progress,
+      child: SvgPicture.asset(
+        isCompleted ? Assets.svg.unitProgress100 : Assets.svg.unitProgress0,
+        color: color,
       ),
     );
   }
