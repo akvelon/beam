@@ -19,10 +19,10 @@
 import 'package:flutter/material.dart';
 import 'package:playground_components/playground_components.dart';
 
-class ArbitraryProgressIndicator extends StatelessWidget {
+class FractionProgressIndicator extends StatelessWidget {
   final double progress;
 
-  const ArbitraryProgressIndicator({
+  const FractionProgressIndicator({
     required this.progress,
   });
 

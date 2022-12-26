@@ -24,7 +24,7 @@ import '../../../cache/unit_progress.dart';
 import '../../../models/group.dart';
 import '../../../models/node.dart';
 import 'binary_progress.dart';
-import 'arbitrary_progress.dart';
+import 'fraction_progress.dart';
 
 class GroupTitleWidget extends StatelessWidget {
   final GroupModel group;
@@ -75,7 +75,7 @@ class _GroupProgressIndicator extends StatelessWidget {
           );
         }
 
-        return ArbitraryProgressIndicator(progress: progress);
+        return FractionProgressIndicator(progress: progress);
       },
     );
   }

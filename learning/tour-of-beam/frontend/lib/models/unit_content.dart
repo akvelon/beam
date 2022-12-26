@@ -44,7 +44,14 @@ class UnitContentModel extends Equatable {
   });
 
   @override
-  List<Object> get props => [id, title, description, hints];
+  List<Object?> get props => [
+        id,
+        title,
+        description,
+        taskSnippetId,
+        solutionSnippetId,
+        hints,
+      ];
 
   factory UnitContentModel.fromJson(Map<String, dynamic> json) =>
       _$UnitContentModelFromJson(json);
