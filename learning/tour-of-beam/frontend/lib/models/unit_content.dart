@@ -23,34 +23,34 @@ part 'unit_content.g.dart';
 
 @JsonSerializable(createToJson: false)
 class UnitContentModel extends Equatable {
-  final String id;
-  final String title;
   final String description;
-  final String? taskSnippetId;
-  final String? solutionSnippetId;
   @JsonKey(defaultValue: [])
   final List<String> hints;
+  final String id;
+  final String? solutionSnippetId;
+  final String title;
+  final String? taskSnippetId;
 
   @JsonKey(ignore: true)
   bool get isChallenge => hints.isNotEmpty;
 
   const UnitContentModel({
-    required this.id,
-    required this.title,
     required this.description,
-    required this.taskSnippetId,
-    required this.solutionSnippetId,
     required this.hints,
+    required this.id,
+    required this.solutionSnippetId,
+    required this.title,
+    required this.taskSnippetId,
   });
 
   @override
   List<Object?> get props => [
-        id,
-        title,
         description,
-        taskSnippetId,
-        solutionSnippetId,
         hints,
+        id,
+        solutionSnippetId,
+        title,
+        taskSnippetId,
       ];
 
   factory UnitContentModel.fromJson(Map<String, dynamic> json) =>
