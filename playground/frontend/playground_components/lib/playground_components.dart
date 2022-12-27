@@ -61,6 +61,7 @@ export 'src/theme/switch_notifier.dart';
 export 'src/theme/theme.dart';
 
 export 'src/util/pipeline_options.dart';
+export 'src/util/string.dart';
 
 export 'src/widgets/bubble.dart';
 export 'src/widgets/clickable.dart';

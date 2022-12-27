@@ -33,10 +33,12 @@ class TobMarkdown extends StatelessWidget {
     this.shrinkWrap = true,
   });
 
+  static const _spaceCount = 4;
+
   @override
   Widget build(BuildContext context) {
     return Markdown(
-      data: data,
+      data: data.tabsToSpaces(_spaceCount),
       builders: {
         'code': MarkdownCodeBuilder(),
       },
