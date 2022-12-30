@@ -23,10 +23,10 @@ part 'unit_content.g.dart';
 
 @JsonSerializable(createToJson: false)
 class UnitContentModel extends Equatable {
+  final String id;
   final String description;
   @JsonKey(defaultValue: [])
   final List<String> hints;
-  final String id;
   final String? solutionSnippetId;
   final String title;
   final String? taskSnippetId;
@@ -35,9 +35,9 @@ class UnitContentModel extends Equatable {
   bool get isChallenge => hints.isNotEmpty;
 
   const UnitContentModel({
+    required this.id,
     required this.description,
     required this.hints,
-    required this.id,
     required this.solutionSnippetId,
     required this.title,
     required this.taskSnippetId,

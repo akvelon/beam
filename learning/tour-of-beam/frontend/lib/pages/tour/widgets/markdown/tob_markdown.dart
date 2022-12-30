@@ -23,13 +23,13 @@ import 'package:playground_components/playground_components.dart';
 import 'code_builder.dart';
 
 class TobMarkdown extends StatelessWidget {
-  final EdgeInsets padding;
   final String data;
+  final EdgeInsets padding;
   final bool shrinkWrap;
 
   const TobMarkdown({
-    required this.padding,
     required this.data,
+    required this.padding,
     this.shrinkWrap = true,
   });
 
