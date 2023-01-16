@@ -147,16 +147,19 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
       return;
     }
 
-    await playgroundController.examplesLoader.load(
-      ExamplesLoadingDescriptor(
-        descriptors: [
-          UserSharedExampleLoadingDescriptor(
-            sdk: contentTreeController.sdk,
-            snippetId: snippetId,
-          ),
-        ],
-      ),
-    );
+    final selectedSdk = _appNotifier.sdk;
+    if (selectedSdk != null) {
+      await playgroundController.examplesLoader.load(
+        ExamplesLoadingDescriptor(
+          descriptors: [
+            UserSharedExampleLoadingDescriptor(
+              sdk: selectedSdk,
+              snippetId: snippetId,
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   // TODO(alexeyinkin): Hide the entire right pane instead.
