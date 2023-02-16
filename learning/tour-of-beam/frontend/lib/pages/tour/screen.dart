@@ -57,7 +57,7 @@ class _WideTour extends StatelessWidget {
             direction: Axis.horizontal,
             first: UnitContentWidget(tourNotifier),
             second: PlaygroundWidget(
-              playgroundController: tourNotifier.playgroundController,
+              tourNotifier: tourNotifier,
             ),
           ),
         ),

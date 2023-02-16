@@ -20,12 +20,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:playground_components/playground_components.dart';
 
+import '../../../models/event_snippet_context.dart';
+import '../state.dart';
+
 class PlaygroundWidget extends StatelessWidget {
-  final PlaygroundController playgroundController;
+  final TourNotifier tourNotifier;
 
   const PlaygroundWidget({
-    required this.playgroundController,
+    required this.tourNotifier,
   });
+
+  PlaygroundController get playgroundController =>
+      tourNotifier.playgroundController;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +65,45 @@ class PlaygroundWidget extends StatelessWidget {
           right: 30,
           child: Row(
             children: [
-              RunOrCancelButton(playgroundController: playgroundController),
+              RunOrCancelButton(
+                playgroundController: playgroundController,
+                beforeCancel: (runner) {
+                  PlaygroundComponents.analyticsService.sendUnawaited(
+                    CancelRunAnalyticsEvent(
+                      snippetContext:
+                          TobEventSnippetContext.fromEventSnippetContext(
+                        eventSnippetContext: runner.eventSnippetContext!,
+                        unitId: tourNotifier.currentUnitId,
+                      ),
+                      duration: runner.elapsed!,
+                    ),
+                  );
+                },
+                beforeRun: () {
+                  PlaygroundComponents.analyticsService.sendUnawaited(
+                    RunAnalyticsEvent(
+                      snippetContext:
+                          TobEventSnippetContext.fromEventSnippetContext(
+                        eventSnippetContext:
+                            playgroundController.eventSnippetContext,
+                        unitId: tourNotifier.currentUnitId,
+                      ),
+                    ),
+                  );
+                },
+                onComplete: (runner) {
+                  PlaygroundComponents.analyticsService.sendUnawaited(
+                    RunFinishedAnalyticsEvent(
+                      snippetContext:
+                          TobEventSnippetContext.fromEventSnippetContext(
+                        eventSnippetContext: runner.eventSnippetContext!,
+                        unitId: tourNotifier.currentUnitId,
+                      ),
+                      duration: runner.elapsed!,
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),
