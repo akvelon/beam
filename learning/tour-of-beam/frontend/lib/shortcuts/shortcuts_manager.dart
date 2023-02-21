@@ -19,34 +19,38 @@
 import 'package:flutter/widgets.dart';
 import 'package:playground_components/playground_components.dart';
 
-import '../constants/global_shortcuts.dart';
+import '../pages/tour/state.dart';
 
-class PlaygroundShortcutsManager extends StatelessWidget {
-  const PlaygroundShortcutsManager({
+class TobShortcutsManager extends StatelessWidget {
+  const TobShortcutsManager({
     required this.child,
-    required this.playgroundController,
+    required this.tourNotifier,
   });
 
   final Widget child;
-  final PlaygroundController playgroundController;
+  final TourNotifier tourNotifier;
 
   @override
   Widget build(BuildContext context) {
     return ShortcutsManager(
       shortcuts: [
-        ...playgroundController.shortcuts,
+        ...tourNotifier.playgroundController.shortcuts,
         BeamRunShortcut(
-          getCodeRunner: () => playgroundController.codeRunner,
+          getCodeRunner: () => tourNotifier.playgroundController.codeRunner,
           afterInvoke: () {
-            PlaygroundComponents.analyticsService.sendUnawaited(
-              RunAnalyticsEvent(
-                snippetContext:
-                    playgroundController.codeRunner.eventSnippetContext!,
-              ),
-            );
+            final eventSnippetContext = tourNotifier
+                .playgroundController.codeRunner.eventSnippetContext;
+            // TODO(nausharipov) review: can snippetContext be nullable?
+            if (eventSnippetContext != null) {
+              PlaygroundComponents.analyticsService.sendUnawaited(
+                RunAnalyticsEvent(
+                  snippetContext: eventSnippetContext,
+                  additionalParams: tourNotifier.tobEventContext.toJson(),
+                ),
+              );
+            }
           },
         ),
-        ...globalShortcuts,
       ],
       child: child,
     );

@@ -27,6 +27,7 @@ import '../../auth/notifier.dart';
 import '../../cache/unit_content.dart';
 import '../../cache/unit_progress.dart';
 import '../../config.dart';
+import '../../models/event_context.dart';
 import '../../models/unit.dart';
 import '../../models/unit_content.dart';
 import '../../state.dart';
@@ -44,6 +45,9 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
   final _unitProgressCache = GetIt.instance.get<UnitProgressCache>();
   UnitContentModel? _currentUnitContent;
   DateTime? _currentUnitOpenedAt;
+
+  TobEventContext _tobEventContext = TobEventContext.empty;
+  TobEventContext get tobEventContext => _tobEventContext;
 
   TourNotifier({
     required String initialSdkId,
@@ -127,6 +131,7 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
     UnitModel unit, {
     required Sdk sdk,
   }) async {
+    _tobEventContext = TobEventContext(sdkId: sdk.id, unitId: unit.id);
     final content = _unitContentCache.getUnitContent(
       sdk.id,
       unit.id,

@@ -16,15 +16,32 @@
  * limitations under the License.
  */
 
-import 'abstract.dart';
-import 'constants.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-/// 'Run' button is pressed to show cached result or to run for real.
-class RunAnalyticsEvent extends AnalyticsEventWithSnippetContext {
-  const RunAnalyticsEvent({
-    required super.snippetContext,
-    super.additionalParams,
+import '../controllers/code_runner.dart';
+import 'intents.dart';
+import 'shortcut.dart';
+
+class BeamRunShortcut extends BeamShortcut {
+  final ValueGetter<CodeRunner> getCodeRunner;
+  final VoidCallback? afterInvoke;
+
+  BeamRunShortcut({
+    required this.getCodeRunner,
+    this.afterInvoke,
   }) : super(
-          name: BeamAnalyticsEvents.run,
+          shortcuts: LogicalKeySet(
+            LogicalKeyboardKey.meta,
+            LogicalKeyboardKey.enter,
+          ),
+          actionIntent: const RunIntent(),
+          createAction: (BuildContext context) => CallbackAction(
+            onInvoke: (_) {
+              getCodeRunner().runCode();
+              afterInvoke?.call();
+              return;
+            },
+          ),
         );
 }

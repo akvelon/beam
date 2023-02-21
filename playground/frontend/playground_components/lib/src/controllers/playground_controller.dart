@@ -312,17 +312,6 @@ class PlaygroundController with ChangeNotifier {
     );
   }
 
-  late BeamShortcut runShortcut = BeamShortcut(
-    shortcuts: LogicalKeySet(
-      LogicalKeyboardKey.meta,
-      LogicalKeyboardKey.enter,
-    ),
-    actionIntent: const RunIntent(),
-    createAction: (BuildContext context) => CallbackAction(
-      onInvoke: (_) => codeRunner.runCode(),
-    ),
-  );
-
   late BeamShortcut resetShortcut = BeamShortcut(
     shortcuts: LogicalKeySet(
       LogicalKeyboardKey.meta,
@@ -336,7 +325,6 @@ class PlaygroundController with ChangeNotifier {
   );
 
   List<BeamShortcut> get shortcuts => [
-        runShortcut,
         resetShortcut,
       ];
 

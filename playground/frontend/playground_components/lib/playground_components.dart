@@ -48,6 +48,7 @@ export 'src/models/example_view_options.dart';
 export 'src/models/intents.dart';
 export 'src/models/loading_status.dart';
 export 'src/models/outputs.dart';
+export 'src/models/run_shortcut.dart';
 export 'src/models/sdk.dart';
 export 'src/models/shortcut.dart';
 export 'src/models/snippet_file.dart';

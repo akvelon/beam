@@ -70,6 +70,9 @@ class CodeRunner extends ChangeNotifier {
     return _snippetEditingControllerGetter().isChanged;
   }
 
+  // TODO(nausharipov) review: tourNotifier is unattainable from BeamRunShortcut.
+  // Map<String, dynamic>? _analyticsData;
+
   void clearResult() {
     _eventSnippetContext = null;
     _result = null;

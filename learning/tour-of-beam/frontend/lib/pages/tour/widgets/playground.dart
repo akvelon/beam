@@ -20,7 +20,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:playground_components/playground_components.dart';
 
-import '../../../models/event_snippet_context.dart';
 import '../state.dart';
 
 class PlaygroundWidget extends StatelessWidget {
@@ -69,12 +68,10 @@ class PlaygroundWidget extends StatelessWidget {
                 playgroundController: playgroundController,
                 beforeCancel: (runner) {
                   PlaygroundComponents.analyticsService.sendUnawaited(
+                    // TODO(nausharipov): add additionalParams.
                     CancelRunAnalyticsEvent(
-                      snippetContext:
-                          TobEventSnippetContext.fromEventSnippetContext(
-                        eventSnippetContext: runner.eventSnippetContext!,
-                        unitId: tourNotifier.currentUnitId,
-                      ),
+                      snippetContext: tourNotifier
+                          .playgroundController.codeRunner.eventSnippetContext!,
                       duration: runner.elapsed!,
                     ),
                   );
@@ -82,23 +79,17 @@ class PlaygroundWidget extends StatelessWidget {
                 beforeRun: () {
                   PlaygroundComponents.analyticsService.sendUnawaited(
                     RunAnalyticsEvent(
-                      snippetContext:
-                          TobEventSnippetContext.fromEventSnippetContext(
-                        eventSnippetContext:
-                            playgroundController.eventSnippetContext,
-                        unitId: tourNotifier.currentUnitId,
-                      ),
+                      snippetContext: tourNotifier
+                          .playgroundController.codeRunner.eventSnippetContext!,
+                      additionalParams: tourNotifier.tobEventContext.toJson(),
                     ),
                   );
                 },
                 onComplete: (runner) {
                   PlaygroundComponents.analyticsService.sendUnawaited(
                     RunFinishedAnalyticsEvent(
-                      snippetContext:
-                          TobEventSnippetContext.fromEventSnippetContext(
-                        eventSnippetContext: runner.eventSnippetContext!,
-                        unitId: tourNotifier.currentUnitId,
-                      ),
+                      snippetContext: tourNotifier
+                          .playgroundController.codeRunner.eventSnippetContext!,
                       duration: runner.elapsed!,
                     ),
                   );
