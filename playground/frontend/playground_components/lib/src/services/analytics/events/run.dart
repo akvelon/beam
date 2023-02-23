@@ -23,8 +23,17 @@ import 'constants.dart';
 class RunAnalyticsEvent extends AnalyticsEventWithSnippetContext {
   const RunAnalyticsEvent({
     required super.snippetContext,
+    required this.trigger,
     super.additionalParams,
   }) : super(
           name: BeamAnalyticsEvents.run,
         );
+
+  final EventTrigger trigger;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        ...super.toJson(),
+        EventParams.trigger: trigger.name,
+      };
 }

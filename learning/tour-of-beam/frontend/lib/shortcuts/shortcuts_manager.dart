@@ -36,16 +36,23 @@ class TobShortcutsManager extends StatelessWidget {
       shortcuts: [
         ...tourNotifier.playgroundController.shortcuts,
         BeamRunShortcut(
-          getCodeRunner: () => tourNotifier.playgroundController.codeRunner,
-          afterInvoke: () {
-            final eventSnippetContext = tourNotifier
-                .playgroundController.codeRunner.eventSnippetContext;
-            // TODO(nausharipov) review: can snippetContext be nullable?
+          onInvoke: () {
+            final codeRunner = tourNotifier.playgroundController.codeRunner;
+
+            codeRunner.runCode(
+              analyticsData: tourNotifier.tobEventContext.toJson(),
+            );
+
+            final eventSnippetContext = codeRunner.eventSnippetContext;
+            final additionalParams = codeRunner.analyticsData;
+            // eventSnippetContext can be null if Ctrl-Enter is pressed
+            // in the shortcut handler before the snippet is loaded.
             if (eventSnippetContext != null) {
               PlaygroundComponents.analyticsService.sendUnawaited(
                 RunAnalyticsEvent(
                   snippetContext: eventSnippetContext,
-                  additionalParams: tourNotifier.tobEventContext.toJson(),
+                  trigger: EventTrigger.shortcut,
+                  additionalParams: additionalParams,
                 ),
               );
             }

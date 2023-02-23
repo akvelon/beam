@@ -40,4 +40,10 @@ class EventParams {
   static const runSeconds = 'runSeconds';
   static const sdk = 'sdk';
   static const snippet = 'snippet';
+  static const trigger = 'trigger';
+}
+
+enum EventTrigger {
+  shortcut,
+  click,
 }

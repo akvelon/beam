@@ -19,17 +19,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../controllers/code_runner.dart';
 import 'intents.dart';
 import 'shortcut.dart';
 
 class BeamRunShortcut extends BeamShortcut {
-  final ValueGetter<CodeRunner> getCodeRunner;
-  final VoidCallback? afterInvoke;
+  final VoidCallback onInvoke;
 
   BeamRunShortcut({
-    required this.getCodeRunner,
-    this.afterInvoke,
+    required this.onInvoke,
   }) : super(
           shortcuts: LogicalKeySet(
             LogicalKeyboardKey.meta,
@@ -38,8 +35,7 @@ class BeamRunShortcut extends BeamShortcut {
           actionIntent: const RunIntent(),
           createAction: (BuildContext context) => CallbackAction(
             onInvoke: (_) {
-              getCodeRunner().runCode();
-              afterInvoke?.call();
+              onInvoke();
               return;
             },
           ),

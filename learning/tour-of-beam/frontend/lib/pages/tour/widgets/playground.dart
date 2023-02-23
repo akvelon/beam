@@ -64,37 +64,41 @@ class PlaygroundWidget extends StatelessWidget {
           right: 30,
           child: Row(
             children: [
-              RunOrCancelButton(
-                playgroundController: playgroundController,
-                beforeCancel: (runner) {
-                  PlaygroundComponents.analyticsService.sendUnawaited(
-                    // TODO(nausharipov): add additionalParams.
-                    CancelRunAnalyticsEvent(
-                      snippetContext: tourNotifier
-                          .playgroundController.codeRunner.eventSnippetContext!,
-                      duration: runner.elapsed!,
-                    ),
-                  );
-                },
-                beforeRun: () {
-                  PlaygroundComponents.analyticsService.sendUnawaited(
-                    RunAnalyticsEvent(
-                      snippetContext: tourNotifier
-                          .playgroundController.codeRunner.eventSnippetContext!,
-                      additionalParams: tourNotifier.tobEventContext.toJson(),
-                    ),
-                  );
-                },
-                onComplete: (runner) {
-                  PlaygroundComponents.analyticsService.sendUnawaited(
-                    RunFinishedAnalyticsEvent(
-                      snippetContext: tourNotifier
-                          .playgroundController.codeRunner.eventSnippetContext!,
-                      duration: runner.elapsed!,
-                    ),
-                  );
-                },
-              ),
+              // TODO(nausharipov) review: is this the right check?
+              if (playgroundController.selectedExample != null)
+                RunOrCancelButton(
+                  playgroundController: playgroundController,
+                  beforeCancel: (runner) {
+                    PlaygroundComponents.analyticsService.sendUnawaited(
+                      // TODO(nausharipov): add params like in beforeRun.
+                      CancelRunAnalyticsEvent(
+                        snippetContext: tourNotifier.playgroundController
+                            .codeRunner.eventSnippetContext!,
+                        duration: runner.elapsed!,
+                      ),
+                    );
+                  },
+                  beforeRun: () {
+                    PlaygroundComponents.analyticsService.sendUnawaited(
+                      RunAnalyticsEvent(
+                        snippetContext: tourNotifier.playgroundController
+                            .codeRunner.eventSnippetContext!,
+                        additionalParams: tourNotifier.tobEventContext.toJson(),
+                        trigger: EventTrigger.click,
+                      ),
+                    );
+                  },
+                  onComplete: (runner) {
+                    PlaygroundComponents.analyticsService.sendUnawaited(
+                      // TODO(nausharipov): add params like in beforeRun.
+                      RunFinishedAnalyticsEvent(
+                        snippetContext: tourNotifier.playgroundController
+                            .codeRunner.eventSnippetContext!,
+                        duration: runner.elapsed!,
+                      ),
+                    );
+                  },
+                ),
             ],
           ),
         ),

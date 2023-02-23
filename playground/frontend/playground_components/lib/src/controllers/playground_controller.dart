@@ -125,7 +125,8 @@ class PlaygroundController with ChangeNotifier {
 
   /// [EventSnippetContext] of the current [SnippetEditingController].
   EventSnippetContext get eventSnippetContext =>
-      snippetEditingController?.eventSnippetContext ?? EventSnippetContext.empty;
+      snippetEditingController?.eventSnippetContext ??
+      EventSnippetContext.empty;
 
   String? get source =>
       snippetEditingController?.activeFileController?.codeController.fullText;
@@ -325,6 +326,7 @@ class PlaygroundController with ChangeNotifier {
   );
 
   List<BeamShortcut> get shortcuts => [
+        // TODO(nausharipov): refactor like BeamRunShortcut.
         resetShortcut,
       ];
 

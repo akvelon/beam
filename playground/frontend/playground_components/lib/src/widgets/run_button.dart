@@ -57,7 +57,7 @@ class RunButton extends StatelessWidget {
           height: BeamSizes.buttonHeight,
           child: ShortcutTooltip(
             shortcut: BeamRunShortcut(
-              getCodeRunner: () => playgroundController.codeRunner,
+              onInvoke: playgroundController.codeRunner.runCode,
             ),
             child: ElevatedButton.icon(
               style: const ButtonStyle(
