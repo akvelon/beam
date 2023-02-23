@@ -16,10 +16,28 @@
  * limitations under the License.
  */
 
-import '../sdk.dart';
-import 'example_loading_descriptor.dart';
+import 'package:playground_components/playground_components.dart';
 
-abstract class SdkAwareExampleLoadingDescriptor
-    extends ExampleLoadingDescriptor {
-  Sdk get sdk;
+import 'constants.dart';
+
+/// Playground is loaded.
+class LoadedAnalyticsEvent extends AnalyticsEvent {
+  const LoadedAnalyticsEvent({
+    required this.sdk,
+    required this.snippet,
+  }) : super(
+    name: PlaygroundAnalyticsEvents.loaded,
+  );
+
+  final Sdk? sdk;
+  final String? snippet;
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      EventParams.sdk: sdk?.id,
+      EventParams.snippet: snippet,
+    };
+  }
 }
