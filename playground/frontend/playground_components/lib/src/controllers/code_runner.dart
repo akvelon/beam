@@ -70,8 +70,11 @@ class CodeRunner extends ChangeNotifier {
     return _snippetEditingControllerGetter().isChanged;
   }
 
+  // Snapshot of additional analytics data at the time when execution started.
   Map<String, dynamic> _analyticsData = const {};
   Map<String, dynamic> get analyticsData => _analyticsData;
+
+  bool get canRun => snippetEditingController != null;
 
   void clearResult() {
     _eventSnippetContext = null;

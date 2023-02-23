@@ -37,14 +37,14 @@ class PlaygroundShortcutsManager extends StatelessWidget {
         ...playgroundController.shortcuts,
         BeamRunShortcut(
           onInvoke: () {
-            final eventSnippetContext =
-                playgroundController.codeRunner.eventSnippetContext;
-            // eventSnippetContext can be null if Ctrl-Enter is pressed
-            // in the shortcut handler before the snippet is loaded.
-            if (eventSnippetContext != null) {
+            final codeRunner = playgroundController.codeRunner;
+
+            if (codeRunner.canRun) {
+              codeRunner.runCode();
+
               PlaygroundComponents.analyticsService.sendUnawaited(
                 RunAnalyticsEvent(
-                  snippetContext: eventSnippetContext,
+                  snippetContext: codeRunner.eventSnippetContext!,
                   trigger: EventTrigger.shortcut,
                 ),
               );
