@@ -160,6 +160,9 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
       sdkId: sdk.id,
       unitId: unit.id,
     );
+    // TODO(nausharipov) review: all snippetEditingControllers are not set in playgroundController, because _tobEventContext points to a specific sdk.
+    playgroundController.snippetEditingController!
+        .setDefaultEventParams(_tobEventContext.toJson());
     PlaygroundComponents.analyticsService.sendUnawaited(
       UnitOpenedTobAnalyticsEvent(
         tobContext: _tobEventContext,

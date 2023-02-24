@@ -143,6 +143,7 @@ class _SnippetFileEditorState extends State<SnippetFileEditor> {
       if (snippet != null) {
         AnalyticsService.get().sendUnawaited(
           SnippetModifiedAnalyticsEvent(
+            additionalParams: widget.controller.defaultEventParams,
             fileName: widget.controller.savedFile.name,
             sdk: widget.controller.sdk,
             snippet: snippet,
