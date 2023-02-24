@@ -65,6 +65,7 @@ class GoogleAnalytics4ServiceWeb extends GoogleAnalytics4Service {
   }
 
   static dynamic _evalJs(String code) {
+    // TODO(nausharipov) review: why is this print needed?
     print('JS eval: $code'); // ignore: avoid_print
     return js.context.callMethod('eval', [code]);
   }

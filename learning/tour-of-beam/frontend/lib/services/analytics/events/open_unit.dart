@@ -23,6 +23,6 @@ class UnitOpenedTobAnalyticsEvent extends AnalyticsEventWithTobContext {
   const UnitOpenedTobAnalyticsEvent({
     required super.tobContext,
   }) : super(
-          name: TobAnalyticsEvents.unitClosed,
+          name: TobAnalyticsEvents.unitOpened,
         );
 }
