@@ -30,6 +30,8 @@ import '../../config.dart';
 import '../../models/event_context.dart';
 import '../../models/unit.dart';
 import '../../models/unit_content.dart';
+import '../../services/analytics/events/close_unit.dart';
+import '../../services/analytics/events/open_unit.dart';
 import '../../state.dart';
 import 'controllers/content_tree.dart';
 import 'controllers/unit.dart';
@@ -131,7 +133,6 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
     UnitModel unit, {
     required Sdk sdk,
   }) async {
-    _tobEventContext = TobEventContext(sdkId: sdk.id, unitId: unit.id);
     final content = _unitContentCache.getUnitContent(
       sdk.id,
       unit.id,
@@ -141,7 +142,12 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
     }
 
     if (_currentUnitOpenedAt != null && _currentUnitContent != null) {
-      // TODO: Send close unit event.
+      PlaygroundComponents.analyticsService.sendUnawaited(
+        UnitClosedTobAnalyticsEvent(
+          tobContext: _tobEventContext,
+          timeSpent: DateTime.now().difference(_currentUnitOpenedAt!),
+        ),
+      );
     }
 
     _currentUnitContent = content;
@@ -150,7 +156,15 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
     }
 
     _currentUnitOpenedAt = DateTime.now();
-    // TODO: Send open unit event.
+    _tobEventContext = TobEventContext(
+      sdkId: sdk.id,
+      unitId: unit.id,
+    );
+    PlaygroundComponents.analyticsService.sendUnawaited(
+      UnitOpenedTobAnalyticsEvent(
+        tobContext: _tobEventContext,
+      ),
+    );
 
     final taskSnippetId = content.taskSnippetId;
     await _setPlaygroundSnippet(taskSnippetId);

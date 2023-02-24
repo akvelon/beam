@@ -18,6 +18,10 @@
 
 class TobAnalyticsEvents {
   static const unitCompleted = 'unit_completed';
+  static const unitClosed = 'unit_closed';
+  static const unitOpened = 'unit_opened';
 }
 
-class TobEventParams {}
+class TobEventParams {
+  static const timeSpentSeconds = 'timeSpentSeconds';
+}

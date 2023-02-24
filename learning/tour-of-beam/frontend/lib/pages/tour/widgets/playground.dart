@@ -64,17 +64,16 @@ class PlaygroundWidget extends StatelessWidget {
           right: 30,
           child: Row(
             children: [
-              // TODO(nausharipov) review: is this the right check?
-              if (playgroundController.selectedExample != null)
+              if (playgroundController.codeRunner.canRun)
                 RunOrCancelButton(
                   playgroundController: playgroundController,
                   beforeCancel: (runner) {
                     PlaygroundComponents.analyticsService.sendUnawaited(
-                      // TODO(nausharipov): add params like in beforeRun.
                       CancelRunAnalyticsEvent(
-                        snippetContext: tourNotifier.playgroundController
-                            .codeRunner.eventSnippetContext!,
+                        snippetContext: runner.eventSnippetContext!,
                         duration: runner.elapsed!,
+                        trigger: EventTrigger.click,
+                        additionalParams: tourNotifier.tobEventContext.toJson(),
                       ),
                     );
                   },
@@ -83,18 +82,18 @@ class PlaygroundWidget extends StatelessWidget {
                       RunAnalyticsEvent(
                         snippetContext: tourNotifier.playgroundController
                             .codeRunner.eventSnippetContext!,
-                        additionalParams: tourNotifier.tobEventContext.toJson(),
                         trigger: EventTrigger.click,
+                        additionalParams: tourNotifier.tobEventContext.toJson(),
                       ),
                     );
                   },
                   onComplete: (runner) {
                     PlaygroundComponents.analyticsService.sendUnawaited(
-                      // TODO(nausharipov): add params like in beforeRun.
                       RunFinishedAnalyticsEvent(
-                        snippetContext: tourNotifier.playgroundController
-                            .codeRunner.eventSnippetContext!,
+                        snippetContext: runner.eventSnippetContext!,
                         duration: runner.elapsed!,
+                        trigger: EventTrigger.click,
+                        additionalParams: tourNotifier.tobEventContext.toJson(),
                       ),
                     );
                   },

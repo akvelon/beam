@@ -20,9 +20,7 @@ import 'package:equatable/equatable.dart';
 
 const _none = 'none';
 
-/// Basic information of the Tour of Beam state at a particular moment of time
-/// to augment analytics events.
-// TODO(nausharipov) review: or EventTobContext?
+/// Basic information of the Tour of Beam state to augment analytics events.
 class TobEventContext with EquatableMixin {
   const TobEventContext({
     required this.sdkId,

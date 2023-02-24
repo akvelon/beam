@@ -35,7 +35,6 @@ class TourScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TobShortcutsManager(
-      // TODO(nausharipov): investigate hot restart.
       tourNotifier: tourNotifier,
       child: TobScaffold(
         child: MediaQuery.of(context).size.width > ScreenBreakpoints.twoColumns

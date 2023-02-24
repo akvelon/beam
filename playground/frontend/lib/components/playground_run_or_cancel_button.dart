@@ -33,6 +33,7 @@ class PlaygroundRunOrCancelButton extends StatelessWidget {
             CancelRunAnalyticsEvent(
               snippetContext: runner.eventSnippetContext!,
               duration: runner.elapsed!,
+              trigger: EventTrigger.click,
             ),
           );
         },
@@ -49,6 +50,7 @@ class PlaygroundRunOrCancelButton extends StatelessWidget {
             RunFinishedAnalyticsEvent(
               snippetContext: runner.eventSnippetContext!,
               duration: runner.elapsed!,
+              trigger: EventTrigger.click,
             ),
           );
         },
