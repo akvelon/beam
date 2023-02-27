@@ -17,16 +17,16 @@
  */
 
 class BeamAnalyticsEvents {
-  static const runCancelled = 'run_cancelled';
+  static const appRated = 'app_rated';
   static const externalUrlNavigated = 'external_url_navigated';
   static const feedbackFormSent = 'feedback_form_sent';
-  static const appRated = 'app_rated';
   static const reportIssueClicked = 'report_issue_clicked';
-  static const snippetReset = 'snippet_reset';
-  static const runStarted = 'run_started';
+  static const runCancelled = 'run_cancelled';
   static const runFinished = 'run_finished';
+  static const runStarted = 'run_started';
   static const sdkSelected = 'sdk_selected';
   static const snippetModified = 'snippet_modified';
+  static const snippetReset = 'snippet_reset';
   static const themeSet = 'theme_set';
 }
 
