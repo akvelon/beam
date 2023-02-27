@@ -1,3 +1,4 @@
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,8 +21,9 @@ import 'abstract.dart';
 import 'constants.dart';
 
 /// Report issue is clicked.
-class IssueReportedAnalyticsEvent extends AnalyticsEventWithSnippetContext {
-  const IssueReportedAnalyticsEvent({
+class ReportIssueClickedAnalyticsEvent
+    extends AnalyticsEventWithSnippetContext {
+  const ReportIssueClickedAnalyticsEvent({
     required super.snippetContext,
   }) : super(
           name: BeamAnalyticsEvents.issueReported,

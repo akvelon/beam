@@ -62,8 +62,7 @@ Future<void> _checkEnjoyingAndSendFeedback(WidgetTester wt) async {
     const FeedbackFormSentAnalyticsEvent(
       snippetContext: EventSnippetContext(
         // TODO: Replace with values from the example object when merged https://github.com/apache/beam/pull/25034
-        originalSnippet:
-            'SDK_JAVA/PRECOMPILED_OBJECT_TYPE_EXAMPLE/MinimalWordCount',
+        originalSnippet: 'SDK_JAVA/PRECOMPILED_OBJECT_TYPE_EXAMPLE/MinimalWordCount',
         sdk: Sdk.java,
         snippet: 'SDK_JAVA/PRECOMPILED_OBJECT_TYPE_EXAMPLE/MinimalWordCount',
       ),
@@ -96,8 +95,7 @@ Future<void> _checkNotEnjoyingAndSendFeedback(WidgetTester wt) async {
     const FeedbackFormSentAnalyticsEvent(
       snippetContext: EventSnippetContext(
         // TODO: Replace with values from the example object when merged https://github.com/apache/beam/pull/25034
-        originalSnippet:
-            'SDK_JAVA/PRECOMPILED_OBJECT_TYPE_EXAMPLE/MinimalWordCount',
+        originalSnippet: 'SDK_JAVA/PRECOMPILED_OBJECT_TYPE_EXAMPLE/MinimalWordCount',
         sdk: Sdk.java,
         snippet: 'SDK_JAVA/PRECOMPILED_OBJECT_TYPE_EXAMPLE/MinimalWordCount',
       ),
