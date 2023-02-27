@@ -21,7 +21,7 @@ class BeamAnalyticsEvents {
   static const externalUrlNavigated = 'external_url_navigated';
   static const feedbackFormSent = 'feedback_form_sent';
   static const appRated = 'app_rated';
-  static const issueReported = 'issue_reported';
+  static const reportIssueClicked = 'report_issue_clicked';
   static const snippetReset = 'snippet_reset';
   static const runStarted = 'run_started';
   static const runFinished = 'run_finished';

@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -26,6 +25,6 @@ class ReportIssueClickedAnalyticsEvent
   const ReportIssueClickedAnalyticsEvent({
     required super.snippetContext,
   }) : super(
-          name: BeamAnalyticsEvents.issueReported,
+          name: BeamAnalyticsEvents.reportIssueClicked,
         );
 }
