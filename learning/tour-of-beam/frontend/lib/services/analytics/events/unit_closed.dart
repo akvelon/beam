@@ -16,24 +16,22 @@
  * limitations under the License.
  */
 
-import '../../../enums/feedback_rating.dart';
 import 'abstract.dart';
 import 'constants.dart';
 
-/// A thump-up or thumb-down button pressed without yet entering feedback text.
-class RatedAnalyticsEvent extends AnalyticsEventWithSnippetContext {
-  const RatedAnalyticsEvent({
-    required this.rating,
-    required super.snippetContext,
+class UnitClosedTobAnalyticsEvent extends AnalyticsEventWithTobContext {
+  const UnitClosedTobAnalyticsEvent({
+    required super.tobContext,
+    required this.timeSpent,
   }) : super(
-          name: BeamAnalyticsEvents.rated,
+          name: TobAnalyticsEvents.unitClosed,
         );
 
-  final FeedbackRating rating;
+  final Duration timeSpent;
 
   @override
   Map<String, dynamic> toJson() => {
         ...super.toJson(),
-        EventParams.feedbackRating: rating.name,
+        TobEventParams.timeSpentInSeconds: timeSpent.inSeconds,
       };
 }

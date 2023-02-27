@@ -43,7 +43,7 @@ class PlaygroundShortcutsManager extends StatelessWidget {
               codeRunner.runCode();
 
               PlaygroundComponents.analyticsService.sendUnawaited(
-                RunAnalyticsEvent(
+                RunStartedAnalyticsEvent(
                   snippetContext: codeRunner.eventSnippetContext!,
                   trigger: EventTrigger.shortcut,
                 ),

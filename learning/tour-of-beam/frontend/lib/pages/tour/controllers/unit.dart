@@ -23,9 +23,8 @@ import 'package:playground_components/playground_components.dart';
 import '../../../cache/unit_progress.dart';
 import '../../../models/event_context.dart';
 import '../../../models/unit.dart';
-// import '../../../modules/analytics/google_analytics_service.dart';
 import '../../../repositories/client/client.dart';
-import '../../../services/analytics/events/complete_unit.dart';
+import '../../../services/analytics/events/unit_completed.dart';
 
 class UnitController extends ChangeNotifier {
   final UnitModel unit;

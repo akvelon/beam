@@ -16,14 +16,24 @@
  * limitations under the License.
  */
 
+import '../../../enums/feedback_rating.dart';
 import 'abstract.dart';
 import 'constants.dart';
 
-/// 'Reset Snippet' is clicked.
-class ResetSnippetAnalyticsEvent extends AnalyticsEventWithSnippetContext {
-  const ResetSnippetAnalyticsEvent({
+/// A thump-up or thumb-down button pressed without yet entering feedback text.
+class AppRatedAnalyticsEvent extends AnalyticsEventWithSnippetContext {
+  const AppRatedAnalyticsEvent({
+    required this.rating,
     required super.snippetContext,
   }) : super(
-          name: BeamAnalyticsEvents.resetSnippet,
+          name: BeamAnalyticsEvents.appRated,
         );
+
+  final FeedbackRating rating;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        ...super.toJson(),
+        EventParams.feedbackRating: rating.name,
+      };
 }

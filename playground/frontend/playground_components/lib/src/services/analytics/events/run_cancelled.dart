@@ -19,19 +19,24 @@
 import 'abstract.dart';
 import 'constants.dart';
 
-class UnitClosedTobAnalyticsEvent extends AnalyticsEventWithTobContext {
-  const UnitClosedTobAnalyticsEvent({
-    required super.tobContext,
-    required this.timeSpent,
+/// A real or cached run is cancelled.
+class RunCancelledAnalyticsEvent extends AnalyticsEventWithSnippetContext {
+  const RunCancelledAnalyticsEvent({
+    required this.duration,
+    required super.snippetContext,
+    required this.trigger,
+    super.additionalParams,
   }) : super(
-          name: TobAnalyticsEvents.unitClosed,
+          name: BeamAnalyticsEvents.runCancelled,
         );
 
-  final Duration timeSpent;
+  final Duration duration;
+  final EventTrigger trigger;
 
   @override
   Map<String, dynamic> toJson() => {
         ...super.toJson(),
-        TobEventParams.timeSpentSeconds: timeSpent.inSeconds,
+        EventParams.runDurationInSeconds: duration.inSeconds,
+        EventParams.trigger: trigger.name,
       };
 }

@@ -36,7 +36,7 @@ class RunFinishedAnalyticsEvent extends AnalyticsEventWithSnippetContext {
   @override
   Map<String, dynamic> toJson() => {
         ...super.toJson(),
-        EventParams.runSeconds: duration.inSeconds,
+        EventParams.runDurationInSeconds: duration.inSeconds,
         EventParams.trigger: trigger.name,
       };
 }

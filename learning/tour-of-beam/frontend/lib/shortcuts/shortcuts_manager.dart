@@ -45,7 +45,7 @@ class TobShortcutsManager extends StatelessWidget {
               );
 
               PlaygroundComponents.analyticsService.sendUnawaited(
-                RunAnalyticsEvent(
+                RunStartedAnalyticsEvent(
                   snippetContext: codeRunner.eventSnippetContext!,
                   trigger: EventTrigger.shortcut,
                   additionalParams: codeRunner.analyticsData,

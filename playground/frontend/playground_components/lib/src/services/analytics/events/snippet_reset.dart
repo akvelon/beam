@@ -19,21 +19,11 @@
 import 'abstract.dart';
 import 'constants.dart';
 
-/// 'Run' button is pressed to show cached result or to run for real.
-class RunAnalyticsEvent extends AnalyticsEventWithSnippetContext {
-  const RunAnalyticsEvent({
+/// 'Reset Snippet' is clicked.
+class SnippetResetAnalyticsEvent extends AnalyticsEventWithSnippetContext {
+  const SnippetResetAnalyticsEvent({
     required super.snippetContext,
-    required this.trigger,
-    super.additionalParams,
   }) : super(
-          name: BeamAnalyticsEvents.run,
+          name: BeamAnalyticsEvents.snippetReset,
         );
-
-  final EventTrigger trigger;
-
-  @override
-  Map<String, dynamic> toJson() => {
-        ...super.toJson(),
-        EventParams.trigger: trigger.name,
-      };
 }

@@ -23,5 +23,5 @@ class TobAnalyticsEvents {
 }
 
 class TobEventParams {
-  static const timeSpentSeconds = 'timeSpentSeconds';
+  static const timeSpentInSeconds = 'timeSpentInSeconds';
 }

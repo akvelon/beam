@@ -30,7 +30,7 @@ class PlaygroundRunOrCancelButton extends StatelessWidget {
         playgroundController: playgroundController,
         beforeCancel: (runner) {
           PlaygroundComponents.analyticsService.sendUnawaited(
-            CancelRunAnalyticsEvent(
+            RunCancelledAnalyticsEvent(
               snippetContext: runner.eventSnippetContext!,
               duration: runner.elapsed!,
               trigger: EventTrigger.click,
@@ -39,7 +39,7 @@ class PlaygroundRunOrCancelButton extends StatelessWidget {
         },
         beforeRun: () {
           PlaygroundComponents.analyticsService.sendUnawaited(
-            RunAnalyticsEvent(
+            RunStartedAnalyticsEvent(
               snippetContext: playgroundController.eventSnippetContext,
               trigger: EventTrigger.click,
             ),

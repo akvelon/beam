@@ -65,16 +65,16 @@ export 'src/router/router_delegate.dart';
 
 export 'src/services/analytics/analytics_service.dart';
 export 'src/services/analytics/events/abstract.dart';
-export 'src/services/analytics/events/cancel_run.dart';
+export 'src/services/analytics/events/app_rated.dart';
 export 'src/services/analytics/events/constants.dart';
 export 'src/services/analytics/events/external_url_navigated.dart';
-export 'src/services/analytics/events/feedback_form.dart';
-export 'src/services/analytics/events/rated.dart';
-export 'src/services/analytics/events/report_issue.dart';
-export 'src/services/analytics/events/reset_snippet.dart';
-export 'src/services/analytics/events/run.dart';
+export 'src/services/analytics/events/feedback_form_sent.dart';
+export 'src/services/analytics/events/issue_reported.dart';
+export 'src/services/analytics/events/run_cancelled.dart';
 export 'src/services/analytics/events/run_finished.dart';
+export 'src/services/analytics/events/run_started.dart';
 export 'src/services/analytics/events/sdk_selected.dart';
+export 'src/services/analytics/events/snippet_reset.dart';
 export 'src/services/analytics/google_analytics4_service/google_analytics4_service.dart';
 export 'src/services/symbols/loaders/yaml.dart';
 

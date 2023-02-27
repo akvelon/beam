@@ -30,8 +30,8 @@ import '../../config.dart';
 import '../../models/event_context.dart';
 import '../../models/unit.dart';
 import '../../models/unit_content.dart';
-import '../../services/analytics/events/close_unit.dart';
-import '../../services/analytics/events/open_unit.dart';
+import '../../services/analytics/events/unit_closed.dart';
+import '../../services/analytics/events/unit_opened.dart';
 import '../../state.dart';
 import 'controllers/content_tree.dart';
 import 'controllers/unit.dart';
@@ -160,8 +160,8 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
       sdkId: sdk.id,
       unitId: unit.id,
     );
-    // TODO(nausharipov) review: all snippetEditingControllers are not set in playgroundController, because _tobEventContext points to a specific sdk.
-    playgroundController.snippetEditingController!
+    playgroundController
+        .requireSnippetEditingController()
         .setDefaultEventParams(_tobEventContext.toJson());
     PlaygroundComponents.analyticsService.sendUnawaited(
       UnitOpenedTobAnalyticsEvent(

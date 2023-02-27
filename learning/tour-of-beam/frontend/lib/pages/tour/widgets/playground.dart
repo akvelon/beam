@@ -29,18 +29,16 @@ class PlaygroundWidget extends StatelessWidget {
     required this.tourNotifier,
   });
 
-  PlaygroundController get playgroundController =>
-      tourNotifier.playgroundController;
-
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: playgroundController,
+      animation: tourNotifier.playgroundController,
       builder: _buildOnChange,
     );
   }
 
   Widget _buildOnChange(BuildContext context, Widget? child) {
+    final playgroundController = tourNotifier.playgroundController;
     final snippetController = playgroundController.snippetEditingController;
     if (snippetController == null) {
       return const LoadingIndicator();
@@ -69,7 +67,7 @@ class PlaygroundWidget extends StatelessWidget {
                   playgroundController: playgroundController,
                   beforeCancel: (runner) {
                     PlaygroundComponents.analyticsService.sendUnawaited(
-                      CancelRunAnalyticsEvent(
+                      RunCancelledAnalyticsEvent(
                         snippetContext: runner.eventSnippetContext!,
                         duration: runner.elapsed!,
                         trigger: EventTrigger.click,
@@ -79,7 +77,7 @@ class PlaygroundWidget extends StatelessWidget {
                   },
                   beforeRun: () {
                     PlaygroundComponents.analyticsService.sendUnawaited(
-                      RunAnalyticsEvent(
+                      RunStartedAnalyticsEvent(
                         snippetContext: tourNotifier.playgroundController
                             .codeRunner.eventSnippetContext!,
                         trigger: EventTrigger.click,
