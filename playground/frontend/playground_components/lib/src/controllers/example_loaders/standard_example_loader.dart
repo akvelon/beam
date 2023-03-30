@@ -50,17 +50,29 @@ class StandardExampleLoader extends ExampleLoader {
 
   Future<void> _load() async {
     try {
-      final example = await exampleCache.getPrecompiledObject(
+      final exampleBase = await exampleCache.getPrecompiledObject(
         descriptor.path,
         descriptor.sdk,
       );
 
       _completer.complete(
-        exampleCache.loadExampleInfo(example),
+        await exampleCache.loadExampleInfo(exampleBase),
       );
 
       // ignore: avoid_catches_without_on_clauses
-    } catch (ex, trace) {
+    } catch (_) {
+      await _tryLoadSharedExample();
+    }
+  }
+
+  Future<void> _tryLoadSharedExample() async {
+    try {
+      final example = await exampleCache.loadSharedExample(
+        descriptor.path,
+        viewOptions: descriptor.viewOptions,
+      );
+      _completer.complete(example);
+    } on Exception catch (ex, trace) {
       _completer.completeError(ex, trace);
       return;
     }
