@@ -18,11 +18,25 @@
 
 class MultipleExceptions implements Exception {
   final List<Exception> exceptions;
+  final List<StackTrace> stackTraces;
 
-  MultipleExceptions(this.exceptions);
+  MultipleExceptions({
+    required this.exceptions,
+    required this.stackTraces,
+  });
 
   @override
   String toString() {
-    return 'Exceptions: ${exceptions.map((e) => e.toString()).join(', ')}';
+    final buffer = StringBuffer('Exceptions (${exceptions.length}): ');
+    for (var i = 0; i < exceptions.length; i++) {
+      buffer
+        ..write('Exception #')
+        ..write(i + 1)
+        ..writeln(':')
+        ..writeln(exceptions[i])
+        ..writeln('StackTrace:')
+        ..writeln(stackTraces[i]);
+    }
+    return buffer.toString();
   }
 }

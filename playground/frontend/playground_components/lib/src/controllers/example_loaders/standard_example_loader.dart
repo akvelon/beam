@@ -59,15 +59,17 @@ class StandardExampleLoader extends ExampleLoader {
       _completer.complete(
         await exampleCache.loadExampleInfo(exampleBase),
       );
-    } on Exception catch (loadPrecompiledExampleException) {
+    } on Exception catch (ex, trace) {
       await _tryLoadSharedExample(
-        previousException: loadPrecompiledExampleException,
+        previousExceptions: [ex],
+        previousStackTraces: [trace],
       );
     }
   }
 
   Future<void> _tryLoadSharedExample({
-    required Exception previousException,
+    required List<Exception> previousExceptions,
+    required List<StackTrace> previousStackTraces,
   }) async {
     try {
       final example = await exampleCache.loadSharedExample(
@@ -75,13 +77,12 @@ class StandardExampleLoader extends ExampleLoader {
         viewOptions: descriptor.viewOptions,
       );
       _completer.complete(example);
-    } on Exception catch (loadSharedExampleException, trace) {
+    } on Exception catch (ex, trace) {
       _completer.completeError(
-        MultipleExceptions([
-          previousException,
-          loadSharedExampleException,
-        ]),
-        trace,
+        MultipleExceptions(
+          exceptions: [...previousExceptions, ex],
+          stackTraces: [...previousStackTraces, trace],
+        ),
       );
     }
   }
