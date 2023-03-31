@@ -174,7 +174,9 @@ class UnitProgressCache extends ChangeNotifier {
   }
 
   Future<void> deleteUserProgress() async {
-    await _localStorageUserProgressRepository.deleteUserProgress();
-    await _cloudUserProgressRepository.deleteUserProgress();
+    await Future.wait([
+      _localStorageUserProgressRepository.deleteUserProgress(),
+      _cloudUserProgressRepository.deleteUserProgress(),
+    ]);
   }
 }

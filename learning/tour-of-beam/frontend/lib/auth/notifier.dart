@@ -56,7 +56,8 @@ class AuthNotifier extends ChangeNotifier {
 
   Future<void> deleteAccount() async {
     try {
-      // TODO(nausharipov) review: is there a better place for this?
+      // If there are more things to do before account deletion,
+      // add final _accountDeletionListeners = <AccountDeletionListener>[].
       await GetIt.instance.get<UnitProgressCache>().deleteUserProgress();
       await FirebaseAuth.instance.currentUser?.delete();
     } on Exception catch (e) {
