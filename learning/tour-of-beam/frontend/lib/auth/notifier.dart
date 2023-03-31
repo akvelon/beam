@@ -21,8 +21,10 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_platform_interface/firebase_auth_platform_interface.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:playground_components/playground_components.dart';
 
+import '../cache/unit_progress.dart';
 import '../repositories/client/client.dart';
 
 class AuthNotifier extends ChangeNotifier {
@@ -54,7 +56,8 @@ class AuthNotifier extends ChangeNotifier {
 
   Future<void> deleteAccount() async {
     try {
-      await client.postDeleteUserProgress();
+      // TODO(nausharipov) review: is there a better place for this?
+      await GetIt.instance.get<UnitProgressCache>().deleteUserProgress();
       await FirebaseAuth.instance.currentUser?.delete();
     } on Exception catch (e) {
       PlaygroundComponents.toastNotifier.addException(e);
