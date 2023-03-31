@@ -127,7 +127,6 @@ class HiveUserProgressRepository extends AbstractUserProgressRepository {
   Future<void> deleteUserProgress() async {
     final sdks = GetIt.instance.get<SdkCache>().getSdks();
     for (final sdk in sdks) {
-      // TODO(nausharipov) review: Hive.deleteBoxFromDisk(boxName) didn't work reliably.
       final unitProgress = await Hive.openBox(
         HiveBoxNames.getSdkBoxName(sdk, HiveBoxNames.unitProgress),
       );
