@@ -24,6 +24,7 @@ export 'src/constants/links.dart';
 export 'src/constants/sizes.dart';
 export 'src/controllers/build_metadata.dart';
 export 'src/controllers/example_loaders/examples_loader.dart';
+export 'src/controllers/feedback_controller.dart';
 export 'src/controllers/playground_controller.dart';
 export 'src/controllers/public_notifier.dart';
 export 'src/controllers/window_close_notifier/window_close_notifier.dart';

@@ -53,9 +53,9 @@ widgets:
     label: 'Close'
   
   feedback:
-    bad: 'Bad Experience'
-    good: 'Good Experience'
     hint: "Have feedback? We'd love to hear it, but please don't share sensitive information."
+    negative: 'Bad Experience'
+    positive: 'Good Experience'
     send: 'Send Feedback'
     title: 'Feedback'
 

@@ -23,31 +23,28 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../playground_components.dart';
 import '../assets/assets.gen.dart';
 
-enum Rating { none, positive, negative }
+class FeedbackWidget extends StatelessWidget {
+  static const positiveRatingButtonKey = Key('positive');
+  static const negativeRatingButtonKey = Key('negative');
 
-class FeedbackWidget extends StatefulWidget {
+  final FeedbackController controller;
   final String title;
-  final Function(Rating) onRatingChanged;
-  final Function(Rating, String) onSubmitPressed;
 
   const FeedbackWidget({
+    required this.controller,
     required this.title,
-    required this.onRatingChanged,
-    required this.onSubmitPressed,
   });
 
-  @override
-  State<FeedbackWidget> createState() => _FeedbackWidgetState();
-}
+  void _onRatingChanged(BuildContext context, FeedbackRating rating) {
+    controller.setRating(rating);
 
-class _FeedbackWidgetState extends State<FeedbackWidget> {
-  Rating _rating = Rating.none;
-
-  void _onRatingChanged(Rating rating) {
-    setState(() {
-      _rating = rating;
-    });
-    widget.onRatingChanged(_rating);
+    PlaygroundComponents.analyticsService.sendUnawaited(
+      AppRatedAnalyticsEvent(
+        rating: rating,
+        snippetContext: controller.eventSnippetContext,
+        additionalParams: controller.additionalParams,
+      ),
+    );
 
     final closeNotifier = PublicNotifier();
     showOverlay(
@@ -57,12 +54,12 @@ class _FeedbackWidgetState extends State<FeedbackWidget> {
         bottom: 50,
         left: 20,
         child: OverlayBody(
-          child: _FeedbackDropdown(
+          child: FeedbackDropdown(
+            close: closeNotifier.notifyPublic,
+            controller: controller,
+            rating: rating,
             title: 'widgets.feedback.title'.tr(),
             subtitle: 'widgets.feedback.hint'.tr(),
-            rating: _rating,
-            onSubmitPressed: widget.onSubmitPressed,
-            close: closeNotifier.notifyPublic,
           ),
         ),
       ),
@@ -71,135 +68,155 @@ class _FeedbackWidgetState extends State<FeedbackWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          widget.title,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(width: BeamSizes.size6),
-        Tooltip(
-          message: 'widgets.feedback.bad'.tr(),
-          child: InkWell(
-            onTap: () {
-              _onRatingChanged(Rating.positive);
-            },
-            child: _RatingIcon(
-              groupValue: _rating,
-              value: Rating.positive,
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, child) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(width: BeamSizes.size6),
+          Tooltip(
+            message: 'widgets.feedback.positive'.tr(),
+            child: InkWell(
+              key: positiveRatingButtonKey,
+              onTap: () {
+                _onRatingChanged(context, FeedbackRating.positive);
+              },
+              child: _RatingIcon(
+                groupValue: controller.rating,
+                value: FeedbackRating.positive,
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: BeamSizes.size6),
-        Tooltip(
-          message: 'widgets.feedback.good'.tr(),
-          child: InkWell(
-            onTap: () {
-              _onRatingChanged(Rating.negative);
-            },
-            child: _RatingIcon(
-              groupValue: _rating,
-              value: Rating.negative,
+          const SizedBox(width: BeamSizes.size6),
+          Tooltip(
+            message: 'widgets.feedback.negative'.tr(),
+            child: InkWell(
+              key: negativeRatingButtonKey,
+              onTap: () {
+                _onRatingChanged(context, FeedbackRating.negative);
+              },
+              child: _RatingIcon(
+                groupValue: controller.rating,
+                value: FeedbackRating.negative,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
 class _RatingIcon extends StatelessWidget {
-  final Rating groupValue;
-  final Rating value;
+  final FeedbackRating? groupValue;
+  final FeedbackRating value;
   const _RatingIcon({
     required this.groupValue,
     required this.value,
   });
 
+  String _getAsset() {
+    final isSelected = value == groupValue;
+    switch (value) {
+      case FeedbackRating.positive:
+        return isSelected ? Assets.svg.thumbUpFilled : Assets.svg.thumbUp;
+      case FeedbackRating.negative:
+        return isSelected ? Assets.svg.thumbDownFilled : Assets.svg.thumbDown;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isSelected = value == groupValue;
-    final String asset;
-    switch (value) {
-      case Rating.positive:
-        asset = isSelected ? Assets.svg.thumbUpFilled : Assets.svg.thumbUp;
-        break;
-      case Rating.negative:
-        asset = isSelected ? Assets.svg.thumbDownFilled : Assets.svg.thumbDown;
-        break;
-      case Rating.none:
-        asset = '';
-        break;
-    }
     return SvgPicture.asset(
-      asset,
+      _getAsset(),
       package: PlaygroundComponents.packageName,
     );
   }
 }
 
-class _FeedbackDropdown extends StatelessWidget {
+class FeedbackDropdown extends StatelessWidget {
+  static const sendButtonKey = Key('sendFeedbackButtonKey');
+  static const textFieldKey = Key('feedbackTextFieldKey');
+
+  final FeedbackController controller;
   final VoidCallback close;
-  final Function(Rating, String) onSubmitPressed;
-  final Rating rating;
+  final FeedbackRating rating;
   final String title;
   final String subtitle;
 
-  _FeedbackDropdown({
+  const FeedbackDropdown({
+    required this.controller,
     required this.title,
     required this.rating,
-    required this.onSubmitPressed,
     required this.close,
     required this.subtitle,
   });
 
-  final TextEditingController _feedback = TextEditingController();
+  void _sendFeedback() {
+    PlaygroundComponents.analyticsService.sendUnawaited(
+      FeedbackFormSentAnalyticsEvent(
+        rating: rating,
+        text: controller.textController.text,
+        snippetContext: controller.eventSnippetContext,
+        additionalParams: controller.additionalParams,
+      ),
+    );
+    controller.textController.clear();
+    close();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 400,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.headlineLarge,
-          ),
-          const SizedBox(height: BeamSizes.size8),
-          Text(
-            subtitle,
-          ),
-          const SizedBox(height: BeamSizes.size8),
-          TextField(
-            controller: _feedback,
-            minLines: 3,
-            maxLines: 5,
-            keyboardType: TextInputType.multiline,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
+    return AnimatedBuilder(
+      animation: controller.textController,
+      builder: (context, child) => Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: const EdgeInsets.all(16),
+        width: 400,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.headlineLarge,
             ),
-          ),
-          const SizedBox(height: BeamSizes.size8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  onSubmitPressed(rating, _feedback.text);
-                  close();
-                },
-                child: const Text('widgets.feedback.send').tr(),
+            const SizedBox(height: BeamSizes.size8),
+            Text(
+              subtitle,
+            ),
+            const SizedBox(height: BeamSizes.size8),
+            TextField(
+              key: textFieldKey,
+              controller: controller.textController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
               ),
-            ],
-          ),
-        ],
+              keyboardType: TextInputType.multiline,
+              maxLines: 5,
+              minLines: 3,
+            ),
+            const SizedBox(height: BeamSizes.size8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton(
+                  key: sendButtonKey,
+                  onPressed: controller.textController.text.isEmpty
+                      ? null
+                      : _sendFeedback,
+                  child: const Text('widgets.feedback.send').tr(),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
