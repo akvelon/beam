@@ -28,7 +28,6 @@ Future<void> initializeServiceLocator() async {
   await _initializeRepositories();
   _initializeRouter();
   _initializeServices();
-  _initializeControllers();
 }
 
 Future<void> _initializeRepositories() async {
@@ -76,8 +75,4 @@ void _initializeServices() {
     measurementId: getGoogleAnalyticsMeasurementId(),
   );
   GetIt.instance.registerSingleton<BeamAnalyticsService>(analyticsService);
-}
-
-void _initializeControllers() {
-  GetIt.instance.registerSingleton(FeedbackController());
 }

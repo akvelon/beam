@@ -34,8 +34,8 @@ class FeedbackController extends ChangeNotifier {
   FeedbackRating? _rating;
   FeedbackRating? get rating => _rating;
 
-  void setRating(FeedbackRating rating) {
-    _rating = rating;
+  set rating(FeedbackRating? newValue) {
+    _rating = newValue;
     notifyListeners();
   }
 }

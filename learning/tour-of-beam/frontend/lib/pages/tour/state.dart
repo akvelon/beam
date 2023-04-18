@@ -299,10 +299,9 @@ class TourNotifier extends ChangeNotifier with PageStateMixin<void> {
   }
 
   void _fillFeedbackController() {
-    GetIt.instance.get<FeedbackController>().eventSnippetContext =
-        playgroundController.eventSnippetContext;
-    GetIt.instance.get<FeedbackController>().additionalParams =
-        _tobEventContext.toJson();
+    final controller = GetIt.instance.get<FeedbackController>();
+    controller.eventSnippetContext = playgroundController.eventSnippetContext;
+    controller.additionalParams = _tobEventContext.toJson();
   }
 
   ExampleLoadingDescriptor _getStandardOrEmptyDescriptor(

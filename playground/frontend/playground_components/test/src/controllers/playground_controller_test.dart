@@ -17,7 +17,6 @@
  */
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:playground_components/playground_components.dart';
@@ -30,7 +29,6 @@ import 'playground_controller_test.mocks.dart';
 Future<void> main() async {
   TestWidgetsFlutterBinding.ensureInitialized();
   await PlaygroundComponents.ensureInitialized();
-  GetIt.instance.registerSingleton(FeedbackController());
 
   late PlaygroundController controller;
   final mockExamplesLoader = MockExamplesLoader();

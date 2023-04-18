@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:playground_components/playground_components.dart';
@@ -45,7 +46,7 @@ class PlaygroundPageFooter extends StatelessWidget {
             children: [
               FeedbackWidget(
                 controller: GetIt.instance.get<FeedbackController>(),
-                title: 'Enjoying Playground?',
+                title: 'ui.feedbackTitle'.tr(),
               ),
               ReportIssueButton(playgroundController: playgroundController),
               const PrivacyPolicyButton(),

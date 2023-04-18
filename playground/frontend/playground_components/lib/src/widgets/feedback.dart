@@ -36,7 +36,7 @@ class FeedbackWidget extends StatelessWidget {
   });
 
   void _onRatingChanged(BuildContext context, FeedbackRating rating) {
-    controller.setRating(rating);
+    controller.rating = rating;
 
     PlaygroundComponents.analyticsService.sendUnawaited(
       AppRatedAnalyticsEvent(
