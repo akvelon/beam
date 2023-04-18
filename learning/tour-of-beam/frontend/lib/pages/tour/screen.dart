@@ -78,36 +78,37 @@ class _NarrowTour extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ContentTreeWidget(controller: tourNotifier.contentTreeController),
-              Expanded(child: UnitContentWidget(tourNotifier)),
-            ],
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: Theme.of(context).dividerColor),
-              ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ContentTreeWidget(controller: tourNotifier.contentTreeController),
+        Expanded(
+          child: DefaultTabController(
+            length: 2,
+            child: Column(
+              children: [
+                const TabBar(
+                  tabs: [
+                    // TODO(nausharipov): localize if ok.
+                    Tab(text: 'Content'),
+                    Tab(text: 'Playground'),
+                  ],
+                ),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      UnitContentWidget(tourNotifier),
+                      PlaygroundWidget(
+                        tourNotifier: tourNotifier,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            child: const _NarrowScreenPlayground(),
           ),
-        ],
-      ),
+        ),
+      ],
     );
-  }
-}
-
-class _NarrowScreenPlayground extends StatelessWidget {
-  const _NarrowScreenPlayground();
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO(alexeyinkin): Even this way the narrow layout breaks, https://github.com/apache/beam/issues/23244
-    return const Center(child: Text('TODO: Playground for narrow screen'));
   }
 }
