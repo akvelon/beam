@@ -44,6 +44,7 @@ dependencies:
   hive: ^2.2.3
   http: ^0.13.5
   json_annotation: ^4.7.0
+  keyed_collection_widgets: ^0.4.3
   markdown: ^7.0.1
   playground_components: { path: ../../../playground/frontend/playground_components }
   provider: ^6.0.3

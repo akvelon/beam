@@ -685,7 +685,7 @@ packages:
     source: hosted
     version: "6.6.1"
   keyed_collection_widgets:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: keyed_collection_widgets
       sha256: "9db2df4c4897c35fe167bdca82d307d81baa4161c3118da3f06ab4fd2d75291b"

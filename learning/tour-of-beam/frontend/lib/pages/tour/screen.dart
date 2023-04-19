@@ -16,11 +16,14 @@
  * limitations under the License.
  */
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:keyed_collection_widgets/keyed_collection_widgets.dart';
 import 'package:playground_components/playground_components.dart';
 
 import '../../components/scaffold.dart';
 import '../../constants/sizes.dart';
+import '../../enums/tour_view.dart';
 import '../../shortcuts/shortcuts_manager.dart';
 import 'state.dart';
 import 'widgets/content_tree.dart';
@@ -83,25 +86,30 @@ class _NarrowTour extends StatelessWidget {
       children: [
         ContentTreeWidget(controller: tourNotifier.contentTreeController),
         Expanded(
-          child: DefaultTabController(
-            length: 2,
+          child: DefaultKeyedTabController.fromKeys(
+            keys: const [TourView.content, TourView.playground],
             child: Column(
               children: [
-                const TabBar(
-                  tabs: [
-                    // TODO(nausharipov): localize if ok.
-                    Tab(text: 'Content'),
-                    Tab(text: 'Playground'),
-                  ],
+                KeyedTabBar.withDefaultController<TourView>(
+                  tabs: {
+                    TourView.content: Tab(
+                      text: 'pages.tour.content'.tr(),
+                    ),
+                    TourView.playground: Tab(
+                      text: 'pages.tour.playground'.tr(),
+                    ),
+                  },
                 ),
                 Expanded(
-                  child: TabBarView(
-                    children: [
-                      UnitContentWidget(tourNotifier),
-                      PlaygroundWidget(
-                        tourNotifier: tourNotifier,
+                  child: KeyedTabBarView.withDefaultController<TourView>(
+                    children: {
+                      TourView.content: UnitContentWidget(
+                        tourNotifier,
                       ),
-                    ],
+                      TourView.playground: PlaygroundWidget(
+                        tourNotifier: tourNotifier,
+                      )
+                    },
                   ),
                 ),
               ],
