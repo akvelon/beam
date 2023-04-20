@@ -29,17 +29,18 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('Cancel running example', (WidgetTester wt) async {
+    const runDuration = Duration(milliseconds: 300);
     await init(wt);
 
     // Cancel unchanged example.
-    await _runAndCancelExample(wt, const Duration(milliseconds: 300));
+    await _runAndCancelExample(wt, runDuration);
 
     final source = wt.findPlaygroundController().source ?? '';
     await wt.enterText(find.codeField(), '//comment\n' + source);
     await wt.pumpAndSettle();
 
     // Cancel changed example.
-    await _runAndCancelExample(wt, const Duration(milliseconds: 5000));
+    await _runAndCancelExample(wt, runDuration);
   });
 }
 
