@@ -28,8 +28,6 @@ import '../../../models/unit.dart';
 class ContentTreeController extends ChangeNotifier {
   Sdk _sdk;
   List<String> _treeIds;
-  // TODO(nausharipov) review: delete the todo?
-  // TODO(nausharipov): non-nullable currentNode?
   NodeModel? _currentNode;
   final _contentTreeCache = GetIt.instance.get<ContentTreeCache>();
   final _expandedIds = <String>{};

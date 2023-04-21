@@ -87,29 +87,29 @@ class _NarrowTour extends StatelessWidget {
         ContentTreeWidget(controller: tourNotifier.contentTreeController),
         Expanded(
           child: DefaultKeyedTabController.fromKeys(
-            keys: const [TourView.content, TourView.playground],
+            keys: TourView.values,
             child: Column(
               children: [
                 KeyedTabBar.withDefaultController<TourView>(
-                  tabs: {
-                    TourView.content: Tab(
+                  tabs: UnmodifiableTourViewMap(
+                    content: Tab(
                       text: 'pages.tour.content'.tr(),
                     ),
-                    TourView.playground: Tab(
+                    playground: Tab(
                       text: 'pages.tour.playground'.tr(),
                     ),
-                  },
+                  ),
                 ),
                 Expanded(
                   child: KeyedTabBarView.withDefaultController<TourView>(
-                    children: {
-                      TourView.content: UnitContentWidget(
+                    children: UnmodifiableTourViewMap(
+                      content: UnitContentWidget(
                         tourNotifier,
                       ),
-                      TourView.playground: PlaygroundWidget(
+                      playground: PlaygroundWidget(
                         tourNotifier: tourNotifier,
-                      )
-                    },
+                      ),
+                    ),
                   ),
                 ),
               ],

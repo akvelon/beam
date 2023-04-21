@@ -15,7 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import 'package:enum_map/enum_map.dart';
 
+part 'tour_view.g.dart';
+
+@unmodifiableEnumMap
 enum TourView {
   content,
   playground,
