@@ -323,8 +323,20 @@ tasks.register("flutterPubGetTob") {
     }
 }
 
-tasks.register("flutterPubRunTob") {
+tasks.register("flutterClean") {
     dependsOn("flutterPubGetTob")
+
+    doLast {
+        exec {
+            executable("flutter")
+            args("clean")
+            workingDir("../frontend")
+        }
+    }
+}
+
+tasks.register("flutterPubRunTob") {
+    dependsOn("flutterClean")
 
     doLast {
         exec {
@@ -455,6 +467,7 @@ tasks.register("InitFrontend") {
     dependsOn("flutterPubRunPG")
     dependsOn("flutterPubAddPerf")
     dependsOn("flutterPubGetTob")
+    dependsOn("flutterClean")
     dependsOn("flutterPubRunTob")
     dependsOn("flutterBuildWeb")
     dependsOn("firebaseDeploy")
