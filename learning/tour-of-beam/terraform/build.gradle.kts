@@ -298,7 +298,7 @@ tasks.register("flutterPubRunPG") {
 }
 
 tasks.register("flutterPubAddPerf") {
-    dependsOn("flutterPubRunPG")
+    dependsOn("flutterClean")
     dependsOn("getSdkConfigWebApp")
 
     doLast {
@@ -324,7 +324,7 @@ tasks.register("flutterPubGetTob") {
 }
 
 tasks.register("flutterClean") {
-    dependsOn("flutterPubGetTob")
+    dependsOn("flutterPubRunPG")
 
     doLast {
         exec {
@@ -336,7 +336,7 @@ tasks.register("flutterClean") {
 }
 
 tasks.register("flutterPubRunTob") {
-    dependsOn("flutterClean")
+    dependsOn("flutterPubGetTob")
 
     doLast {
         exec {
@@ -465,9 +465,9 @@ tasks.register("InitFrontend") {
     dependsOn("prepareFirebaseOptionsDart")
     dependsOn("flutterPubGetPG")
     dependsOn("flutterPubRunPG")
+    dependsOn("flutterClean")
     dependsOn("flutterPubAddPerf")
     dependsOn("flutterPubGetTob")
-    dependsOn("flutterClean")
     dependsOn("flutterPubRunTob")
     dependsOn("flutterBuildWeb")
     dependsOn("firebaseDeploy")
