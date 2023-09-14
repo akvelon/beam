@@ -1,0 +1,60 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+name: Cleanup Skipped Jobs
+
+on:
+  workflow_dispatch:
+
+# This allows a subsequently queued workflow run to interrupt previous runs
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.issue.number || github.event.pull_request.head.label || github.sha || github.head_ref || github.ref }}-${{ github.event.schedule || github.event.comment.body || github.event.sender.login}}'
+  cancel-in-progress: true
+
+
+#Setting explicit permissions for the action to avoid the default permissions which are `write-all` in case of pull_request_target event
+permissions:
+  actions: write
+  pull-requests: read
+  checks: read
+  contents: read
+  deployments: read
+  id-token: none
+  issues: read
+  discussions: read
+  packages: read
+  pages: read
+  repository-projects: read
+  security-events: read
+  statuses: read
+
+jobs:
+  cleanup_skipped:
+    name: Cleanup Skipped Jobs 
+    runs-on: [self-hosted, ubuntu-20.04, main]
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install GH Cli
+        run: |
+          wget https://github.com/cli/cli/releases/download/v2.31.0/gh_2.31.0_linux_amd64.tar.gz
+          tar -xvf gh_2.31.0_linux_amd64.tar.gz
+          sudo mv gh_2.31.0_linux_amd64/bin/gh /usr/local/bin
+      - name: Cleanup Skipped Jobs
+        run: |
+          gh run list -s skipped --limit 3000 --json databaseId -q '.[] | .databaseId' | xargs -d '\n' -n1 gh run delete
+
