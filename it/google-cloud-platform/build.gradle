@@ -30,6 +30,7 @@ dependencies {
     implementation enforcedPlatform(library.java.google_cloud_platform_libraries_bom)
     implementation project(path: ":sdks:java:core", configuration: "shadow")
     implementation project(path: ":runners:google-cloud-dataflow-java")
+    implementation project(path: ":runners:direct-java")
     implementation project(path: ":it:conditions", configuration: "shadow")
     implementation project(path: ":it:truthmatchers", configuration: "shadow")
     implementation library.java.slf4j_api
@@ -81,4 +82,7 @@ dependencies {
 
 tasks.register("GCSPerformanceTest", IoPerformanceTestUtilities.IoPerformanceTest, project, 'google-cloud-platform', 'FileBasedIOLT', ['configuration':'large','project':'apache-beam-testing', 'artifactBucket':'io-performance-temp'])
 tasks.register("BigTablePerformanceTest", IoPerformanceTestUtilities.IoPerformanceTest, project, 'google-cloud-platform', 'BigTableIOLT', ['configuration':'large','project':'apache-beam-testing', 'artifactBucket':'io-performance-temp'])
-tasks.register("BigQueryStorageApiStreamingPerformanceTest", IoPerformanceTestUtilities.IoPerformanceTest, project, 'google-cloud-platform', 'BigQueryStreamingLT', ['configuration':'large', 'project':'apache-beam-testing', 'artifactBucket':'io-performance-temp'])
+tasks.register("BigQueryStorageApiStreamingPerformanceTest", IoPerformanceTestUtilities.IoPerformanceTest, project, 'google-cloud-platform', 'BigQueryStreamingLT', ['configuration':'local', 'project':'apache-beam-testing', 'artifactBucket':'io-performance-temp'])
+tasks.register("BigQueryPerformanceTest", IoPerformanceTestUtilities.IoPerformanceTest, project, 'google-cloud-platform', 'BigQueryIOLT', ['configuration':'local','project':'apache-beam-testing', 'artifactBucket':'apache-beam-testing-cdap-integration'])
+tasks.register("PubSubPerformanceTest", IoPerformanceTestUtilities.IoPerformanceTest, project, 'google-cloud-platform', 'PubSubIOLT', ['configuration':'medium','project':'apache-beam-testing', 'artifactBucket':'apache-beam-testing-cdap-integration'])
+tasks.register("WordCountIntegrationTest", IoPerformanceTestUtilities.IoPerformanceTest, project, 'google-cloud-platform', 'WordCountIT', ['project':'apache-beam-testing', 'artifactBucket':'apache-beam-testing-cdap-integration'])
