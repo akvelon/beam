@@ -17,10 +17,20 @@
  */
 package org.apache.beam.it.gcp.bigquery;
 
+import static org.apache.beam.it.truthmatchers.PipelineAsserts.assertThatResult;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.bigquery.model.TableSchema;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.beam.it.common.PipelineLauncher;
@@ -45,17 +55,6 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Strings;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.collect.ImmutableMap;
 import org.junit.*;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.time.Duration;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-
-import static org.apache.beam.it.truthmatchers.PipelineAsserts.assertThatResult;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * BigQueryIO performance tests.
@@ -271,16 +270,16 @@ public final class BigQueryIOLT extends IOLoadTestBase {
     assertNotEquals(PipelineOperator.Result.LAUNCH_FAILED, result);
 
     // export metrics
-//    MetricsConfiguration metricsConfig =
-//            MetricsConfiguration.builder()
-//                    .setInputPCollection("Map records.out0")
-//                    .setInputPCollectionV2("Map records/ParMultiDo(MapKVToV).out0")
-//                    .build();
-//    try {
-//      exportMetricsToBigQuery(launchInfo, getMetrics(launchInfo, metricsConfig));
-//    } catch (ParseException | InterruptedException e) {
-//      throw new RuntimeException(e);
-//    }
+    //    MetricsConfiguration metricsConfig =
+    //            MetricsConfiguration.builder()
+    //                    .setInputPCollection("Map records.out0")
+    //                    .setInputPCollectionV2("Map records/ParMultiDo(MapKVToV).out0")
+    //                    .build();
+    //    try {
+    //      exportMetricsToBigQuery(launchInfo, getMetrics(launchInfo, metricsConfig));
+    //    } catch (ParseException | InterruptedException e) {
+    //      throw new RuntimeException(e);
+    //    }
   }
 
   private void testRead() throws IOException {
@@ -316,16 +315,16 @@ public final class BigQueryIOLT extends IOLoadTestBase {
     assertEquals(configuration.numRecords, numRecords, 0.5);
 
     // export metrics
-//    MetricsConfiguration metricsConfig =
-//        MetricsConfiguration.builder()
-//            .setOutputPCollection("Counting element.out0")
-//            .setOutputPCollectionV2("Counting element/ParMultiDo(Counting).out0")
-//            .build();
-//    try {
-//      exportMetricsToBigQuery(launchInfo, getMetrics(launchInfo, metricsConfig));
-//    } catch (ParseException | InterruptedException e) {
-//      throw new RuntimeException(e);
-//    }
+    //    MetricsConfiguration metricsConfig =
+    //        MetricsConfiguration.builder()
+    //            .setOutputPCollection("Counting element.out0")
+    //            .setOutputPCollectionV2("Counting element/ParMultiDo(Counting).out0")
+    //            .build();
+    //    try {
+    //      exportMetricsToBigQuery(launchInfo, getMetrics(launchInfo, metricsConfig));
+    //    } catch (ParseException | InterruptedException e) {
+    //      throw new RuntimeException(e);
+    //    }
   }
 
   private static class MapKVToV extends DoFn<KV<byte[], byte[]>, byte[]> {

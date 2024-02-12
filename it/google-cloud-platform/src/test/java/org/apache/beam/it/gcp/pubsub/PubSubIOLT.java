@@ -1,16 +1,45 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.beam.it.gcp.pubsub;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.pubsub.v1.SubscriptionName;
 import com.google.pubsub.v1.TopicName;
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Map;
+import java.util.Objects;
 import org.apache.beam.it.common.PipelineLauncher;
 import org.apache.beam.it.common.PipelineOperator;
 import org.apache.beam.it.common.TestProperties;
 import org.apache.beam.it.common.utils.ResourceManagerUtils;
 import org.apache.beam.it.gcp.IOLoadTestBase;
 import org.apache.beam.runners.direct.DirectOptions;
+import org.apache.beam.sdk.extensions.protobuf.Proto3SchemaMessages.Primitive;
 import org.apache.beam.sdk.io.Read;
 import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
+import org.apache.beam.sdk.io.gcp.pubsub.PubsubMessage;
 import org.apache.beam.sdk.io.gcp.pubsub.PubsubOptions;
 import org.apache.beam.sdk.io.synthetic.SyntheticSourceOptions;
 import org.apache.beam.sdk.io.synthetic.SyntheticUnboundedSource;
@@ -20,194 +49,347 @@ import org.apache.beam.sdk.testing.TestPipelineOptions;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.KV;
+import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.MoreObjects;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Strings;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.collect.ImmutableMap;
-import org.junit.*;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.Map;
-import java.util.Objects;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
+/** PubSubIO performance tests. */
 public class PubSubIOLT extends IOLoadTestBase {
 
-    private Configuration configuration;
-    private static PubsubResourceManager resourceManager;
-    private static TopicName topicName;
-    private static SubscriptionName subscription;
-    private static final String READ_ELEMENT_METRIC_NAME = "read_count";
-    private static int numOfSourceBundles;
+  private static final int numberOfBundlesForLocal = 10;
+  private static final int numberOfBundlesForMediumAndLarge = 20;
+  private static final String READ_ELEMENT_METRIC_NAME = "read_count";
+  private static final String MAP_RECORDS_STEP_NAME = "Map records";
+  private static final String WRITE_TO_PUBSUB_STEP_NAME = "Write to PubSub";
+  private static final Map<String, Configuration> TEST_CONFIGS_PRESET;
+  private static int numOfSourceBundles;
+  private static TopicName topicName;
+  private static Configuration configuration;
+  private static SubscriptionName subscription;
+  private static PubsubResourceManager resourceManager;
 
-    @Rule public transient TestPipeline writePipeline = TestPipeline.create();
-    @Rule public transient TestPipeline readPipeline = TestPipeline.create();
+  @Rule public transient TestPipeline writePipeline = TestPipeline.create();
+  @Rule public transient TestPipeline readPipeline = TestPipeline.create();
 
-    @BeforeClass
-    public static void beforeClass() throws IOException {
-        resourceManager =
-                PubsubResourceManager.builder("io-pubsub-lt", project, CREDENTIALS_PROVIDER).build();
-        topicName = resourceManager.createTopic("topic");
-        subscription = resourceManager.createSubscription(topicName, "subscription");
-        PipelineOptionsFactory.register(TestPipelineOptions.class);
+  static {
+    try {
+      TEST_CONFIGS_PRESET =
+          ImmutableMap.of(
+              "local",
+              PubSubIOLT.Configuration.fromJsonString(
+                  "{\"numRecords\":200,\"valueSizeBytes\":1000,\"pipelineTimeout\":7,\"runner\":\"DirectRunner\"}",
+                  PubSubIOLT.Configuration.class), // 0.2 MB
+              "medium",
+              PubSubIOLT.Configuration.fromJsonString(
+                  "{\"numRecords\":10000000,\"valueSizeBytes\":1000,\"pipelineTimeout\":20,\"runner\":\"DataflowRunner\"}",
+                  PubSubIOLT.Configuration.class), // 10 GB
+              "large",
+              PubSubIOLT.Configuration.fromJsonString(
+                  "{\"numRecords\":100000000,\"valueSizeBytes\":1000,\"pipelineTimeout\":80,\"runner\":\"DataflowRunner\"}",
+                  PubSubIOLT.Configuration.class) // 100 GB
+              );
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Before
+  public void setup() throws IOException {
+    resourceManager =
+        PubsubResourceManager.builder("io-pubsub-lt", project, CREDENTIALS_PROVIDER).build();
+    topicName = resourceManager.createTopic("topic");
+    subscription = resourceManager.createSubscription(topicName, "subscription");
+    PipelineOptionsFactory.register(TestPipelineOptions.class);
+
+    // parse configuration
+    String testConfig =
+        TestProperties.getProperty("configuration", "local", TestProperties.Type.PROPERTY);
+    configuration = TEST_CONFIGS_PRESET.get(testConfig);
+    if (configuration == null) {
+      try {
+        configuration =
+            PubSubIOLT.Configuration.fromJsonString(testConfig, PubSubIOLT.Configuration.class);
+      } catch (IOException e) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Unknown test configuration: [%s]. Pass to a valid configuration json, or use"
+                    + " config presets: %s",
+                testConfig, TEST_CONFIGS_PRESET.keySet()));
+      }
     }
 
-    @Before
-    public void setup() {
-        // parse configuration
-        String testConfig =
-                TestProperties.getProperty("configuration", "local", TestProperties.Type.PROPERTY);
-        configuration = TEST_CONFIGS_PRESET.get(testConfig);
-        if (configuration == null) {
-            try {
-                configuration = PubSubIOLT.Configuration.fromJsonString(testConfig, PubSubIOLT.Configuration.class);
-            } catch (IOException e) {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "Unknown test configuration: [%s]. Pass to a valid configuration json, or use"
-                                        + " config presets: %s",
-                                testConfig, TEST_CONFIGS_PRESET.keySet()));
-            }
-        }
+    // Explicitly set up number of bundles in SyntheticUnboundedSource since it has a bug in
+    // implementation where
+    // number of lost data in streaming pipeline equals to number of initial bundles.
+    numOfSourceBundles =
+        testConfig.equals("local") ? numberOfBundlesForLocal : numberOfBundlesForMediumAndLarge;
+    configuration.forceNumInitialBundles = numOfSourceBundles;
 
-        // Explicitly set up number of bundles in SyntheticUnboundedSource since it has a bug in implementation where
-        // number of lost data in streaming pipeline equals to number of initial bundles.
-        numOfSourceBundles = testConfig.equals("local") ? 10 : 20;
-        configuration.forceNumInitialBundles = numOfSourceBundles;
+    // tempLocation needs to be set for DataflowRunner
+    if (!Strings.isNullOrEmpty(tempBucketName)) {
+      String tempLocation = String.format("gs://%s/temp/", tempBucketName);
+      writePipeline.getOptions().as(TestPipelineOptions.class).setTempRoot(tempLocation);
+      writePipeline.getOptions().setTempLocation(tempLocation);
+      readPipeline.getOptions().as(TestPipelineOptions.class).setTempRoot(tempLocation);
+      readPipeline.getOptions().setTempLocation(tempLocation);
+    }
+    writePipeline.getOptions().as(PubsubOptions.class).setProject(project);
+    readPipeline.getOptions().as(PubsubOptions.class).setProject(project);
+    writePipeline.getOptions().as(DirectOptions.class).setBlockOnRun(false);
+    readPipeline.getOptions().as(DirectOptions.class).setBlockOnRun(false);
+  }
 
-        // tempLocation needs to be set for DataflowRunner
-        if (!Strings.isNullOrEmpty(tempBucketName)) {
-            String tempLocation = String.format("gs://%s/temp/", tempBucketName);
-            writePipeline.getOptions().as(TestPipelineOptions.class).setTempRoot(tempLocation);
-            writePipeline.getOptions().setTempLocation(tempLocation);
-            readPipeline.getOptions().as(TestPipelineOptions.class).setTempRoot(tempLocation);
-            readPipeline.getOptions().setTempLocation(tempLocation);
-        }
-        writePipeline.getOptions().as(PubsubOptions.class).setProject(topicName.getProject());
-        readPipeline.getOptions().as(PubsubOptions.class).setProject(topicName.getProject());
-        writePipeline.getOptions().as(DirectOptions.class).setBlockOnRun(false);
-        readPipeline.getOptions().as(DirectOptions.class).setBlockOnRun(false);
+  @After
+  public void tearDownClass() {
+    ResourceManagerUtils.cleanResources(resourceManager);
+  }
+
+  @Test
+  public void testStringWriteAndRead() throws IOException {
+    configuration.writeAndReadFormat = WriteAndReadFormat.STRING.toString();
+    testWriteAndRead();
+  }
+
+  @Test
+  public void testAvroGenericClassWriteAndRead() throws IOException {
+    configuration.writeAndReadFormat = WriteAndReadFormat.AVRO.toString();
+    testWriteAndRead();
+  }
+
+  @Test
+  public void testProtoPrimitiveWriteAndRead() throws IOException {
+    configuration.writeAndReadFormat = WriteAndReadFormat.PROTO.toString();
+    testWriteAndRead();
+  }
+
+  @Test
+  public void testPubsubMessageWriteAndRead() throws IOException {
+    configuration.writeAndReadFormat = WriteAndReadFormat.PUBSUB_MESSAGE.toString();
+    testWriteAndRead();
+  }
+
+  public void testWriteAndRead() throws IOException {
+    WriteAndReadFormat format = WriteAndReadFormat.valueOf(configuration.writeAndReadFormat);
+    PipelineLauncher.LaunchInfo writeLaunchInfo = testWrite(format);
+    PipelineLauncher.LaunchInfo readLaunchInfo = testRead(format);
+
+    try {
+      PipelineOperator.Result readResult =
+          pipelineOperator.waitUntilDone(
+              createConfig(readLaunchInfo, Duration.ofMinutes(configuration.pipelineTimeout)));
+
+      // Check the initial launch didn't fail
+      assertNotEquals(PipelineOperator.Result.LAUNCH_FAILED, readResult);
+      // streaming read pipeline does not end itself
+      // Fail the test if read pipeline (streaming) not in running state.
+      assertEquals(
+          PipelineLauncher.JobState.RUNNING,
+          pipelineLauncher.getJobStatus(project, region, readLaunchInfo.jobId()));
+
+      // check metrics
+      double numRecords =
+          pipelineLauncher.getMetric(
+              project,
+              region,
+              readLaunchInfo.jobId(),
+              getBeamMetricsName(PipelineMetricsType.COUNTER, READ_ELEMENT_METRIC_NAME));
+      assertEquals(configuration.numRecords, numRecords, numOfSourceBundles);
+    } finally {
+      cancelJobIfRunning(writeLaunchInfo);
+      cancelJobIfRunning(readLaunchInfo);
+    }
+  }
+
+  private PipelineLauncher.LaunchInfo testWrite(WriteAndReadFormat format) throws IOException {
+    PCollection<KV<byte[], byte[]>> dataFromSource =
+        writePipeline.apply(
+            "Read from source", Read.from(new SyntheticUnboundedSource(configuration)));
+
+    switch (format) {
+      case STRING:
+        dataFromSource
+            .apply(MAP_RECORDS_STEP_NAME, ParDo.of(new MapKVtoString()))
+            .apply(WRITE_TO_PUBSUB_STEP_NAME, PubsubIO.writeStrings().to(topicName.toString()));
+        break;
+      case AVRO:
+        dataFromSource
+            .apply(MAP_RECORDS_STEP_NAME, ParDo.of(new MapKVtoGenericClass()))
+            .apply(
+                WRITE_TO_PUBSUB_STEP_NAME,
+                PubsubIO.writeAvros(GenericClass.class).to(topicName.toString()));
+        break;
+      case PROTO:
+        dataFromSource
+            .apply(MAP_RECORDS_STEP_NAME, ParDo.of(new MapKVtoPrimitiveProto()))
+            .apply(
+                WRITE_TO_PUBSUB_STEP_NAME,
+                PubsubIO.writeProtos(Primitive.class).to(topicName.toString()));
+        break;
+      case PUBSUB_MESSAGE:
+        dataFromSource
+            .apply(MAP_RECORDS_STEP_NAME, ParDo.of(new MapKVtoPubSubMessage()))
+            .apply(WRITE_TO_PUBSUB_STEP_NAME, PubsubIO.writeMessages().to(topicName.toString()));
+        break;
     }
 
-    @AfterClass
-    public static void tearDownClass() {
-        ResourceManagerUtils.cleanResources(resourceManager);
+    PipelineLauncher.LaunchConfig writeOptions =
+        PipelineLauncher.LaunchConfig.builder("write-pubsub")
+            .setSdk(PipelineLauncher.Sdk.JAVA)
+            .setPipeline(writePipeline)
+            .addParameter("runner", configuration.runner)
+            .addParameter("streaming", "true")
+            .addParameter("experiments", "use_runner_v2")
+            .build();
+
+    return pipelineLauncher.launch(project, region, writeOptions);
+  }
+
+  private PipelineLauncher.LaunchInfo testRead(WriteAndReadFormat format) throws IOException {
+    PubsubIO.Read<?> read = null;
+    switch (format) {
+      case STRING:
+        read = PubsubIO.readStrings().fromSubscription(subscription.toString());
+        break;
+      case AVRO:
+        read = PubsubIO.readAvros(GenericClass.class).fromSubscription(subscription.toString());
+        break;
+      case PROTO:
+        read = PubsubIO.readProtos(Primitive.class).fromSubscription(subscription.toString());
+        break;
+      case PUBSUB_MESSAGE:
+        read = PubsubIO.readMessages().fromSubscription(subscription.toString());
+        break;
     }
 
-    private static final Map<String, Configuration> TEST_CONFIGS_PRESET;
+    readPipeline
+        .apply("Read from PubSub", read)
+        .apply("Counting element", ParDo.of(new CountingFn<>(READ_ELEMENT_METRIC_NAME)));
 
-    static {
-        try {
-            TEST_CONFIGS_PRESET =
-                    ImmutableMap.of(
-                            "local",
-                            PubSubIOLT.Configuration.fromJsonString(
-                                    "{\"numRecords\":500,\"valueSizeBytes\":1000,\"pipelineTimeout\":5,\"runner\":\"DirectRunner\"}",
-                                    PubSubIOLT.Configuration.class), // 0.5 MB
-                            "medium",
-                            PubSubIOLT.Configuration.fromJsonString(
-                                    "{\"numRecords\":100000,\"valueSizeBytes\":1000,\"pipelineTimeout\":15,\"runner\":\"DataflowRunner\"}",
-                                    PubSubIOLT.Configuration.class), // 10 GB
-                            "large",
-                            PubSubIOLT.Configuration.fromJsonString(
-                                    "{\"numRecords\":100000000,\"valueSizeBytes\":1000,\"pipelineTimeout\":80,\"runner\":\"DataflowRunner\"}",
-                                    PubSubIOLT.Configuration.class) // 100 GB
-                    );
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    PipelineLauncher.LaunchConfig readOptions =
+        PipelineLauncher.LaunchConfig.builder("read-pubsub")
+            .setSdk(PipelineLauncher.Sdk.JAVA)
+            .setPipeline(readPipeline)
+            .addParameter("runner", configuration.runner)
+            .addParameter("streaming", "true")
+            .addParameter("experiments", "use_runner_v2")
+            .build();
+
+    return pipelineLauncher.launch(project, region, readOptions);
+  }
+
+  private void cancelJobIfRunning(PipelineLauncher.LaunchInfo pipelineLaunchInfo)
+      throws IOException {
+    if (pipelineLauncher.getJobStatus(project, region, pipelineLaunchInfo.jobId())
+        == PipelineLauncher.JobState.RUNNING) {
+      pipelineLauncher.cancelJob(project, region, pipelineLaunchInfo.jobId());
+    }
+  }
+
+  /** Mapper class to convert data from KV<byte[], byte[]> to String. */
+  private static class MapKVtoString extends DoFn<KV<byte[], byte[]>, String> {
+    @ProcessElement
+    public void process(ProcessContext context) {
+      context.output(
+          new String(Objects.requireNonNull(context.element()).getValue(), StandardCharsets.UTF_8));
+    }
+  }
+
+  /** Mapper class to convert data from KV<byte[], byte[]> to GenericClass. */
+  private static class MapKVtoGenericClass extends DoFn<KV<byte[], byte[]>, GenericClass> {
+    @ProcessElement
+    public void process(ProcessContext context) {
+      byte[] byteValue = Objects.requireNonNull(context.element()).getValue();
+      int intValue = ByteBuffer.wrap(byteValue).getInt();
+      GenericClass pojo = new GenericClass(intValue, "data_" + intValue);
+      context.output(pojo);
+    }
+  }
+
+  /** Mapper class to convert data from KV<byte[], byte[]> to Proto Primitive. */
+  private static class MapKVtoPrimitiveProto extends DoFn<KV<byte[], byte[]>, Primitive> {
+    @ProcessElement
+    public void process(ProcessContext context) {
+      byte[] byteValue = Objects.requireNonNull(context.element()).getValue();
+      int intValue = ByteBuffer.wrap(byteValue).getInt();
+      String stringValue = "data_" + intValue;
+      Primitive proto =
+          Primitive.newBuilder()
+              .setPrimitiveInt32(intValue)
+              .setPrimitiveString(stringValue)
+              .build();
+      context.output(proto);
+    }
+  }
+
+  /** Mapper class to convert data from KV<byte[], byte[]> to PubSubMessage. */
+  private static class MapKVtoPubSubMessage extends DoFn<KV<byte[], byte[]>, PubsubMessage> {
+    @ProcessElement
+    public void process(ProcessContext context) {
+      byte[] byteValue = Objects.requireNonNull(context.element()).getValue();
+      int intValue = ByteBuffer.wrap(byteValue).getInt();
+      Map<String, String> attributes = ImmutableMap.of("someValue", "value_" + intValue);
+      PubsubMessage pubsubMessage = new PubsubMessage(byteValue, attributes);
+      context.output(pubsubMessage);
+    }
+  }
+
+  /** Example of Generic class to test PubSubIO.writeAvros()/readAvros methods. */
+  static class GenericClass implements Serializable {
+    int intField;
+    String stringField;
+
+    public GenericClass() {}
+
+    public GenericClass(int intField, String stringField) {
+      this.intField = intField;
+      this.stringField = stringField;
     }
 
-    @Test
-    public void testWriteAndRead() throws IOException {
-
-        writePipeline
-                .apply("Read from source", Read.from(new SyntheticUnboundedSource(configuration)))
-                .apply("Map records", ParDo.of(new MapKVtoString()))
-                .apply("Write to PubSub",
-                        PubsubIO
-                                .writeStrings()
-                                .to(topicName.toString()));
-
-        PipelineLauncher.LaunchConfig writeOptions =
-                PipelineLauncher.LaunchConfig.builder("write-pubsub")
-                        .setSdk(PipelineLauncher.Sdk.JAVA)
-                        .setPipeline(writePipeline)
-                        .addParameter("runner", configuration.runner)
-                        .addParameter("streaming", "true")
-                        .build();
-
-        PipelineLauncher.LaunchInfo writeLaunchInfo = pipelineLauncher.launch(project, region, writeOptions);
-
-
-        readPipeline
-                .apply("Read from PubSub", PubsubIO.readStrings().fromSubscription(subscription.toString()))
-                .apply("Counting element", ParDo.of(new CountingFn<>(READ_ELEMENT_METRIC_NAME)));
-
-        PipelineLauncher.LaunchConfig readOptions =
-                PipelineLauncher.LaunchConfig.builder("read-pubsub")
-                        .setSdk(PipelineLauncher.Sdk.JAVA)
-                        .setPipeline(readPipeline)
-                        .addParameter("runner", configuration.runner)
-                        .addParameter("streaming", "true")
-                        .build();
-
-        PipelineLauncher.LaunchInfo readLaunchInfo = pipelineLauncher.launch(project, region, readOptions);
-
-        try {
-            PipelineOperator.Result result =
-                    pipelineOperator.waitUntilDone(
-                            createConfig(readLaunchInfo, Duration.ofMinutes(configuration.pipelineTimeout)));
-
-            // Check the initial launch didn't fail
-            assertNotEquals(PipelineOperator.Result.LAUNCH_FAILED, result);
-            // streaming read pipeline does not end itself
-            // Fail the test if read pipeline (streaming) not in running state.
-            assertEquals(
-                    PipelineLauncher.JobState.RUNNING,
-                    pipelineLauncher.getJobStatus(project, region, readLaunchInfo.jobId()));
-
-            // check metrics
-            double numRecords =
-                    pipelineLauncher.getMetric(
-                            project,
-                            region,
-                            readLaunchInfo.jobId(),
-                            getBeamMetricsName(PipelineMetricsType.COUNTER, READ_ELEMENT_METRIC_NAME));
-            assertEquals(configuration.numRecords, numRecords, numOfSourceBundles);
-        } finally {
-            if (pipelineLauncher.getJobStatus(project, region, writeLaunchInfo.jobId())
-                    == PipelineLauncher.JobState.RUNNING) {
-                pipelineLauncher.cancelJob(project, region, writeLaunchInfo.jobId());
-            }
-            if (pipelineLauncher.getJobStatus(project, region, readLaunchInfo.jobId())
-                    == PipelineLauncher.JobState.RUNNING) {
-                pipelineLauncher.cancelJob(project, region, readLaunchInfo.jobId());
-            }
-        }
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(getClass())
+          .add("intField", intField)
+          .add("stringField", stringField)
+          .toString();
     }
 
-//    private enum ReadAndWriteType {
-//        MESSAGE,
-//        STRING,
-//        AVRO,
-//        PROTO
-//    }
-
-    private static class MapKVtoString extends DoFn<KV<byte[], byte[]>, String> {
-        @ProcessElement
-        public void process(ProcessContext context) {
-            context.output(new String(Objects.requireNonNull(context.element()).getValue(), StandardCharsets.UTF_8));
-        }
+    @Override
+    public int hashCode() {
+      return Objects.hash(intField, stringField);
     }
 
-    static class Configuration extends SyntheticSourceOptions {
-        /** Pipeline timeout in minutes. Must be a positive value. */
-        @JsonProperty public int pipelineTimeout = 20;
-
-        /** Runner specified to run the pipeline. */
-        @JsonProperty public String runner = "DirectRunner";
+    @Override
+    public boolean equals(@Nullable Object other) {
+      if (other == null || !(other instanceof GenericClass)) {
+        return false;
+      }
+      GenericClass o = (GenericClass) other;
+      return intField == o.intField && Objects.equals(stringField, o.stringField);
     }
+  }
+
+  private enum WriteAndReadFormat {
+    STRING,
+    AVRO,
+    PROTO,
+    PUBSUB_MESSAGE
+  }
+
+  /** Options for PubSub IO load test. */
+  static class Configuration extends SyntheticSourceOptions {
+    /** Pipeline timeout in minutes. Must be a positive value. */
+    @JsonProperty public int pipelineTimeout = 20;
+
+    /** Runner specified to run the pipeline. */
+    @JsonProperty public String runner = "DirectRunner";
+
+    /** PubSub write and read format: STRING/AVRO/PROTO/PUBSUB_MESSAGE. */
+    @JsonProperty public String writeAndReadFormat = "STRING";
+  }
 }
