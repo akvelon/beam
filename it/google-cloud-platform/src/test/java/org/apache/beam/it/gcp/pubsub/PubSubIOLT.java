@@ -68,7 +68,6 @@ public class PubSubIOLT extends IOLoadTestBase {
   private static final String MAP_RECORDS_STEP_NAME = "Map records";
   private static final String WRITE_TO_PUBSUB_STEP_NAME = "Write to PubSub";
   private static final Map<String, Configuration> TEST_CONFIGS_PRESET;
-  private static int numOfSourceBundles;
   private static TopicName topicName;
   private static Configuration configuration;
   private static SubscriptionName subscription;
@@ -127,9 +126,8 @@ public class PubSubIOLT extends IOLoadTestBase {
     // Explicitly set up number of bundles in SyntheticUnboundedSource since it has a bug in
     // implementation where
     // number of lost data in streaming pipeline equals to number of initial bundles.
-    numOfSourceBundles =
-        testConfig.equals("local") ? numberOfBundlesForLocal : numberOfBundlesForMediumAndLarge;
-    configuration.forceNumInitialBundles = numOfSourceBundles;
+    configuration.forceNumInitialBundles = testConfig.equals("local")
+            ? numberOfBundlesForLocal : numberOfBundlesForMediumAndLarge;
 
     // tempLocation needs to be set for DataflowRunner
     if (!Strings.isNullOrEmpty(tempBucketName)) {
