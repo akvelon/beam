@@ -37,6 +37,8 @@ import org.apache.beam.runners.core.StepContext;
 import org.apache.beam.runners.core.TimerInternals.TimerData;
 import org.apache.beam.runners.core.metrics.ExecutionStateSampler;
 import org.apache.beam.runners.core.metrics.ExecutionStateTracker;
+import org.apache.beam.runners.core.metrics.ExecutionStateTracker.ExecutionState;
+import org.apache.beam.runners.dataflow.options.DataflowPipelineOptions;
 import org.apache.beam.runners.dataflow.worker.DataflowExecutionContext.DataflowStepContext;
 import org.apache.beam.runners.dataflow.worker.DataflowOperationContext.DataflowExecutionState;
 import org.apache.beam.runners.dataflow.worker.counters.CounterFactory;
@@ -48,10 +50,10 @@ import org.apache.beam.sdk.metrics.MetricsEnvironment;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.transforms.windowing.BoundedWindow;
 import org.apache.beam.sdk.values.PCollectionView;
+import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Stopwatch;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.collect.Iterables;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.io.Closer;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.joda.time.DateTimeUtils.MillisProvider;
 import org.joda.time.Instant;
 
 /** Execution context for the Dataflow worker. */
@@ -252,6 +254,8 @@ public abstract class DataflowExecutionContext<T extends DataflowStepContext> {
     private final ContextActivationObserverRegistry contextActivationObserverRegistry;
     private final String workItemId;
 
+    private final boolean isStreaming;
+
     /**
      * Metadata on the message whose processing is currently being managed by this tracker. If no
      * message is actively being processed, activeMessageMetadata will be null.
@@ -259,8 +263,6 @@ public abstract class DataflowExecutionContext<T extends DataflowStepContext> {
     @GuardedBy("this")
     @Nullable
     private ActiveMessageMetadata activeMessageMetadata = null;
-
-    private final MillisProvider clock = System::currentTimeMillis;
 
     @GuardedBy("this")
     private final Map<String, IntSummaryStatistics> processingTimesByStep = new HashMap<>();
@@ -277,6 +279,11 @@ public abstract class DataflowExecutionContext<T extends DataflowStepContext> {
       this.otherState = otherState;
       this.workItemId = workItemId;
       this.contextActivationObserverRegistry = ContextActivationObserverRegistry.createDefault();
+      if (options instanceof DataflowPipelineOptions) {
+        this.isStreaming = ((DataflowPipelineOptions) options).isStreaming();
+      } else {
+        this.isStreaming = false;
+      }
     }
 
     @Override
@@ -318,12 +325,14 @@ public abstract class DataflowExecutionContext<T extends DataflowStepContext> {
           newState.isProcessElementState && newState instanceof DataflowExecutionState;
       if (isDataflowProcessElementState) {
         DataflowExecutionState newDFState = (DataflowExecutionState) newState;
-        if (newDFState.getStepName() != null && newDFState.getStepName().userName() != null) {
-          recordActiveMessageInProcessingTimesMap();
-          synchronized (this) {
-            this.activeMessageMetadata =
-                ActiveMessageMetadata.create(
-                    newDFState.getStepName().userName(), clock.getMillis());
+        if (isStreaming) {
+          if (newDFState.getStepName() != null && newDFState.getStepName().userName() != null) {
+            recordActiveMessageInProcessingTimesMap();
+            synchronized (this) {
+              this.activeMessageMetadata =
+                  ActiveMessageMetadata.create(
+                      newDFState.getStepName().userName(), Stopwatch.createStarted());
+            }
           }
         }
         elementExecutionTracker.enter(newDFState.getStepName());
@@ -331,7 +340,9 @@ public abstract class DataflowExecutionContext<T extends DataflowStepContext> {
 
       return () -> {
         if (isDataflowProcessElementState) {
-          recordActiveMessageInProcessingTimesMap();
+          if (isStreaming) {
+            recordActiveMessageInProcessingTimesMap();
+          }
           elementExecutionTracker.exit();
         }
         baseCloseable.close();
@@ -369,8 +380,7 @@ public abstract class DataflowExecutionContext<T extends DataflowStepContext> {
       if (this.activeMessageMetadata == null) {
         return;
       }
-      int processingTime =
-          (int) (System.currentTimeMillis() - this.activeMessageMetadata.startTime());
+      int processingTime = (int) (this.activeMessageMetadata.stopwatch().elapsed().toMillis());
       this.processingTimesByStep.compute(
           this.activeMessageMetadata.userStepName(),
           (k, v) -> {
