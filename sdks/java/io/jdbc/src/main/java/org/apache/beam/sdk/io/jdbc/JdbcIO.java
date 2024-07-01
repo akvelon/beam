@@ -361,12 +361,30 @@ public class JdbcIO {
    * Like {@link #readAll}, but executes multiple instances of the query on the same table
    * (subquery) using ranges.
    *
+   * @param partitioningColumnType Type descriptor for the partition column.
    * @param <T> Type of the data to be read.
    */
   public static <T, PartitionColumnT> ReadWithPartitions<T, PartitionColumnT> readWithPartitions(
       TypeDescriptor<PartitionColumnT> partitioningColumnType) {
     return new AutoValue_JdbcIO_ReadWithPartitions.Builder<T, PartitionColumnT>()
         .setPartitionColumnType(partitioningColumnType)
+        .setNumPartitions(DEFAULT_NUM_PARTITIONS)
+        .setFetchSize(DEFAULT_FETCH_SIZE)
+        .setUseBeamSchema(false)
+        .build();
+  }
+
+  /**
+   * Like {@link #readAll}, but executes multiple instances of the query on the same table
+   * (subquery) using ranges.
+   *
+   * @param partitionsHelper Custom helper for defining partitions.
+   * @param <T> Type of the data to be read.
+   */
+  public static <T, PartitionColumnT> ReadWithPartitions<T, PartitionColumnT> readWithPartitions(
+      JdbcUtil.JdbcReadWithPartitionsHelper<PartitionColumnT> partitionsHelper) {
+    return new AutoValue_JdbcIO_ReadWithPartitions.Builder<T, PartitionColumnT>()
+        .setPartitionsHelper(partitionsHelper)
         .setNumPartitions(DEFAULT_NUM_PARTITIONS)
         .setFetchSize(DEFAULT_FETCH_SIZE)
         .setUseBeamSchema(false)
@@ -1229,7 +1247,11 @@ public class JdbcIO {
     abstract @Nullable String getTable();
 
     @Pure
-    abstract TypeDescriptor<PartitionColumnT> getPartitionColumnType();
+    abstract @Nullable TypeDescriptor<PartitionColumnT> getPartitionColumnType();
+
+    @Pure
+    abstract JdbcUtil.@Nullable JdbcReadWithPartitionsHelper<PartitionColumnT>
+        getPartitionsHelper();
 
     @Pure
     abstract Builder<T, PartitionColumnT> toBuilder();
@@ -1260,6 +1282,9 @@ public class JdbcIO {
 
       abstract Builder<T, PartitionColumnT> setPartitionColumnType(
           TypeDescriptor<PartitionColumnT> partitionColumnType);
+
+      abstract Builder<T, PartitionColumnT> setPartitionsHelper(
+          JdbcUtil.JdbcReadWithPartitionsHelper<PartitionColumnT> partitionsHelper);
 
       abstract ReadWithPartitions<T, PartitionColumnT> build();
     }
@@ -1360,10 +1385,20 @@ public class JdbcIO {
             ((Comparable<PartitionColumnT>) getLowerBound()).compareTo(getUpperBound()) < EQUAL,
             "The lower bound of partitioning column is larger or equal than the upper bound");
       }
-      checkNotNull(
-          JdbcUtil.JdbcReadWithPartitionsHelper.getPartitionsHelper(getPartitionColumnType()),
-          "readWithPartitions only supports the following types: %s",
-          JdbcUtil.PRESET_HELPERS.keySet());
+
+      JdbcUtil.JdbcReadWithPartitionsHelper<PartitionColumnT> partitionsHelper =
+          getPartitionsHelper();
+      if (partitionsHelper == null) {
+        partitionsHelper =
+            JdbcUtil.JdbcReadWithPartitionsHelper.getPartitionsHelper(
+                checkStateNotNull(
+                    getPartitionColumnType(),
+                    "Provide partitionColumnType or partitionsHelper for JdbcIO.readWithPartitions()"));
+        checkNotNull(
+            partitionsHelper,
+            "readWithPartitions only supports the following types: %s",
+            JdbcUtil.PRESET_HELPERS.keySet());
+      }
 
       PCollection<KV<Long, KV<PartitionColumnT, PartitionColumnT>>> params;
 
@@ -1383,10 +1418,7 @@ public class JdbcIO {
                     JdbcIO.<KV<Long, KV<PartitionColumnT, PartitionColumnT>>>read()
                         .withQuery(query)
                         .withDataSourceProviderFn(dataSourceProviderFn)
-                        .withRowMapper(
-                            checkStateNotNull(
-                                JdbcUtil.JdbcReadWithPartitionsHelper.getPartitionsHelper(
-                                    getPartitionColumnType())))
+                        .withRowMapper(checkStateNotNull(partitionsHelper))
                         .withFetchSize(getFetchSize()))
                 .apply(
                     MapElements.via(
@@ -1441,7 +1473,9 @@ public class JdbcIO {
 
       PCollection<KV<PartitionColumnT, PartitionColumnT>> ranges =
           params
-              .apply("Partitioning", ParDo.of(new PartitioningFn<>(getPartitionColumnType())))
+              .apply(
+                  "Partitioning",
+                  ParDo.of(new PartitioningFn<>(checkStateNotNull(partitionsHelper))))
               .apply("Reshuffle partitions", Reshuffle.viaRandomKey());
 
       JdbcIO.ReadAll<KV<PartitionColumnT, PartitionColumnT>, T> readAll =
@@ -1452,11 +1486,7 @@ public class JdbcIO {
                       "select * from %1$s where %2$s >= ? and %2$s < ?", table, partitionColumn))
               .withRowMapper(rowMapper)
               .withFetchSize(getFetchSize())
-              .withParameterSetter(
-                  checkStateNotNull(
-                          JdbcUtil.JdbcReadWithPartitionsHelper.getPartitionsHelper(
-                              getPartitionColumnType()))
-                      ::setParameters)
+              .withParameterSetter(checkStateNotNull(partitionsHelper))
               .withOutputParallelization(false);
 
       if (getUseBeamSchema()) {

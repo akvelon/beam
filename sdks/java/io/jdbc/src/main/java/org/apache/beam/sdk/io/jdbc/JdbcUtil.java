@@ -18,7 +18,6 @@
 package org.apache.beam.sdk.io.jdbc;
 
 import static org.apache.beam.sdk.util.Preconditions.checkArgumentNotNull;
-import static org.apache.beam.sdk.util.Preconditions.checkStateNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -443,7 +442,7 @@ class JdbcUtil {
    *
    * @param <PartitionT>
    */
-  interface JdbcReadWithPartitionsHelper<PartitionT>
+  public interface JdbcReadWithPartitionsHelper<PartitionT>
       extends PreparedStatementSetter<KV<PartitionT, PartitionT>>,
           RowMapper<KV<Long, KV<PartitionT, PartitionT>>> {
     static <T> @Nullable JdbcReadWithPartitionsHelper<T> getPartitionsHelper(
@@ -467,21 +466,19 @@ class JdbcUtil {
   /** Create partitions on a table. */
   static class PartitioningFn<T> extends DoFn<KV<Long, KV<T, T>>, KV<T, T>> {
     private static final Logger LOG = LoggerFactory.getLogger(PartitioningFn.class);
-    final TypeDescriptor<T> partitioningColumnType;
+    final JdbcReadWithPartitionsHelper<T> partitionsHelper;
 
-    PartitioningFn(TypeDescriptor<T> partitioningColumnType) {
-      this.partitioningColumnType = partitioningColumnType;
+    PartitioningFn(JdbcReadWithPartitionsHelper<T> partitionsHelper) {
+      this.partitionsHelper = partitionsHelper;
     }
 
     @ProcessElement
     public void processElement(ProcessContext c) {
       T lowerBound = c.element().getValue().getKey();
       T upperBound = c.element().getValue().getValue();
-      JdbcReadWithPartitionsHelper<T> helper =
-          checkStateNotNull(
-              JdbcReadWithPartitionsHelper.getPartitionsHelper(partitioningColumnType));
       List<KV<T, T>> ranges =
-          Lists.newArrayList(helper.calculateRanges(lowerBound, upperBound, c.element().getKey()));
+          Lists.newArrayList(
+              partitionsHelper.calculateRanges(lowerBound, upperBound, c.element().getKey()));
       LOG.warn("Total of {} ranges: {}", ranges.size(), ranges);
       for (KV<T, T> e : ranges) {
         c.output(e);

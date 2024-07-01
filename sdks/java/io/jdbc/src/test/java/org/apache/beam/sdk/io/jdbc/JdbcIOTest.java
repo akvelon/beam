@@ -45,6 +45,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
@@ -1326,7 +1327,11 @@ public class JdbcIOTest implements Serializable {
     PCollection<KV<DateTime, DateTime>> ranges =
         pipeline
             .apply(Create.of(KV.of(10L, KV.of(new DateTime(0), DateTime.now()))))
-            .apply(ParDo.of(new PartitioningFn<>(TypeDescriptor.of(DateTime.class))));
+            .apply(
+                ParDo.of(
+                    new PartitioningFn<>(
+                        JdbcUtil.JdbcReadWithPartitionsHelper.getPartitionsHelper(
+                            TypeDescriptor.of(DateTime.class)))));
 
     PAssert.that(ranges.apply(Count.globally()))
         .satisfies(
@@ -1407,7 +1412,64 @@ public class JdbcIOTest implements Serializable {
     PCollection<KV<Long, Long>> ranges =
         pipeline
             .apply(Create.of(KV.of(10L, KV.of(0L, 12346789L))))
-            .apply(ParDo.of(new PartitioningFn<>(TypeDescriptors.longs())));
+            .apply(
+                ParDo.of(
+                    new PartitioningFn<>(
+                        JdbcUtil.JdbcReadWithPartitionsHelper.getPartitionsHelper(
+                            TypeDescriptors.longs()))));
+
+    PAssert.that(ranges.apply(Count.globally())).containsInAnyOrder(10L);
+    pipeline.run().waitUntilFinish();
+  }
+
+  @Test
+  public void testPartitioningStringsWithCustomPartitionsHelper() {
+    JdbcUtil.JdbcReadWithPartitionsHelper<String> partitionsHelper =
+        new JdbcUtil.JdbcReadWithPartitionsHelper<String>() {
+          @Override
+          public Iterable<KV<String, String>> calculateRanges(
+              String lowerBoundStr, String upperBoundStr, Long partitions) {
+            List<KV<String, String>> ranges = new ArrayList<>();
+            long lowerBound = Long.parseLong(lowerBoundStr);
+            long upperBound = Long.parseLong(upperBoundStr);
+
+            long stride = (upperBound / partitions - lowerBound / partitions) + 1;
+            long highest = lowerBound;
+            for (long i = lowerBound; i < upperBound - stride; i += stride) {
+              ranges.add(KV.of(String.valueOf(i), String.valueOf(i + stride)));
+              highest = i + stride;
+            }
+            if (highest < upperBound + 1) {
+              ranges.add(KV.of(String.valueOf(highest), String.valueOf(upperBound + 1)));
+            }
+            return ranges;
+          }
+
+          @Override
+          public void setParameters(
+              KV<String, String> element, PreparedStatement preparedStatement) {
+            try {
+              preparedStatement.setString(1, element.getKey());
+              preparedStatement.setString(2, element.getValue());
+            } catch (SQLException e) {
+              throw new RuntimeException(e);
+            }
+          }
+
+          @Override
+          public KV<Long, KV<String, String>> mapRow(ResultSet resultSet) throws Exception {
+            if (resultSet.getMetaData().getColumnCount() == 3) {
+              return KV.of(
+                  resultSet.getLong(3), KV.of(resultSet.getString(1), resultSet.getString(2)));
+            } else {
+              return KV.of(0L, KV.of(resultSet.getString(1), resultSet.getString(2)));
+            }
+          }
+        };
+    PCollection<KV<String, String>> ranges =
+        pipeline
+            .apply(Create.of(KV.of(10L, KV.of("0", "12346789"))))
+            .apply(ParDo.of(new PartitioningFn<>(partitionsHelper)));
 
     PAssert.that(ranges.apply(Count.globally())).containsInAnyOrder(10L);
     pipeline.run().waitUntilFinish();
