@@ -85,7 +85,7 @@ jobs:
           kubectl apply -k ${{ github.workspace }}/.test-infra/kafka/strimzi/02-kafka-persistent/overlays/gke-internal-load-balanced
           end=$((SECONDS + 1200))
           while [ $SECONDS -lt $end ]; do
-            if kubectl get kafka beam-testing-cluster -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' -n <namespace> | grep -q "True"; then
+            if kubectl get kafka beam-testing-cluster -o jsonpath="{.status.conditions[?(@.type=='Ready')].status}" -n <namespace> | grep -q "True"; then
               echo "Kafka is Ready!"
               break
             fi
