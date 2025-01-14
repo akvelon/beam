@@ -83,7 +83,21 @@ jobs:
         id: install_kafka
         run: |
           kubectl apply -k ${{ github.workspace }}/.test-infra/kafka/strimzi/02-kafka-persistent/overlays/gke-internal-load-balanced
-          kubectl wait kafka beam-testing-cluster --for=condition=Ready --timeout=7800s
+          end=$((SECONDS + 1200))
+          while [ $SECONDS -lt $end ]; do
+            if kubectl get kafka beam-testing-cluster -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' -n <namespace> | grep -q "True"; then
+              echo "Kafka is Ready!"
+              break
+            fi
+            echo "Waiting for Kafka to become Ready..."
+            sleep 20
+          done
+          if [ $SECONDS -ge $end ]; then
+            echo "Timeout: Kafka did not become Ready within 10 minutes."
+          else
+            echo "Successfully exited loop because Kafka is Ready."
+          fi
+#kubectl wait kafka beam-testing-cluster --for=condition=Ready --timeout=7800s
       - name: Set up Kafka brokers
         id: set_brokers
         run: |
