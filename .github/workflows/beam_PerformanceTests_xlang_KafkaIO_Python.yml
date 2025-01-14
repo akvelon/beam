@@ -69,6 +69,10 @@ jobs:
           comment_phrase: ${{ matrix.job_phrase }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           github_job: ${{ matrix.job_name }} (${{ matrix.job_phrase }})
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment-action
+        with:
+          python-version: default
       - name: Set k8s access
         uses: ./.github/actions/setup-k8s-access
         with:
@@ -79,7 +83,7 @@ jobs:
         id: install_kafka
         run: |
           kubectl apply -k ${{ github.workspace }}/.test-infra/kafka/strimzi/02-kafka-persistent/overlays/gke-internal-load-balanced
-          kubectl wait kafka beam-testing-cluster --for=condition=Ready --timeout=1200s
+          kubectl wait kafka beam-testing-cluster --for=condition=Ready --timeout=7800s
       - name: Set up Kafka brokers
         id: set_brokers
         run: |
@@ -92,10 +96,6 @@ jobs:
             echo "KAFKA_SERVICE_BROKER_${INDEX}=${kafka_service_brokers[$INDEX]}" >> $GITHUB_OUTPUT
             echo "KAFKA_SERVICE_BROKER_PORTS_${INDEX}=${kafka_service_brokers_ports[$INDEX]}" >> $GITHUB_OUTPUT
           done
-      - name: Setup environment
-        uses: ./.github/actions/setup-environment-action
-        with:
-          python-version: default
       - name: Prepare test arguments
         uses: ./.github/actions/test-arguments-action
         with:
