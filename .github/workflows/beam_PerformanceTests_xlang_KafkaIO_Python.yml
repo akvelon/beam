@@ -85,7 +85,7 @@ jobs:
           kubectl apply -k ${{ github.workspace }}/.test-infra/kafka/strimzi/02-kafka-persistent/overlays/gke-internal-load-balanced
           end=$((SECONDS + 1200))
           while [ $SECONDS -lt $end ]; do
-            kubectl get kafka beam-testing-cluster -n $TEST_NAMESPACE
+            kubectl get kafka beam-testing-cluster
             sleep 20
           done
           echo "Timeout: Kafka did not become Ready within 10 minutes."
