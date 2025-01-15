@@ -94,7 +94,31 @@ jobs:
             echo "KAFKA_SERVICE_BROKER_${INDEX}=${kafka_service_brokers[$INDEX]}" >> $GITHUB_OUTPUT
             echo "KAFKA_SERVICE_BROKER_PORTS_${INDEX}=${kafka_service_brokers_ports[$INDEX]}" >> $GITHUB_OUTPUT
           done
-      - name: run Kafka StressTest Large
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment-action
+        with:
+          python-version: default
+      - name: Prepare test arguments
+        uses: ./.github/actions/test-arguments-action
+        with:
+          test-type: load
+          test-language: python
+          argument-file-paths: |
+            ${{ github.workspace }}/.github/workflows/performance-tests-pipeline-options/xlang_KafkaIO_Python.txt
+          arguments: |
+            --filename_prefix=gs://temp-storage-for-perf-tests/${{ matrix.job_name }}/${{github.run_id}}/
+            --bootstrap_servers=${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_0 }}:${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_PORTS_0 }},${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_1 }}:${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_PORTS_1 }},${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_2 }}:${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_PORTS_2 }}
+      - name: run shadowJar
         uses: ./.github/actions/gradle-command-self-hosted-action
         with:
-          gradle-command: :it:kafka:KafkaStressTestLarge --info -DbootstrapServers="${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_0 }}:${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_PORTS_0 }},${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_1 }}:${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_PORTS_1 }},${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_2 }}:${{ steps.set_brokers.outputs.KAFKA_SERVICE_BROKER_PORTS_2 }}" -DinfluxHost="http://10.128.0.96:8086" -DinfluxDatabase="beam_test_metrics" -DinfluxMeasurement="java_stress_test_kafka"
+          gradle-command: :sdks:java:io:expansion-service:shadowJar
+      # The env variable is created and populated in the test-arguments-action as "<github.job>_test_arguments_<argument_file_paths_index>"
+      - name: run integrationTest
+        uses: ./.github/actions/gradle-command-self-hosted-action
+        with:
+          gradle-command: :sdks:python:apache_beam:testing:load_tests:run
+          arguments: |
+            -Prunner=DataflowRunner \
+            -PloadTest.mainClass=apache_beam.io.external.xlang_kafkaio_perf_test \
+            -PpythonVersion=3.9 \
+            '-PloadTest.args=${{ env.beam_StressTests_Java_KafkaIO_test_arguments_1 }}'
