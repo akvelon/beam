@@ -49,7 +49,8 @@ env:
   INFLUXDB_USER_PASSWORD: ${{ secrets.INFLUXDB_USER_PASSWORD }}
 
 jobs:
-  beam_Perf_xlang_KafkaIO_Python:
+  # Using 'PerfTests' instead of 'PerformanceTests' to comply with Kafka Strimzi's name length limitations.
+  beam_PerfTests_xlang_KafkaIO_Python:
     if: |
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'schedule' && github.repository == 'apache/beam') ||
@@ -59,7 +60,7 @@ jobs:
     name: ${{ matrix.job_name }} (${{ matrix.job_phrase }})
     strategy:
       matrix:
-        job_name: ["beam_Perf_xlang_KafkaIO_Python"]
+        job_name: ["beam_PerfTests_xlang_KafkaIO_Python"]
         job_phrase: ["Run Python xlang KafkaIO Performance Test"]
     steps:
       - uses: actions/checkout@v4
@@ -119,4 +120,4 @@ jobs:
             -Prunner=DataflowRunner \
             -PloadTest.mainClass=apache_beam.io.external.xlang_kafkaio_perf_test \
             -PpythonVersion=3.9 \
-            '-PloadTest.args=${{ env.beam_Perf_xlang_KafkaIO_Python_test_arguments_1 }}'
+            '-PloadTest.args=${{ env.beam_PerfTests_xlang_KafkaIO_Python_test_arguments_1 }}'
