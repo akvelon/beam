@@ -227,7 +227,7 @@ jobs:
           # TODO(https://github.com/apache/beam/issues/31114)
           {"os": "macos-13", "runner": "macos-13", "python": "${{ needs.check_env_variables.outputs.py-versions-test }}", arch: "auto" },
           {"os": "windows-latest", "runner": "windows-latest", "python": "${{ needs.check_env_variables.outputs.py-versions-test }}", arch: "auto" },
-          {"os": "ubuntu-20.04", "runner": "ubuntu-latest", "python": "${{ needs.check_env_variables.outputs.py-versions-test }}", arch: "aarch64" }
+          {"os": "ubuntu-20.04", "runner": [self-hosted, ubuntu-20.04, main], "python": "${{ needs.check_env_variables.outputs.py-versions-test }}", arch: "aarch64" }
         ]
         # Keep in sync (remove asterisks) with PY_VERSIONS_FULL env var above - if changed, change that as well.
         py_version: ["cp39-", "cp310-", "cp311-", "cp312-"]
@@ -247,12 +247,12 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: 3.9
-    - uses: docker/setup-qemu-action@v1
+    - uses: docker/setup-qemu-action@v3
       if: ${{matrix.os_python.arch == 'aarch64'}}
       name: Set up QEMU
     - name: Install cibuildwheel
       # note: sync cibuildwheel version with gradle task sdks:python:bdistPy* steps
-      run: pip install cibuildwheel==2.17.0 setuptools
+      run: pip install cibuildwheel==2.22.0 setuptools
     - name: Build wheel
       # Only build wheel if it is one of the target versions for this platform, otherwise no-op
       if: ${{ contains(matrix.os_python.python, matrix.py_version) }}
@@ -261,7 +261,7 @@ jobs:
         CIBW_BUILD: ${{ matrix.py_version }}*
         # TODO: https://github.com/apache/beam/issues/23048
         CIBW_SKIP: "*-musllinux_*"
-        CIBW_BEFORE_BUILD: pip install cython==0.29.36 numpy --config-settings=setup-args="-Dallow-noblas=true" && pip install --upgrade setuptools
+        CIBW_BEFORE_BUILD: pip install cython==3.0.11 numpy --config-settings=setup-args="-Dallow-noblas=true" && pip install --upgrade setuptools
       run: cibuildwheel --print-build-identifiers && cibuildwheel --output-dir wheelhouse
       shell: bash
     - name: install sha512sum on MacOS
@@ -289,7 +289,7 @@ jobs:
         CIBW_BUILD: ${{ matrix.py_version }}*
         # TODO: https://github.com/apache/beam/issues/23048
         CIBW_SKIP: "*-musllinux_*"
-        CIBW_BEFORE_BUILD: pip install cython==0.29.36 numpy --config-settings=setup-args="-Dallow-noblas=true" && pip install --upgrade setuptools
+        CIBW_BEFORE_BUILD: pip install cython==3.0.11 numpy --config-settings=setup-args="-Dallow-noblas=true" && pip install --upgrade setuptools
       run: cibuildwheel --print-build-identifiers && cibuildwheel --output-dir wheelhouse
       shell: bash
     - name: Add RC checksums
