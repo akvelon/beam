@@ -30,15 +30,18 @@ ENV CLOUDSDK_CORE_DISABLE_PROMPTS yes
 ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 
 # Use one RUN command to reduce the number of layers.
-# Update package index
-RUN apt-get update
 
 # Install native bindings required for dependencies
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     libsnappy-dev \
     libyaml-dev \
     ccache \
-    libgeos-dev
+    libgeos-dev \
+    build-essential \
+    g++ \
+    python3-dev
+
+RUN export CXXFLAGS="-std=c++11"
 
 # Clean up apt cache
 RUN rm -rf /var/lib/apt/lists/*
