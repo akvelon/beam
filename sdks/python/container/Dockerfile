@@ -44,10 +44,10 @@ RUN apt-get install -y \
 RUN rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip and install essential Python packages
-RUN pip install --upgrade pip setuptools wheel
+RUN pip install --use-pep517 --upgrade pip setuptools wheel
 
 # Install required packages for Beam Python SDK and common dependencies
-RUN pip install --no-deps -r /tmp/base_image_requirements.txt \
+RUN pip install --use-pep517 --no-deps -r /tmp/base_image_requirements.txt \
     && rm -rf /tmp/base_image_requirements.txt
 
 # Download NLTK stopwords
@@ -71,11 +71,11 @@ RUN ln -s /usr/bin/ccache /usr/local/bin/gcc \
     && ccache --set-config=sloppiness=file_macro \
     && ccache --set-config=hash_dir=false
 
-RUN pip install protobuf==5.29.2
-RUN pip install numpy==1.26.4
+RUN pip install --use-pep517 protobuf==5.29.2
+RUN pip install --use-pep517 numpy==1.26.4
 
 # Install Apache Beam SDK
-RUN pip install --no-deps -vvv /opt/apache/beam/tars/apache-beam.tar.gz[gcp]
+RUN pip install --use-pep517 --no-deps -vvv /opt/apache/beam/tars/apache-beam.tar.gz[gcp]
 
 RUN pip check
 
