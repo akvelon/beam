@@ -30,57 +30,56 @@ ENV CLOUDSDK_CORE_DISABLE_PROMPTS yes
 ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 
 # Use one RUN command to reduce the number of layers.
-RUN  \
-    # Install native bindings required for dependencies.
-    apt-get update && \
-    apt-get install -y \
-       # Required by python-snappy
-       libsnappy-dev \
-       # Required by pyyaml (for c bindings)
-       libyaml-dev \
-       # This is used to speed up the re-installation of the sdk.
-       ccache \
-       # Required for using Beam Python SDK on ARM machines.
-       libgeos-dev \
-       && \
-    rm -rf /var/lib/apt/lists/* && \
+# Update package index
+RUN apt-get update
 
-    pip install --upgrade pip setuptools wheel && \
+# Install native bindings required for dependencies
+RUN apt-get install -y \
+    libsnappy-dev \
+    libyaml-dev \
+    ccache \
+    libgeos-dev
 
-    # Install required packages for Beam Python SDK and common dependencies used by users.
-    # use --no-deps to ensure the list includes all transitive dependencies.
-    pip install --no-deps -r /tmp/base_image_requirements.txt && \
-    rm -rf /tmp/base_image_requirements.txt && \
-    python -c "import nltk; nltk.download('stopwords')" && \
-    rm /root/nltk_data/corpora/stopwords.zip && \
+# Clean up apt cache
+RUN rm -rf /var/lib/apt/lists/*
 
-    # Check that the protobuf upb(also called micro protobuf) is used.
-    python -c "from google.protobuf.internal import api_implementation; assert api_implementation._implementation_type == 'upb'; print ('Verified fast protobuf used.')" && \
+# Upgrade pip and install essential Python packages
+RUN pip install --upgrade pip setuptools wheel
 
-    # Install Google Cloud SDK.
-    mkdir -p /usr/local/gcloud && \
-    cd /usr/local/gcloud && \
-    curl -s -O https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz && \
-    tar -xf google-cloud-sdk.tar.gz && \
-    /usr/local/gcloud/google-cloud-sdk/install.sh && \
-    rm -rf /usr/local/gcloud/google-cloud-sdk/.install/.backup && \
-    rm google-cloud-sdk.tar.gz && \
+# Install required packages for Beam Python SDK and common dependencies
+RUN pip install --no-deps -r /tmp/base_image_requirements.txt \
+    && rm -rf /tmp/base_image_requirements.txt
 
-    # Configure ccache prior to installing Beam SDK. This speeds up wheels compilation when installing the SDK from sources.
-    ln -s /usr/bin/ccache /usr/local/bin/gcc && \
-    # These parameters are needed as pip compiles artifacts in random temporary directories.
-    ccache --set-config=sloppiness=file_macro && ccache --set-config=hash_dir=false && \
+# Download NLTK stopwords
+RUN python -c "import nltk; nltk.download('stopwords')" \
+    && rm /root/nltk_data/corpora/stopwords.zip
 
-    # Install Apache Beam SDK. Use --no-deps and pip check to verify that all
-    # necessary dependencies are specified in base_image_requirements.txt.
-    pip install --no-deps -v /opt/apache/beam/tars/apache-beam.tar.gz[gcp] && \
-    pip check || (echo "Container does not include required Beam dependencies or has conflicting dependencies. If Beam dependencies have changed, you need to regenerate base_image_requirements.txt files. See: https://s.apache.org/beam-python-requirements-generate" && exit 1) && \
+# Verify that the protobuf upb is used
+RUN python -c "from google.protobuf.internal import api_implementation; assert api_implementation._implementation_type == 'upb'; print('Verified fast protobuf used.')"
 
-    # Log complete list of what exact packages and versions are installed.
-    pip freeze --all && \
+# Install Google Cloud SDK
+RUN mkdir -p /usr/local/gcloud \
+    && cd /usr/local/gcloud \
+    && curl -s -O https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz \
+    && tar -xf google-cloud-sdk.tar.gz \
+    && /usr/local/gcloud/google-cloud-sdk/install.sh \
+    && rm -rf /usr/local/gcloud/google-cloud-sdk/.install/.backup \
+    && rm google-cloud-sdk.tar.gz
 
-    # Remove pip cache.
-    rm -rf /root/.cache/pip
+# Configure ccache for faster SDK builds
+RUN ln -s /usr/bin/ccache /usr/local/bin/gcc \
+    && ccache --set-config=sloppiness=file_macro \
+    && ccache --set-config=hash_dir=false
+
+# Install Apache Beam SDK
+RUN pip install --no-deps -v /opt/apache/beam/tars/apache-beam.tar.gz[gcp] \
+    && pip check || (echo "Container does not include required Beam dependencies or has conflicting dependencies. If Beam dependencies have changed, you need to regenerate base_image_requirements.txt files. See: https://s.apache.org/beam-python-requirements-generate" && exit 1)
+
+# Log complete list of installed packages
+RUN pip freeze --all
+
+# Remove pip cache
+RUN rm -rf /root/.cache/pip
 
 ENTRYPOINT ["/opt/apache/beam/boot"]
 
