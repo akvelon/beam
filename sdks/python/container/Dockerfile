@@ -38,9 +38,12 @@ RUN apt-get update && apt-get install -y \
     ccache \
     libgeos-dev \
     build-essential \
-    g++ \
+    gcc-11 \
+    g++-11 \
     python3-dev
 
+RUN export CC="gcc-11"
+RUN export CXX="g++-11"
 RUN export CXXFLAGS="-std=c++11"
 
 # Clean up apt cache
