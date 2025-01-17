@@ -71,8 +71,11 @@ RUN ln -s /usr/bin/ccache /usr/local/bin/gcc \
     && ccache --set-config=sloppiness=file_macro \
     && ccache --set-config=hash_dir=false
 
+RUN pip install protobuf==5.29.2
+RUN pip install numpy==1.26.4
+
 # Install Apache Beam SDK
-RUN pip install -vvv /opt/apache/beam/tars/apache-beam.tar.gz[gcp]
+RUN pip install --no-deps -vvv /opt/apache/beam/tars/apache-beam.tar.gz[gcp]
 
 RUN pip check
 
