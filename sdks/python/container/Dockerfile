@@ -72,7 +72,7 @@ RUN ln -s /usr/bin/ccache /usr/local/bin/gcc \
     && ccache --set-config=hash_dir=false
 
 # Install Apache Beam SDK
-RUN pip install --no-deps -v /opt/apache/beam/tars/apache-beam.tar.gz[gcp]
+RUN pip install -vvv /opt/apache/beam/tars/apache-beam.tar.gz[gcp]
 
 RUN pip check
 
