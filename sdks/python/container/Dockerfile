@@ -72,8 +72,12 @@ RUN ln -s /usr/bin/ccache /usr/local/bin/gcc \
     && ccache --set-config=hash_dir=false
 
 # Install Apache Beam SDK
-RUN pip install --no-deps -v /opt/apache/beam/tars/apache-beam.tar.gz[gcp] \
-    && pip check || (echo "Container does not include required Beam dependencies or has conflicting dependencies. If Beam dependencies have changed, you need to regenerate base_image_requirements.txt files. See: https://s.apache.org/beam-python-requirements-generate" && exit 1)
+RUN pip install --no-deps -v /opt/apache/beam/tars/apache-beam.tar.gz[gcp]
+
+RUN pip check
+
+# Validate dependencies
+RUN pip check || (echo "Container does not include required Beam dependencies or has conflicting dependencies. If Beam dependencies have changed, you need to regenerate base_image_requirements.txt files. See: https://s.apache.org/beam-python-requirements-generate" && exit 1)
 
 # Log complete list of installed packages
 RUN pip freeze --all
