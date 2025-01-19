@@ -249,7 +249,7 @@ def createRunnerV2ValidatesRunnerTest = { Map args ->
   def excludedCategories = args.excludedCategories ?: []
 
   return tasks.create(name: name, type: Test, group: "Verification") {
-    dependsOn buildAndPushDockerJavaContainer
+    dependsOn   buildAndPushDockerJavaContainer
     systemProperty "beamTestPipelineOptions", JsonOutput.toJson(pipelineOptions)
 
     // Increase test parallelism up to the number of Gradle workers. By default this is equal
@@ -351,7 +351,7 @@ def buildAndPushDockerJavaContainer = tasks.register("buildAndPushDockerJavaCont
   def defaultDockerImageName = containerImageName(
           name: "${project.docker_image_default_repo_prefix}${javaVer}_sdk",
           root: "apache",
-          tag: "latest")
+          tag: "2.61.0")
   doLast {
     exec {
       commandLine "docker", "tag", "${defaultDockerImageName}", "${dockerJavaImageName}"
@@ -394,7 +394,7 @@ def buildAndPushDockerPythonContainer = tasks.create("buildAndPushDockerPythonCo
   def defaultDockerImageName = containerImageName(
           name: "${project.docker_image_default_repo_prefix}python${pythonVer}_sdk",
           root: "apache",
-          tag: "latest")
+          tag: "2.61.0")
   doLast {
     exec {
       commandLine "docker", "tag", "${defaultDockerImageName}", "${dockerPythonImageName}"
