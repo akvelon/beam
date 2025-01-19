@@ -351,7 +351,7 @@ def buildAndPushDockerJavaContainer = tasks.register("buildAndPushDockerJavaCont
   def defaultDockerImageName = containerImageName(
           name: "${project.docker_image_default_repo_prefix}${javaVer}_sdk",
           root: "apache",
-          tag: project.sdk_version)
+          tag: "latest")
   doLast {
     exec {
       commandLine "docker", "tag", "${defaultDockerImageName}", "${dockerJavaImageName}"
@@ -394,7 +394,7 @@ def buildAndPushDockerPythonContainer = tasks.create("buildAndPushDockerPythonCo
   def defaultDockerImageName = containerImageName(
           name: "${project.docker_image_default_repo_prefix}python${pythonVer}_sdk",
           root: "apache",
-          tag: project.sdk_version)
+          tag: "latest")
   doLast {
     exec {
       commandLine "docker", "tag", "${defaultDockerImageName}", "${dockerPythonImageName}"
