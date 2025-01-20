@@ -64,7 +64,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'schedule' && github.repository == 'apache/beam') ||
       github.event.comment.body == 'Run Load Tests Go GBK Flink Batch'
-    runs-on: [self-hosted, ubuntu-20.04, highmem]
+    runs-on: [self-hosted, ubuntu-20.04, highmem-22]
     timeout-minutes: 720
     name: ${{ matrix.job_name }} (${{ matrix.job_phrase }})
     strategy:
@@ -102,7 +102,7 @@ jobs:
           cd ${{ github.workspace }}/.test-infra/dataproc; ./flink_cluster.sh create
       # The env variables are created and populated in the test-arguments-action as "<github.job>_test_arguments_<argument_file_paths_index>"
       - name: run GBK Flink Batch Go Load Test 1 (10 b records)
-        timeout-minutes: 720
+        timeout-minutes: 120
         uses: ./.github/actions/gradle-command-self-hosted-action
         with:
           gradle-command: :sdks:go:test:load:run
