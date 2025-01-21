@@ -128,7 +128,7 @@ def main():
     token = os.environ["GITHUB_TOKEN"]
     auth = Auth.Token(token)
     g = Github(auth=auth)
-    repo = g.get_repo(f"{GIT_ORG}/beam")
+    repo = g.get_repo("Amar3tto/beam")
 
     alerts = get_grafana_alerts()
     open_issues = repo.get_issues(state="open", labels=["flaky_test"])
