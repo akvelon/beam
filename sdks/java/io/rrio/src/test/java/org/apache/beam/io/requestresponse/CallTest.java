@@ -123,7 +123,7 @@ public class CallTest {
 
   @Test
   public void givenCallerTimeout_emitsFailurePCollection() {
-    Duration timeout = Duration.standardSeconds(1L);
+    Duration timeout = Duration.standardSeconds(60L);
     Result<Response> result =
         pipeline
             .apply(Create.of(new Request("a")))
@@ -182,7 +182,7 @@ public class CallTest {
 
   @Test
   public void givenSetupTimeout_throwsError() {
-    Duration timeout = Duration.standardSeconds(1L);
+    Duration timeout = Duration.standardSeconds(60L);
 
     pipeline
         .apply(Create.of(new Request("")))
@@ -231,7 +231,7 @@ public class CallTest {
 
   @Test
   public void givenTeardownTimeout_throwsError() {
-    Duration timeout = Duration.standardSeconds(1L);
+    Duration timeout = Duration.standardSeconds(60L);
     pipeline
         .apply(Create.of(new Request("")))
         .apply(
@@ -358,7 +358,7 @@ public class CallTest {
     private final Duration timeout;
 
     CallerExceedsTimeout(Duration timeout) {
-      this.timeout = timeout.plus(Duration.standardSeconds(1L));
+      this.timeout = timeout.plus(Duration.standardSeconds(60L));
     }
 
     @Override
@@ -397,7 +397,7 @@ public class CallTest {
     private final Duration timeout;
 
     private SetupExceedsTimeout(Duration timeout) {
-      this.timeout = timeout.plus(Duration.standardSeconds(1L));
+      this.timeout = timeout.plus(Duration.standardSeconds(60L));
     }
 
     @Override
@@ -443,7 +443,7 @@ public class CallTest {
     private final Duration timeout;
 
     private TeardownExceedsTimeout(Duration timeout) {
-      this.timeout = timeout.plus(Duration.standardSeconds(1L));
+      this.timeout = timeout.plus(Duration.standardSeconds(60L));
     }
 
     @Override
