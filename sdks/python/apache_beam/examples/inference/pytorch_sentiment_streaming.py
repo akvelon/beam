@@ -190,7 +190,7 @@ def run(
 
   if known_args.mode == 'batch':
     return run_batch_pipeline(known_args, pipeline_args)
-  launch_batch_pubsub_load(known_args)
+  launch_batch_pubsub_load(known_args, pipeline_args)
 
   pipeline_options = PipelineOptions(pipeline_args)
   pipeline_options.view_as(SetupOptions).save_main_session = save_main_session
