@@ -111,7 +111,7 @@ def parse_known_args(argv):
   parser.add_argument(
       '--project', default='apache-beam-testing', help='GCP project ID')
   parser.add_argument(
-      '--mode', default='batch', choices=['streaming', 'batch'])
+      '--mode', default='streaming', choices=['streaming', 'batch'])
   parser.add_argument(
       '--rate_limit',
       type=float,
